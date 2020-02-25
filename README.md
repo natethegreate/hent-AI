@@ -1,6 +1,6 @@
 # Mask R-CNN for Object Detection and Segmentation
 
-This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), which uses Python 3, Keras, and TensorFlow, based on FPN and Resnet 101 backbone.
+This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), which uses Python 3, Keras 2.2, and TensorFlow 1.5, based on FPN and Resnet 101 backbone.
 
 Unrelated image
 ![Instance Segmentation Sample](assets/street.png)
