@@ -33,6 +33,16 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
+# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+# os.environ["OMP_NUM_THREADS"] = "4"
+# import tensorflow as tf
+#
+# config = tf.ConfigProto(intra_op_parallelism_threads=2, inter_op_parallelism_threads=2)
+# config.gpu_options.allow_growth = True
+# session = tf.Session(config=config)
+#
+# from keras import backend as K
+# K.set_session(session)
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
