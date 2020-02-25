@@ -30,24 +30,13 @@ all available in one dataset.
 
 See examples in `samples/shapes/train_shapes.ipynb`, `samples/coco/coco.py`, `samples/balloon/balloon.py`, and `samples/nucleus/nucleus.py`.
 
-## Citation
-Use this bibtex to cite this repository:
-```
-@misc{matterport_maskrcnn_2017,
-  title={Mask R-CNN for object detection and instance segmentation on Keras and TensorFlow},
-  author={Waleed Abdulla},
-  year={2017},
-  publisher={Github},
-  journal={GitHub repository},
-  howpublished={\url{https://github.com/matterport/Mask_RCNN}},
-}
-```
 
 ## Contributing
 I only have a bare understanding of convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome.
 
 ## Requirements
-Python 3.4, TensorFlow 1.15, Keras 2.0.8 (Not sure which one I have but I had to revert to some earlier version) and other common packages listed in `requirements.txt`.
+I would reccomend running these on a virtual environment.
+Python 3.5, TensorFlow 1.5, Keras 2.2 (Not sure which one I have but I had to revert to some earlier version) and other common packages listed in `requirements.txt`.
 
 
 ## Installation
