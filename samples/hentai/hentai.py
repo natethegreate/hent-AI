@@ -1,6 +1,6 @@
 """
 Mask R-CNN
-Similar to baloon.py, modified for my uses
+Similar to baloon.py, modified by Nathan Cueto
 
 Copyright (c) 2018 Matterport, Inc.
 Licensed under the MIT License (see LICENSE for details)
@@ -63,13 +63,13 @@ class HentaiConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 1
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 100
+    STEPS_PER_EPOCH = 183
 
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
@@ -85,6 +85,7 @@ class HentaiDataset(utils.Dataset):
         """Load a subset of hentai dataset.
         dataset_dir: Root directory of the dataset.
         subset: Subset to load: train or val
+        NOTE: modified to support multiple classes, specifically class bar and mosaic
         """
         # Add classes. We have only one class to add.
         self.add_class("hentai", 1, "bar")
@@ -99,7 +100,7 @@ class HentaiDataset(utils.Dataset):
         # { 'filename': '28503151_5b5b7ec140_b.jpg',
         #   'regions': {
         #       '0': {
-        #           'region_attributes': {},
+        #           'region_attributes': {"censor": ____}, # bar or mosaic here
         #           'shape_attributes': {
         #               'all_points_x': [...],
         #               'all_points_y': [...],
@@ -134,13 +135,16 @@ class HentaiDataset(utils.Dataset):
             image_path = os.path.join(dataset_dir, a['filename'])
             image = skimage.io.imread(image_path)
             height, width = image.shape[:2]
-
+            
+            class_id = [r['region_attributes']['censor'] for r in a['regions']]
+            # print('debug class_id load_h',class_id)
             self.add_image(
                 "hentai",
                 image_id=a['filename'],  # use file name as a unique image id
                 path=image_path,
                 width=width, height=height,
-                polygons=polygons)
+                polygons=polygons,
+                class_ids = class_id)
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -157,6 +161,17 @@ class HentaiDataset(utils.Dataset):
         # Convert polygons to a bitmap mask of shape
         # [height, width, instance_count]
         info = self.image_info[image_id]
+        class_ids_st = info['class_ids']
+        class_id = []
+        for ids in class_ids_st:
+            if(ids == 'bar'):
+                class_id.append(1)
+            elif(ids == 'mosaic'):
+                class_id.append(2)
+        
+        np_class_id = np.asarray(class_id) # std lists dont have shape, so convert to np
+
+        # print('load_mask classids', class_id)
         mask = np.zeros([info["height"], info["width"], len(info["polygons"])],
                         dtype=np.uint8)
         for i, p in enumerate(info["polygons"]):
@@ -166,7 +181,7 @@ class HentaiDataset(utils.Dataset):
 
         # Return mask, and array of class IDs of each instance. Since we have
         # one class ID only, we return an array of 1s
-        return mask.astype(np.bool), np.ones([mask.shape[-1]], dtype=np.int32)
+        return mask, np_class_id
 
     def image_reference(self, image_id):
         """Return the path of the image."""
@@ -196,10 +211,10 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,
-                layers='heads')
+                epochs=100,
+                layers='all')
 
-
+# modify this to instead color as solid green
 def color_splash(image, mask):
     """Apply color splash effect.
     image: RGB image [height, width, 3]
