@@ -221,7 +221,7 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=100,
+                epochs=45,
                 layers='all')
 
 # modify this to instead color as solid green
