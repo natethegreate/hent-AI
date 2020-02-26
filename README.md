@@ -16,19 +16,13 @@ This notebooks inspects the weights of a trained model and looks for anomalies a
 
 # The Dataset
 
-In summary, to train the model on your own dataset you'll need to extend two classes:
+Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I have decided to not provide my dataset.
 
-```Config```
-This class contains the default configuration. Subclass it and modify the attributes you need to change.
+# The Model
 
-```Dataset```
-This class provides a consistent way to work with any dataset. 
-It allows you to use new datasets for training without having to change 
-the code of the model. It also supports loading multiple datasets at the
-same time, which is useful if the objects you want to detect are not 
-all available in one dataset. 
+I have a model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45).
 
-See examples in `samples/shapes/train_shapes.ipynb`, `samples/coco/coco.py`, `samples/balloon/balloon.py`, and `samples/nucleus/nucleus.py`.
+Further configuration changes, and likely more training is inevitable, and I may choose to start fresh with a new model.
 
 
 ## Contributing
@@ -36,11 +30,31 @@ I only have a bare understanding of convolutional nueral networks and deep learn
 
 ## Requirements
 I would reccomend running these on a virtual environment.
-Python 3.5, TensorFlow 1.5, Keras 2.2 (Not sure which one I have but I had to revert to some earlier version) and other common packages listed in `requirements.txt`.
+Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
 
 
 ## Installation
-WIP
+
+* After cloning this repo, first install the requirements:
+
+```
+pip install -r requirements.txt
+```
+
+* Next, compile maskrcnn:
+
+```
+python setup.py install
+```
+
+* To train, run
+
+```
+python samples\hentai\hentai.py train --dataset=dataset_img/ --weights=path/to/weights
+```
+Alternatively, you can resume training using --weights=last
+
+
 
 # Acknowledgements
 Inspiration from [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy)
