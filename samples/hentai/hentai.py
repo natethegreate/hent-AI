@@ -81,8 +81,8 @@ class HentaiConfig(Config):
     # Number of training steps per epoch
     STEPS_PER_EPOCH = 183
 
-    # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    # Skip detections with < 75% confidence
+    DETECTION_MIN_CONFIDENCE = 0.75
 
 
 ############################################################
