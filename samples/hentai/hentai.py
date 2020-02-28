@@ -33,6 +33,7 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
+import imgaug
 # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 # os.environ["OMP_NUM_THREADS"] = "4"
 # import tensorflow as tf
@@ -79,7 +80,7 @@ class HentaiConfig(Config):
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 183
+    STEPS_PER_EPOCH = 259
 
     # Skip detections with < 75% confidence
     DETECTION_MIN_CONFIDENCE = 0.75
@@ -218,11 +219,32 @@ def train(model):
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
-    print("Training network heads")
+    augmentation = imgaug.augmenters.Fliplr(0.5)
+    print("Training network heads in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=45,
-                layers='all')
+                epochs=25,
+                layers='heads',
+                augmentation=augmentation)
+
+    # Training - Stage 2
+    # Finetune layers from ResNet stage 4 and up
+    print("Fine tune Resnet stage 4 and up in hentai.py")
+    model.train(dataset_train, dataset_val,
+                learning_rate=config.LEARNING_RATE,
+                epochs=25,
+                layers='4+',
+                augmentation=augmentation)
+
+    # Training - Stage 3
+    # Fine tune all layers
+    print("Fine tune all layers in hentai.py")
+    model.train(dataset_train, dataset_val,
+                learning_rate=config.LEARNING_RATE / 10,
+                epochs=30,
+                layers='all',
+                augmentation=augmentation)
+
 
 # modify this to instead color as solid green
 def color_splash(image, mask):
