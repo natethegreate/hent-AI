@@ -1,26 +1,34 @@
-# Mask R-CNN for Object Detection and Segmentation
+# Detecting censors with Mask R-CNN
 
-This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), which uses Python 3, Keras 2.2, and TensorFlow 1.5, based on FPN and Resnet 101 backbone.
+Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosic blurs. For us degenerated living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
+
+This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), which uses Python 3, Keras 2.2, and TensorFlow 1.5, based on FPN and Resnet 101 backbone. 
+
+NOTE: Despite the title, this project does not actually use AI.
 
 Unrelated image
 ![Instance Segmentation Sample](assets/street.png)
 
 # Getting Started
-Not yet
+You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable.
 
-* [inspect_model.ipynb](samples/coco/inspect_model.ipynb) This notebook goes in depth into the steps performed to detect and segment objects. It provides visualizations of every step of the pipeline. Mostly unchanged from Matterports implementation, and is kept here for educational purposes.
+* [inspect_model.ipynb](samples/coco/inspect_model.ipynb) This notebook is identical to the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
 
 * [inspect_weights.ipynb](samples/coco/inspect_weights.ipynb)
-This notebooks inspects the weights of a trained model and looks for anomalies and odd patterns, and is mostly unchanged from Matterports implementation.
+Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
+
+I have only worked on Windows platforms, and had not been able to train or work on other instances like Google colab and Google Cloud. 
 
 
 # The Dataset
 
-Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I have decided to not provide my dataset.
+Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I have decided to not provide my dataset. Annotated with VGG annotator in .json format.
+
+The color_splash function will be overwritten to instead return a full green mask over the returned rpn mask. This will ensure compatibility with the DeepCreamPy framework.
 
 # The Model
 
-I have a model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45).
+I have a prototype model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45). I will continue adding more trained models as I continue training.
 
 Further configuration changes, and likely more training is inevitable, and I may choose to start fresh with a new model.
 
