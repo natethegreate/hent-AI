@@ -2,11 +2,11 @@
 
 Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerated living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
 
-This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), which uses Python 3, Keras 2.2, and TensorFlow 1.5, based on FPN and Resnet 101 backbone. 
+This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
 
 NOTE: Despite the title, this project does not actually use AI.
 
-Unrelated image
+SFW example of image segmentation:
 ![Instance Segmentation Sample](assets/street.png)
 
 # Getting Started
@@ -27,6 +27,8 @@ Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I
 The color_splash function will be overwritten to instead return a full green mask over the returned rpn mask. This will ensure compatibility with the DeepCreamPy framework.
 
 # The Model
+
+I experimented with other pre-trained models, but ended transfer learning with the imagenet model. 
 
 I have a prototype model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45). I will continue adding more trained models as I continue training.
 
