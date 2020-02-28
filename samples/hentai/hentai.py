@@ -229,7 +229,7 @@ def train(model):
 
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up
-    print("Fine tune Resnet stage 4 and up in hentai.py")
+    '''print("Fine tune Resnet stage 4 and up in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=25,
@@ -243,7 +243,7 @@ def train(model):
                 learning_rate=config.LEARNING_RATE / 10,
                 epochs=30,
                 layers='all',
-                augmentation=augmentation)
+                augmentation=augmentation)'''
 
 
 # modify this to instead color as solid green
