@@ -9,20 +9,25 @@ Written by Nathan Cueto
 
 import os
 import sys
-# import json
-# import datetime
+import json
+import datetime
 import numpy as np
 import skimage.draw
-# import imgaug
-from PIL import Image
+import imgaug
+# from PIL import Image
 
 # Root directory of project
-ROOT_DIR = os.path.abspath("../")
+ROOT_DIR = os.path.abspath("../../")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
+print(ROOT_DIR)
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
+sys.path.insert(1, 'samples/hentai/')
+from hentai import HentaiConfig
+
+DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Path to trained weights
 WEIGHTS_PATH = os.path.join(ROOT_DIR, "weights.h5")
@@ -42,7 +47,7 @@ def apply_cover(image, mask):
     green[:,:] = [0, 255, 0]
     if mask.shape[-1] > 0:
         # We're treating all instances as one, so collapse the mask into one layer
-        mask = (np.sum(mask, -1, keepdims=True) >= 1)
+        mask = (np.sum(mask, -1, keepdims=True) < 1)
         cover = np.where(mask, image, green).astype(np.uint8)
     else:
         # error case, return image
@@ -55,9 +60,9 @@ def detect_and_cover(model, image_path=None):
     # Image or video?
     # if image_path:
         # Run model detection and generate the color splash effect
-    print("Running on {}".format(args.image))
+    print("Running on {}".format(image_path))
     # Read image
-    image = skimage.io.imread(args.image)
+    image = skimage.io.imread(image_path)
     # Detect objects
     r = model.detect([image], verbose=1)[0]
     # Color splash
@@ -122,12 +127,25 @@ if __name__ == '__main__':
     # Validate argument
     if args.command == "cover":
         assert args.image
+    weights_path = args.weights
+
+    class InferenceConfig(HentaiConfig):
+        # Set batch size to 1 since we'll be running inference on
+        # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
+        GPU_COUNT = 1
+        IMAGES_PER_GPU = 1
+    config = InferenceConfig()
 
     print("Loading weights ", weights_path)
+    model = modellib.MaskRCNN(mode="inference", config=config,
+                                  model_dir=DEFAULT_LOGS_DIR)
     model.load_weights(weights_path, by_name=True)
-
+    print("model loaded")
     if args.command == "cover":
-        detect_and_color_splash(model, image_path=args.image)
+        # detect_and_cover(model, image_path='detectorTest1_o')
+        detect_and_cover(model, image_path='detector\detectTest2_o.jpg')
+        detect_and_cover(model, image_path='detector\detectTest3_o.jpg')
+        detect_and_cover(model, image_path='detector\detectTest4_o.jpg')
     else:
         print("'{}' is not recognized. "
               "Use 'cover'".format(args.command))
