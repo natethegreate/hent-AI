@@ -6,6 +6,8 @@ This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/17
 
 NOTE: Despite the title, this project does not actually use AI.
 
+[Twitter (NSFw)](https://twitter.com/pecanpie112) 
+
 Standard example of image segmentation:
 ![Instance Segmentation Sample](assets/street.png)
 
