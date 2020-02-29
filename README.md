@@ -1,13 +1,21 @@
 # Detecting censors with Mask R-CNN
 
-Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerated living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
+Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
 
 This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
 
 NOTE: Despite the title, this project does not actually use AI.
 
-SFW example of image segmentation:
+[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
+
+Like what you see? You can send me a tip! (Proceeds also go to my tuition)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
+
+Standard example of image segmentation:
 ![Instance Segmentation Sample](assets/street.png)
+
+Example of mosaic detection on current (Feb 27,2020) model 107:
+![Detection Sample](assets/detect_output4.jpg)
 
 # Getting Started
 You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable.
@@ -32,8 +40,7 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 I have a prototype model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45). I will continue adding more trained models as I continue training.
 
-Further configuration changes, and likely more training is inevitable, and I may choose to start fresh with a new model.
-
+Latest model ready for inference is model 107. I will continue training models, and models I am comfortable with will be made available here.
 
 ## Contributing
 I only have a bare understanding of convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome.
