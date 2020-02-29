@@ -8,6 +8,9 @@ NOTE: Despite the title, this project does not actually use AI.
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
 
+Like what you see? You can send me a tip! (Proceeds also go to my tuition)
+[![Donate with PayPal](https://img.shields.io/badge/paypal-donate-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
+
 Standard example of image segmentation:
 ![Instance Segmentation Sample](assets/street.png)
 
