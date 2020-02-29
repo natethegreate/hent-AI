@@ -80,7 +80,7 @@ class HentaiConfig(Config):
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 259
+    STEPS_PER_EPOCH = 297
 
     # Skip detections with < 75% confidence
     DETECTION_MIN_CONFIDENCE = 0.75
