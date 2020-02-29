@@ -222,9 +222,9 @@ def train(model):
     augmentation = imgaug.augmenters.Fliplr(0.5)
     print("Training network heads in hentai.py")
     model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE,
-                epochs=25,
-                layers='heads',
+                learning_rate=config.LEARNING_RATE/5,
+                epochs=32,
+                layers='all',
                 augmentation=augmentation)
 
     # Training - Stage 2
