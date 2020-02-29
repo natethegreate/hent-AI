@@ -222,17 +222,17 @@ def train(model):
     augmentation = imgaug.augmenters.Fliplr(0.5)
     print("Training network heads in hentai.py")
     model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE/5,
-                epochs=32,
-                layers='all',
+                learning_rate=config.LEARNING_RATE,
+                epochs=17,
+                layers='heads',
                 augmentation=augmentation)
 
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up
-    '''print("Fine tune Resnet stage 4 and up in hentai.py")
+    print("Fine tune Resnet stage 4 and up in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=25,
+                epochs=34,
                 layers='4+',
                 augmentation=augmentation)
 
@@ -241,9 +241,9 @@ def train(model):
     print("Fine tune all layers in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE / 10,
-                epochs=30,
+                epochs=54,
                 layers='all',
-                augmentation=augmentation)'''
+                augmentation=augmentation)
 
 
 # modify this to instead color as solid green
