@@ -21,7 +21,6 @@ ROOT_DIR = os.path.abspath("../../")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
-print(ROOT_DIR)
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 sys.path.insert(1, 'samples/hentai/')
@@ -137,9 +136,9 @@ class Detector():
         for file in os.listdir(input_folder):
             # TODO: check what other filetpyes supported
             if file.endswith('.png') or file.endswith('.PNG'):
-                img_list.append((input_folder, file))
+                img_list.append(input_folder + '/' + file)
             elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
-                img_list.append((input_folder, file))
+                img_list.append(input_folder + '/' + file) # TODO verify this
                 self.dcp_compat += 1
 
         # save run detection with outputs to output folder
