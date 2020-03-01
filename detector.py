@@ -33,9 +33,8 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 WEIGHTS_PATH = os.path.join(ROOT_DIR, "weights.h5")
 
 class Detector():
-    # at startup, we only know weights location, and censor type
-    # censor_type: 0 if bar, 1 if mosaic
-    def __init__(self, censorType, weights_path):
+    # at startup, dont create model yet
+    def __init__(self, weights_path):
         class InferenceConfig(HentaiConfig):
             # Set batch size to 1 since we'll be running inference on
             # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
@@ -44,7 +43,8 @@ class Detector():
         self.config = InferenceConfig()
 
         self.weights_path = weights_path
-        self.censor_type = censorType
+        # counts how many non-png images, if >1 then warn user
+        self.dcp_compat = 0
         # keep model loading to be done later, not now
 
     # Make sure this is called before using model weights
@@ -74,6 +74,8 @@ class Detector():
             cover = green.astype(np.uint8)
         return cover
 
+    def get_non_png(self):
+        return self.dcp_compat
 
     def detect_and_cover(self, image_path=None, save_path=''):
         assert image_path
@@ -133,8 +135,11 @@ class Detector():
         img_list = []
         for file in os.listdir(input_folder):
             # TODO: check what other filetpyes supported
-            if file.endswith(".jpg") or file.endswith('.png') or file.endswith(".JPG") or file.endswith('.PNG') or file.endswith(".jpeg"):
-                img_list.append(os.path.join(input_folder, file))
+            if file.endswith('.png') or file.endswith('.PNG'):
+                img_list.append(input_folder + file)
+            elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
+                img_list.append(input_folder + file)
+                self.dcp_compat += 1
 
         # save run detection with outputs to output folder
         for img in img_list:
@@ -142,8 +147,8 @@ class Detector():
 
 
 
-# main only used for debugging here. Comment out in prod
-if __name__ == '__main__':
+# main only used for debugging here. Comment out pls
+'''if __name__ == '__main__':
     import argparse
     # Parse command line arguments
     parser = argparse.ArgumentParser(
@@ -161,14 +166,13 @@ if __name__ == '__main__':
 
     weights_path = args.weights
     images_path = args.imagedir
-    is_mosaic = 0
     output_dir = "temp_out/"
 
     print('Initializing Detector class')
-    detect_instance = Detector(censorType=is_mosaic, weights_path=args.weights)
+    detect_instance = Detector(weights_path=args.weights)
     print('loading weights')
     detect_instance.load_weights()
     print('running detect on in and out folder')
     detect_instance.run_on_folder(input_folder=images_path, output_folder=output_dir)
 
-    print("Fin")
+    print("Fin")'''
