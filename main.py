@@ -43,7 +43,7 @@ def error(errcode):
     popup.mainloop()
     # popup error code
 
-def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
+def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False):
     #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
     from detector import Detector
 
@@ -56,9 +56,9 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
     assert in_path
 
 
-    print('Initializing Detector class')
+    # print('Initializing Detector class')
     detect_instance = Detector(weights_path=weights_path)
-    print('loading weights')
+    # print('loading weights')
     detect_instance.load_weights()
     if(is_mosaic == True):
         # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
@@ -66,16 +66,28 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
         # print(in_path)
         # print(listdir(in_path))
         for file in listdir(in_path):
+            # kinda dumb but check if same file
             shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/')
 
     # Run detection
-    print('running detection, outputting to dcp input')
-    detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/')
+    if(is_video==True):
+        print('running video detection')
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True)
+    else:
+        print('running detection, outputting to dcp input')
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False)
+
+
+
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
-    label = Label(popup, text='Process executed successfully! Now you close the program.')
+    label = Label(popup, text='Process executed successfully! Now you close the program and run DeepCreamPy.')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
+    num_jpgs = detect_instance.dcp_compat()
+    if(num_jpgs > 0):
+        label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
+        label2.pack(side=TOP, fill=X, pady=10, padx=5)
     okbutton = Button(popup, text='Ok', command=popup.destroy)
     okbutton.pack()
     popup.mainloop()
@@ -118,7 +130,7 @@ def bar_detect():
     dir_button = Button(bar_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False))
+    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False))
     go_button.grid( columnspan=2, pady=10)
 
     bar_win.mainloop()
@@ -143,10 +155,35 @@ def mosaic_detect():
     dir_button = Button(mos_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True))
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False))
     go_button.grid( columnspan=2, pady=10)
 
     mos_win.mainloop()
+
+def video_detect():
+    vid_win = new_window()
+    vid_win.title('Video Detection (Experimental)')
+
+    # input video(s) directory label, entry, and button
+    o_label = Label(vid_win, text = 'Your own input video (???) folder: ')
+    o_label.grid(row=1, padx=20 ,pady=10)
+    o_entry = Entry(vid_win, textvariable=ovar)
+    o_entry.grid(row=1, column=1)
+    out_button = Button(vid_win, text="Browse", command=input_newdir)
+    out_button.grid(row=1, column=2)
+
+    # Entry for DCP installation
+    d_label = Label(vid_win, text = 'DCP install folder (usually called dist1): ')
+    d_label.grid(row=2, padx=20, pady=20)
+    d_entry = Entry(vid_win, textvariable = dvar)
+    d_entry.grid(row=2, column=1, padx=20)
+    dir_button = Button(vid_win, text="Browse", command=dcp_newdir)
+    dir_button.grid(row=2, column=2, padx=20)
+
+    go_button = Button(vid_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=True))
+    go_button.grid( columnspan=2, pady=10)
+
+    vid_win.mainloop()
 
 # sourced from https://stackoverflow.com/a/35486067
 def new_window():
@@ -182,6 +219,8 @@ if __name__ == "__main__":
     bar_button.pack(pady=10)
     mosaic_button = Button(title_window, text="Mosaic", command=mosaic_detect)
     mosaic_button.pack(pady=10)
+    video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
+    video_button.pack(pady=10, padx=10)
 
     title_window.geometry("300x160")
     title_window.mainloop()

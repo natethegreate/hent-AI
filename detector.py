@@ -76,31 +76,23 @@ class Detector():
     def get_non_png(self):
         return self.dcp_compat
 
-    def detect_and_cover(self, image_path=None, fname=None, save_path=''):
+    # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
+    # fname = filename.
+    # image_path = path of input file, image or video
+    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None):
         assert image_path
         assert fname # replace these with something better?
-        # Image or video?
-        # if image_path:
-            # Run model detection and generate the color splash effect
-        print("Running on {}".format(image_path))
-        # Read image
-        image = skimage.io.imread(image_path)
-        # Detect objects
-        r = self.model.detect([image], verbose=0)[0]
-        # Color splash
-        cov = self.apply_cover(image, r['masks'])
-        # Save output
-        file_name = save_path + fname
-        skimage.io.imsave(file_name, cov)
-        '''elif video_path: # TODO: video capabilities will come later
+        
+        if is_video: # TODO: video capabilities will come later
             import cv2
             # Video capture
+            video_path = image_path
             vcapture = cv2.VideoCapture(video_path)
             width = int(vcapture.get(cv2.CAP_PROP_FRAME_WIDTH))
             height = int(vcapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
             fps = vcapture.get(cv2.CAP_PROP_FPS)
     
-            # Define codec and create video writer
+            # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
             file_name = "splash_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
             vwriter = cv2.VideoWriter(file_name,
                                       cv2.VideoWriter_fourcc(*'MJPG'),
@@ -114,36 +106,70 @@ class Detector():
                 if success:
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
+                    # save frame into decensor input original. Need to keep names persistent.
+                    file_name = orig_video_folder + fname + str(count)
+                    skimage.io.imsave(file_name, image)
+                    print('saving frame as ', file_name)
+
                     # Detect objects
-                    r = model.detect([image], verbose=0)[0]
+                    r = self.model.detect([image], verbose=0)[0]
                     # Color splash
-                    splash = color_splash(image, r['masks'])
+                    splash = self.apply_cover(image, r['masks'])
                     # RGB -> BGR to save image to video
                     splash = splash[..., ::-1]
+                    # save covered frame into input for decensoring path
+                    file_name = save_path + fname + str(count)
+                    skimage.io.imsave(file_name, splash)
+                    print('saving covered frame as ', file_name)
                     # Add image to video writer
                     vwriter.write(splash)
                     count += 1
-            vwriter.release()'''
-        print("Saved to ", file_name)
 
-    # input input_folder needs trailing slash!!
-    def run_on_folder(self, input_folder, output_folder):
+            vwriter.release()
+            print('video complete')
+        else:
+            print("Running on {}".format(image_path))
+            # Read image
+            image = skimage.io.imread(image_path)
+            # Detect objects
+            r = self.model.detect([image], verbose=0)[0]
+            # Color splash
+            cov = self.apply_cover(image, r['masks'])
+            # Save output
+            file_name = save_path + fname
+            skimage.io.imsave(file_name, cov)
+            print("Saved to ", file_name)
+
+    # return 0 means all good
+    # return 1 means jpgs found
+    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None):
         assert input_folder
         assert output_folder # replace with catches and popups
 
-        # obtain inputs from the input folder
-        img_list = []
-        for file in os.listdir(input_folder):
-            # TODO: check what other filetpyes supported
-            if file.endswith('.png') or file.endswith('.PNG'):
-                img_list.append((input_folder + '/' + file, file))
-            elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
-                img_list.append((input_folder + '/' + file, file)) # TODO verify this
-                self.dcp_compat += 1
+        if(is_video == True):
+            # support for multiple videos if your computer can even handle that
+            vid_list = []
+            for file in os.listdir(input_folder):
+                if file.endswith('mp4') or file.endswith('MP4'):
+                    vid_list.append(input_folder + '/' + file, file)
+            
+            for vid_path, vid_name in vid_list:
+                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder), 
+        else:
+            # obtain inputs from the input folder
+            img_list = []
+            for file in os.listdir(input_folder):
+                # TODO: check what other filetpyes supported
+                if file.endswith('.png') or file.endswith('.PNG'):
+                    img_list.append((input_folder + '/' + file, file))
+                elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
+                    # img_list.append((input_folder + '/' + file, file)) # Do not add jpgs. Conversion to png must happen first
+                    self.dcp_compat += 1
 
-        # save run detection with outputs to output folder
-        for img_path, img_name in img_list:
-            self.detect_and_cover(img_path, img_name, output_folder)
+            # save run detection with outputs to output folder
+            for img_path, img_name in img_list:
+                self.detect_and_cover(img_path, img_name, output_folder)
+            # return 0
 
 
 
