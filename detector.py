@@ -107,20 +107,24 @@ class Detector():
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
                     # save frame into decensor input original. Need to keep names persistent.
-                    file_name = orig_video_folder + fname + str(count)
-                    skimage.io.imsave(file_name, image)
+                    im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
+                    file_name = orig_video_folder + im_name + str(count) + '.png'
+                    
                     print('saving frame as ', file_name)
+                    skimage.io.imsave(file_name, image)
+                    
 
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
                     # Color splash
                     splash = self.apply_cover(image, r['masks'])
                     # RGB -> BGR to save image to video
-                    splash = splash[..., ::-1]
+                    # splash = splash[..., ::-1]
                     # save covered frame into input for decensoring path
-                    file_name = save_path + fname + str(count)
-                    skimage.io.imsave(file_name, splash)
+                    file_name = save_path + im_name + str(count) + '.png'
                     print('saving covered frame as ', file_name)
+                    skimage.io.imsave(file_name, splash)
+                    
                     # Add image to video writer
                     vwriter.write(splash)
                     count += 1
@@ -151,7 +155,7 @@ class Detector():
             vid_list = []
             for file in os.listdir(input_folder):
                 if file.endswith('mp4') or file.endswith('MP4'):
-                    vid_list.append(input_folder + '/' + file, file)
+                    vid_list.append((input_folder + '/' + file, file))
             
             for vid_path, vid_name in vid_list:
                 self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder), 

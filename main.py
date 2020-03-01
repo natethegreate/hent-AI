@@ -72,7 +72,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     # Run detection
     if(is_video==True):
         print('running video detection')
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True)
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/')
     else:
         print('running detection, outputting to dcp input')
         detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False)
@@ -84,7 +84,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     popup.title('Success!')
     label = Label(popup, text='Process executed successfully! Now you close the program and run DeepCreamPy.')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
-    num_jpgs = detect_instance.dcp_compat()
+    num_jpgs = detect_instance.get_non_png()
     if(num_jpgs > 0):
         label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
         label2.pack(side=TOP, fill=X, pady=10, padx=5)
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
     video_button.pack(pady=10, padx=10)
 
-    title_window.geometry("300x160")
+    title_window.geometry("300x200")
     title_window.mainloop()
 
     pass
