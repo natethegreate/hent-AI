@@ -8,10 +8,10 @@ from tkinter import *
 # from tkinter import ttk
 # from matplotlib import pyplot as plt
 from tkinter import filedialog
-from detector import Detector
 import shutil
 
 versionNumber = '1.0'
+weights_path = 'mask_rcnn_hentai_0032.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
 # root window, hidden. Only 1 active window at a time
@@ -44,15 +44,17 @@ def error(errcode):
     # popup error code
 
 def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
-    hent_win = new_window()
-    info_label = Label(hent_win, text="Beginning detection")
-    info_label.pack(padx=10,pady=10)
-    hent_win.mainloop()
+    #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
+    from detector import Detector
+
+    # hent_win = new_window()
+    # info_label = Label(hent_win, text="Beginning detection")
+    # info_label.pack(padx=10,pady=10)
+    # hent_win.mainloop()
     # repace these with catches and use error function
     assert dcp_dir
     assert in_path
 
-    weights_path = '' # should call it weights.h5 in main dir
 
     print('Initializing Detector class')
     detect_instance = Detector(weights_path=weights_path)
@@ -62,11 +64,11 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
         # Copy input folder to decensor_input_original
         print('copying inputs into input_original dcp folder')
         for file in os.listdir(in_path):
-            shutil.copy(file, dcp_dir + '/decensor_input_original')
+            shutil.copy(file, dcp_dir + '/decensor_input_original/')
 
     # Run detection
     print('running detection, outputting to dcp input')
-    detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input')
+    detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/')
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
@@ -84,9 +86,12 @@ def getfileList(dir):
 dtext = ""
 otext = ""
 
+
 # both functions used to get and set directories
 def dcp_newdir():
+    print('in dcp grab')
     dtext = filedialog.askdirectory(title='Choose directory for DCP installation')
+    print('grabbed')
     dvar.set(dtext)
 
 def input_newdir():

@@ -136,9 +136,9 @@ class Detector():
         for file in os.listdir(input_folder):
             # TODO: check what other filetpyes supported
             if file.endswith('.png') or file.endswith('.PNG'):
-                img_list.append(input_folder + file)
+                img_list.append(input_folder + '/' + file)
             elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
-                img_list.append(input_folder + file)
+                img_list.append(input_folder + '/' + file)
                 self.dcp_compat += 1
 
         # save run detection with outputs to output folder
