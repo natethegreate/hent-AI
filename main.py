@@ -63,8 +63,10 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
     if(is_mosaic == True):
         # Copy input folder to decensor_input_original
         print('copying inputs into input_original dcp folder')
-        for file in os.listdir(in_path):
-            shutil.copy(file, dcp_dir + '/decensor_input_original/')
+        # print(in_path)
+        # print(listdir(in_path))
+        for file in listdir(in_path):
+            shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/')
 
     # Run detection
     print('running detection, outputting to dcp input')
@@ -89,9 +91,7 @@ otext = ""
 
 # both functions used to get and set directories
 def dcp_newdir():
-    print('in dcp grab')
     dtext = filedialog.askdirectory(title='Choose directory for DCP installation')
-    print('grabbed')
     dvar.set(dtext)
 
 def input_newdir():
