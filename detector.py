@@ -77,8 +77,9 @@ class Detector():
     def get_non_png(self):
         return self.dcp_compat
 
-    def detect_and_cover(self, image_path=None, save_path=''):
+    def detect_and_cover(self, image_path=None, fname=None, save_path=''):
         assert image_path
+        assert fname # replace these with something better?
         # Image or video?
         # if image_path:
             # Run model detection and generate the color splash effect
@@ -90,7 +91,7 @@ class Detector():
         # Color splash
         cov = self.apply_cover(image, r['masks'])
         # Save output
-        file_name = save_path + "cover_{:%Y%m%dT%H%M%S}.png".format(datetime.datetime.now())
+        file_name = save_path + fname
         skimage.io.imsave(file_name, cov)
         '''elif video_path: # TODO: video capabilities will come later
             import cv2
@@ -136,14 +137,14 @@ class Detector():
         for file in os.listdir(input_folder):
             # TODO: check what other filetpyes supported
             if file.endswith('.png') or file.endswith('.PNG'):
-                img_list.append(input_folder + file)
+                img_list.append((input_folder, file))
             elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
-                img_list.append(input_folder + file)
+                img_list.append((input_folder, file))
                 self.dcp_compat += 1
 
         # save run detection with outputs to output folder
-        for img in img_list:
-            self.detect_and_cover(img, output_folder)
+        for img_path, img_name in img_list:
+            self.detect_and_cover(img_path + img_name, img_name, output_folder)
 
 
 
