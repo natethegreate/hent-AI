@@ -6,7 +6,7 @@ This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/17
 
 NOTE: Despite the title, this project does not actually use AI.
 
-Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does.
+Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
 
 Development news will be posted on my Twitter (NSFW).
 [![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
@@ -17,7 +17,7 @@ Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 Standard example of image segmentation:
 ![Instance Segmentation Sample](assets/street.png)
 
-Example of mosaic detection on current (Feb 27,2020) model 107:
+Example of mosaic detection on dated (Feb 27,2020) model 107:
 ![Detection Sample](assets/detect_output4.jpg)
 
 # Getting Started
@@ -60,9 +60,9 @@ Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common pa
 * DCP is not compatible with screentones, or that dotted effect that is characteristic of printed works. Simply refer to my other project, [Screentone Remover](https://github.com/natethegreate/Screentone-Remover), which will batch remove screentones using Digital Signal Processing techniques. After running the Screentone Remover, you can detect the censors with hentAI.
 
 
-## Important Notes
+## Important Notes (READ BEFORE USING)
 
-* I highly reccommend running hentAI on small-medium sized batches, for example one doujin or a few doujins from the same artist. The slowest part of hentAI is the initialization, so the first inference takes time but the rest will be quick.
+* I highly reccommend running hentAI on batches, for example one doujin or a few doujins at once. The slowest part of hentAI is the initialization, so the first inference takes time but the rest will be quick. 
 
 * The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hentAI.
 
@@ -70,9 +70,11 @@ Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common pa
 
 * The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works.
 
-* If you choose to try the video detection, PLEASE only do one clip at a time. More testing is needed with video detection.
+* If you choose to try the video detection, PLEASE only do one SHORT clip at a time. More testing is needed with video detection.
 
 * The Video Maker button creates a video from the output of DCP in decensored_output. Run this after DCP completes. Note you still need to select the directories for the source video, and the DCP install directory.
+
+* Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
 
 ## Contributing
