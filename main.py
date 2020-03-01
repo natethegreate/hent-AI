@@ -43,6 +43,22 @@ def error(errcode):
     popup.mainloop()
     # popup error code
 
+# Just build the video at the root location
+# image_path is default the DCP decensor output
+def hentAI_video_create(video_path=None, dcp_dir=None):
+    # video create does not use self, so create dummy class
+    from detector import Detector
+    video_instance = Detector(weights_path='')
+    video_instance.video_create(image_path=video_path, dcp_path=dcp_dir)
+    print('Process complete!')
+    popup = Tk()
+    popup.title('Success!')
+    label = Label(popup, text='Video Created!.')
+    label.pack(side=TOP, fill=X, pady=20, padx=10)
+    okbutton = Button(popup, text='Ok', command=popup.destroy)
+    okbutton.pack()
+    popup.mainloop()
+
 def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False):
     #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
     from detector import Detector
@@ -180,8 +196,13 @@ def video_detect():
     dir_button = Button(vid_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(vid_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=True))
-    go_button.grid( columnspan=2, pady=10)
+    go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=True))
+    go_button.grid(row=3, columnspan=2, pady=5)
+
+    vid_label = Label(vid_win, text= 'If you finished the video uncensoring, put images from DCP output back into video format. Check README for usage.')
+    vid_label.grid(row=4, pady=5, padx=4)
+    vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
+    vid_button.grid(row=5, pady=5, padx=10)
 
     vid_win.mainloop()
 

@@ -76,6 +76,56 @@ class Detector():
     def get_non_png(self):
         return self.dcp_compat
 
+    def video_create(self, image_path=None, dcp_path=''):
+        assert image_path
+        
+        import cv2
+        # Video capture to get shapes and stats
+        # Only supports 1 video at a time, but this can still get mp4 only
+        
+        vid_list = []
+        for file in os.listdir(image_path):
+            if file.endswith('mp4') or file.endswith('MP4'):
+                vid_list.append(image_path + '/' + file)
+        
+        video_path = vid_list[0] # ONLY works with 1 video for now
+        vcapture = cv2.VideoCapture(video_path)
+        width = int(vcapture.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(vcapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = vcapture.get(cv2.CAP_PROP_FPS)
+
+        # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
+        file_name = "build_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
+        vwriter = cv2.VideoWriter(file_name,
+                                    cv2.VideoWriter_fourcc(*'MJPG'),
+                                    fps, (width, height))
+        count = 0
+        print("Beginning build. Do ensure only relevant images are in source directory")
+        input_path = dcp_path + '/decensor_output/'
+        img_list = []
+        # output of the video detection should be in order anyway
+        # os.chdir(input_path)
+        # files = filter(os.path.isfile, os.listdir(input_path))
+        # files = [os.path.join( f) for f in files]    
+        # files.sort(key=lambda x: os.path.getmtime(x))
+        # for file in files:
+        for file in os.listdir(input_path):
+            # TODO: check what other filetpyes supported
+            if file.endswith('.png') or file.endswith('.PNG'):
+                img_list.append(input_path  + file)
+                print('adding image ', input_path  + file)
+        for img in img_list:
+            print("frame: ", count)
+            # Read next image
+            image = skimage.io.imread(img)
+            # Add image to video writer, after flipping R and B value
+            image = image[..., ::-1]
+            vwriter.write(image)
+            count += 1
+
+        vwriter.release()
+        print('video complete')
+
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
     # image_path = path of input file, image or video
@@ -110,21 +160,22 @@ class Detector():
                     im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
                     file_name = orig_video_folder + im_name + str(count) + '.png'
                     
-                    print('saving frame as ', file_name)
-                    skimage.io.imsave(file_name, image)
+                    # print('saving frame as ', file_name)
+                    # skimage.io.imsave(file_name, image)
                     
 
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
                     # Color splash
                     splash = self.apply_cover(image, r['masks'])
-                    # RGB -> BGR to save image to video
-                    # splash = splash[..., ::-1]
+                    
                     # save covered frame into input for decensoring path
                     file_name = save_path + im_name + str(count) + '.png'
-                    print('saving covered frame as ', file_name)
-                    skimage.io.imsave(file_name, splash)
-                    
+                    # print('saving covered frame as ', file_name)
+                    # skimage.io.imsave(file_name, splash)
+
+                    # RGB -> BGR to save image to video
+                    splash = splash[..., ::-1]
                     # Add image to video writer
                     vwriter.write(splash)
                     count += 1
