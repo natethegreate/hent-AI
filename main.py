@@ -59,7 +59,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
     print('loading weights')
     detect_instance.load_weights()
     if(is_mosaic == True):
-        # Copy input folder to decensor_input_original
+        # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
         print('copying inputs into input_original dcp folder')
         for file in os.listdir(in_path):
             shutil.copy(file, dcp_dir + '/decensor_input_original')
