@@ -67,6 +67,14 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False):
     # Run detection
     print('running detection, outputting to dcp input')
     detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input')
+    print('Process complete!')
+    popup = Tk()
+    popup.title('Success!')
+    label = Label(popup, text='Process executed successfully! Now you close the program.')
+    label.pack(side=TOP, fill=X, pady=20, padx=10)
+    okbutton = Button(popup, text='Ok', command=popup.destroy)
+    okbutton.pack()
+    popup.mainloop()
 
 # function scans directory and returns generator
 def getfileList(dir):
