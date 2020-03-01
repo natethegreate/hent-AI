@@ -11,7 +11,7 @@ from tkinter import filedialog
 import shutil
 
 versionNumber = '1.0'
-weights_path = 'mask_rcnn_hentai_0032.h5' # should call it weights.h5 in main dir
+weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
 # root window, hidden. Only 1 active window at a time
