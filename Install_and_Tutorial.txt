@@ -48,7 +48,18 @@ Unzip the downloaded folder, run main.exe and follow the tutorial
 		corresponding folders in your DeepCreamPy directory.
 	No you can run DeepCreamPy. Be sure to select the appropriate censor type.
 	
-
+--hentAI video detecting (Experimental)
+	Place the input .mp4 into its own folder. 
+		Keep the video as SHORT as possible. You will need to do some video editing.
+	Open hentAI, enter the video detection, then select the source video folder and the DCP folder.
+	First, run Begin Detection
+	hentAI will automatically place frames into the DCP directories.
+	It will take a long time, regardless of your setup. If you have a compatible Nvidia GPU,
+	You can install tensorflow 1.9.0 and it should use your GPU to run detections.
+	After the process ends and you get the popup, run DCP. This will also be kinda slow.
+	After DCP finishes, go back to hentAI and run the Video Maker.
+	This will take the output of DCP and peice it together as a video.
+	As of now, sound will be lost.
 
 --Training:
 **If you are interested in training, please contact me and I may provide you with
