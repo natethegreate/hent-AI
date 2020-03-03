@@ -10,10 +10,10 @@ Written by Nathan Cueto
 import os
 import sys
 import json
-import datetime
+import datetime # not really useful so remove soon pls
 import numpy as np
 import skimage.draw
-import imgaug
+import imgaug # should augment this improt as well haha
 # from PIL import Image
 
 # Root directory of project
@@ -79,7 +79,7 @@ class Detector():
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
         
-        import cv2
+        from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
         # Video capture to get shapes and stats
         # Only supports 1 video at a time, but this can still get mp4 only
         
@@ -89,15 +89,15 @@ class Detector():
                 vid_list.append(image_path + '/' + file)
         
         video_path = vid_list[0] # ONLY works with 1 video for now
-        vcapture = cv2.VideoCapture(video_path)
-        width = int(vcapture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(vcapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = vcapture.get(cv2.CAP_PROP_FPS)
+        vcapture = VideoCapture(video_path)
+        width = int(vcapture.get(CAP_PROP_FRAME_WIDTH))
+        height = int(vcapture.get(CAP_PROP_FRAME_HEIGHT))
+        fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
         file_name = "build_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
-        vwriter = cv2.VideoWriter(file_name,
-                                    cv2.VideoWriter_fourcc(*'MJPG'),
+        vwriter = VideoWriter(file_name,
+                                    VideoWriter_fourcc(*'MJPG'),
                                     fps, (width, height))
         count = 0
         print("Beginning build. Do ensure only relevant images are in source directory")
@@ -134,18 +134,18 @@ class Detector():
         assert fname # replace these with something better?
         
         if is_video: # TODO: video capabilities will come later
-            import cv2
+            from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
             # Video capture
             video_path = image_path
-            vcapture = cv2.VideoCapture(video_path)
-            width = int(vcapture.get(cv2.CAP_PROP_FRAME_WIDTH))
-            height = int(vcapture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = vcapture.get(cv2.CAP_PROP_FPS)
+            vcapture = VideoCapture(video_path)
+            width = int(vcapture.get(CAP_PROP_FRAME_WIDTH))
+            height = int(vcapture.get(CAP_PROP_FRAME_HEIGHT))
+            fps = vcapture.get(CAP_PROP_FPS)
     
             # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
             file_name = "splash_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
-            vwriter = cv2.VideoWriter(file_name,
-                                      cv2.VideoWriter_fourcc(*'MJPG'),
+            vwriter = VideoWriter(file_name,
+                                      VideoWriter_fourcc(*'MJPG'),
                                       fps, (width, height))
             count = 0
             success = True
