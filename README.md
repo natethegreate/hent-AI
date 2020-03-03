@@ -1,8 +1,8 @@
-# Detecting censors with Mask R-CNN
+# Detecting censors with deep learning and computer vision
 
 Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
 
-This is an implementation of Matterposrt's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
+This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
 
 NOTE: Despite the title, this project does not actually use AI.
 
@@ -14,11 +14,15 @@ Development news will be posted on my Twitter (NSFW).
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
 
-Standard example of image segmentation:
-![Instance Segmentation Sample](assets/street.png)
-
 Example of mosaic detection on dated (Feb 27,2020) model 107:
 ![Detection Sample](assets/detect_output4.jpg)
+
+Examples of bar detection on datad model 107:
+![Detection Sample2](assets/detect_output0.jpg)
+
+![Detection Sample3](assets/detect_output1.jpg)
+
+For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
 # Getting Started
 You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line.
@@ -76,12 +80,16 @@ Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common pa
 
 * Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
+## Versions
 
-## Contributing
-I only have a bare understanding of convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome.
+* v1.0: Initial release for 2020 HackIllinois Demo
+
+* v1.1: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
 
 
 ## Installation directions
+
+For detailed instructions, follow Install_and_Tutorial.txt
 
 NOTE: An executable is in the works. Releasing soon.
 
@@ -111,6 +119,9 @@ python samples\hentai\hentai.py train --dataset=dataset_img/ --weights=path/to/w
 ```
 Alternatively, you can resume training using --weights=last
 
+
+## Contributing
+I only have a bare understanding of convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome.
 
 
 # Acknowledgements
