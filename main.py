@@ -1,16 +1,17 @@
 # Feb 2020 - Nathan Cueto
-# Attempt to remove screentones from input images (png) using blurring and sharpening
-#
+# Main function for UI and uses Detector class
+
 # import sys
 # sys.path.append('/usr/local/lib/python2.7/site-packages')
-from os import listdir
-from tkinter import *
+from os import listdir, system
+# from tkinter import *
+from tkinter import Label, Entry, Button, Tk, StringVar, TOP, X, Toplevel
 # from tkinter import ttk
 # from matplotlib import pyplot as plt
 from tkinter import filedialog
 import shutil
 
-versionNumber = '1.0'
+versionNumber = '1.1'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -22,8 +23,9 @@ counter = 0
 
 # 1 - no png files found
 # 2 - no input dir
-# 3 - no output dir
+# 3 - no DCP dir
 # 4 - write error
+# 5 - DCP directory invalid
 def error(errcode):
     # popup success message
     popup = Tk()
@@ -31,8 +33,9 @@ def error(errcode):
     switcher = {
         1: "Error: No .png files found",
         2: "Error: No input directory",
-        3: "Error: No output directory",
-        4: "Error: File write error"
+        3: "Error: No DCP directory",
+        4: "Error: File write error",
+        5: "Error: DCP directory is invalid"
     }
 
     label = Label(popup, text=switcher.get(errcode, "what"))
@@ -47,6 +50,11 @@ def error(errcode):
 # image_path is default the DCP decensor output
 def hentAI_video_create(video_path=None, dcp_dir=None):
     # video create does not use self, so create dummy class
+    if dcp_dir==None:
+        error(5)
+    if video_path==None:
+        error(2)
+
     from detector import Detector
     video_instance = Detector(weights_path='')
     video_instance.video_create(image_path=video_path, dcp_path=dcp_dir)
@@ -60,17 +68,19 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     popup.mainloop()
 
 def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False):
-    #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
-    from detector import Detector
-
+    # Create new window? Can show loading bar
     # hent_win = new_window()
     # info_label = Label(hent_win, text="Beginning detection")
     # info_label.pack(padx=10,pady=10)
     # hent_win.mainloop()
-    # repace these with catches and use error function
-    assert dcp_dir
-    assert in_path
 
+    if dcp_dir==None:
+        error(5)
+    if in_path==None:
+        error(2)
+    
+    #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
+    from detector import Detector
 
     # print('Initializing Detector class')
     detect_instance = Detector(weights_path=weights_path)
@@ -94,19 +104,27 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False)
 
 
-
+    # Announce completion, offer to run DCP from DCP directory
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
-    label = Label(popup, text='Process executed successfully! Now you close the program and run DeepCreamPy.')
+    label = Label(popup, text='Process executed successfully! Now you can run DeepCreamPy.')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
     num_jpgs = detect_instance.get_non_png()
     if(num_jpgs > 0):
         label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
         label2.pack(side=TOP, fill=X, pady=10, padx=5)
+    dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
+    dcprun.pack(pady=10)
     okbutton = Button(popup, text='Ok', command=popup.destroy)
     okbutton.pack()
     popup.mainloop()
+
+# subprocess to automatically run DCP. However, DCP does not do anything when called from here so not adding this yet
+def run_dcp(dcp_dir=None):
+    import subprocess
+    subprocess.call(dcp_dir + '/main.exe')
+
 
 # function scans directory and returns generator
 def getfileList(dir):

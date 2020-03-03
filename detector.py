@@ -158,7 +158,7 @@ class Detector():
                     image = image[..., ::-1]
                     # save frame into decensor input original. Need to keep names persistent.
                     im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
-                    file_name = orig_video_folder + im_name + str(count).zfill(5) + '.png' # TODO change zfill for higher frame counts
+                    file_name = orig_video_folder + im_name + str(count).zfill(6) + '.png' # NOTE Should be adequite for having 10^6 frames, which is more than enough for even 30 mintues total.
                     
                     print('saving frame as ', file_name)
                     skimage.io.imsave(file_name, image)
@@ -168,7 +168,7 @@ class Detector():
                     splash = self.apply_cover(image, r['masks'])
                     
                     # save covered frame into input for decensoring path
-                    file_name = save_path + im_name + str(count).zfill(5) + '.png'
+                    file_name = save_path + im_name + str(count).zfill(7) + '.png'
                     print('saving covered frame as ', file_name)
                     skimage.io.imsave(file_name, splash)
 
