@@ -2,6 +2,9 @@
 
 First install DeepCreamPy. You can install the exe or code.
 
+You should check the github page to see if there is a newer weights model available. This is the h5 file.
+Latest model is 161.
+
 --Installation (You probably want the executable)--
 --hentAI Executable:
 Unzip the downloaded folder, run main.exe and follow the tutorial
