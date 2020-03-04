@@ -72,6 +72,8 @@ Please keep it named as weights.h5
 I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
 
+You need DeepCreamPy, this repo, and the weights.h5 (see above). 
+
 * For now, DCP is required (until I can create my own alternative). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
 * DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
