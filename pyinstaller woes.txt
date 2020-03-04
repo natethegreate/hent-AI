@@ -1,3 +1,4 @@
+conda install -c conda-forge pyinstaller (remove it from pip too)
 
 is it dateparser??
 test with python -v zmqtest.py
