@@ -1,0 +1,13 @@
+
+is it dateparser??
+test with python -v zmqtest.py
+
+pyinstaller  --noconfirm --log-level=WARN ^
+             --hidden-import=zmq.backend ^
+             --hidden-import=zmq.backend.cython ^
+             --hidden-import=zmq.backend.cffi ^
+             --hidden-import=zmq.error  ^
+             --hidden-import=zmq.sugar ^
+             --hidden-import=zmq.utils ^
+             --paths="C:\Program Files\Anaconda2\pkgs\pyzmq-16.0.2-py27_0\Lib\site-packages\zmq" ^
+             zmqtest.py

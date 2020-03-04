@@ -6,10 +6,10 @@ First install DeepCreamPy. You can install the exe or code.
 --hentAI Executable:
 Unzip the downloaded folder, run main.exe and follow the tutorial
 
-You should use the provided input folder to place the images you want to decensor. Remember that you must
-decensor content with bar censors and mosaic censors separately. 
+You should use the provided input_images folder to place the images you want to decensor. Remember that you must
+decensor content with bar censors and mosaic censors separately. Images must be in .png format.
 Also, make sure to clear out the input folder between runs so you dont decensor the same things.
-
+Use my Screentone Remover (on my github) if you want to decensor non-colored doujins with screentones.
 
 --hentAI Code (for fellow developers or contributors, possibly linux users):
 Install Anaconda3.
