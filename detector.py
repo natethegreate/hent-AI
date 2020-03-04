@@ -134,7 +134,8 @@ class Detector():
         assert fname # replace these with something better?
         
         if is_video: # TODO: video capabilities will come later
-            from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
+            # from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
+            import cv2
             # Video capture
             video_path = image_path
             vcapture = VideoCapture(video_path)

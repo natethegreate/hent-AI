@@ -1,11 +1,11 @@
 # Feb 2020 - Nathan Cueto
 # Main function for UI and uses Detector class
 
-# import sys
+import sys
 # sys.path.append('/usr/local/lib/python2.7/site-packages')
 from os import listdir, system
-# from tkinter import *
-from tkinter import Label, Entry, Button, Tk, StringVar, TOP, X, Toplevel
+from tkinter import *
+# from tkinter import Label, Entry, Button, Tk, StringVar, TOP, X, Toplevel
 # from tkinter import ttk
 # from matplotlib import pyplot as plt
 from tkinter import filedialog
@@ -20,6 +20,17 @@ root = Tk()
 root.withdraw()
 current_window = None
 counter = 0
+
+# for compiling fix
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # 1 - no png files found
 # 2 - no input dir
