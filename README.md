@@ -25,21 +25,36 @@ Examples of bar detection on datad model 107:
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
 # Getting Started
-You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line.
+You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line. 
 
-* [inspect_model.ipynb](samples/coco/inspect_model.ipynb) This notebook is identical to the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
+Only windows is supported, I do not yet have the funding to get an Apple product for development there.
 
-* [inspect_weights.ipynb](samples/coco/inspect_weights.ipynb)
+# The code
+
+* [main.py](main.py) Contains GUI and all I/O handling and file parsing, along with basic error detection. Instantiates detector class.
+
+* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP.
+
+* [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Also handles training, and contains the Hentai configuration class.
+
+* [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is identical to the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
+
+* [inspect_h_data.ipynb](samples/hentai/inspect_h_data.ipynb)
 Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
 
-I have only worked on Windows platforms, and had not been able to train or work on other instances like Google colab and Google Cloud. 
-
+I have only worked on Windows platforms, and had not been able to train or work on other instances like Google colab and Google Cloud.
 
 # The Dataset
 
 Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I have decided to not provide my dataset. Annotated with VGG annotator in .json format.
 
-The color_splash function will be overwritten to instead return a full green mask over the returned rpn mask. This will ensure compatibility with the DeepCreamPy framework.
+Dataset annotations have were made with the polygon shape. Bar and Mosaic region attributes are formated as:
+
+```
+"region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
+```
+
+If you wish to train on your own, you can contact me and I might send you the current dataset (~415 images). All i ask is that you send a pull request or send me the trained weights file should it detect better than the current one. I am also open to any help in increasing the dataset.
 
 # The Model
 
@@ -57,11 +72,14 @@ Please keep it named as weights.h5
 I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
 
-* For now, DCP is required (mainly because theres nothing else out there like it). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
+* For now, DCP is required (until I can create my own alternative). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
-* Please note that DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
+* DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
 
-* DCP is not compatible with screentones, or that dotted effect that is characteristic of printed works. Simply refer to my other project, [Screentone Remover](https://github.com/natethegreate/Screentone-Remover), which will batch remove screentones using Digital Signal Processing techniques. After running the Screentone Remover, you can detect the censors with hentAI.
+* DCP is NOT compatible with screentones, or that dotted effect that is characteristic of printed works (see below). Simply refer to my other project, [Screentone Remover](https://github.com/natethegreate/Screentone-Remover), which will batch remove screentones using Digital Signal Processing techniques. This is the only way for printed non-colored images to be decensored.
+
+Here is an example of a screentoned image, and what it looks like when removed by my Screentone Remover app:
+![Screentone removal example](assets/screentoneexsfw.jpg)
 
 
 ## Important Notes (READ BEFORE USING)
