@@ -1,5 +1,18 @@
 conda install -c conda-forge pyinstaller (remove it from pip too)
 
+conda remove numpy, scipy
+
+bump python to 3.5.2 (was 3.5.0) try other versions too
+
+pip uninstall tornado (reinstall it???) should be 5.1.1
+
+copy geos_c and geos to Library\bin
+
+try pyinstaller with --paths option
+
+pip install cairo 
+and also whatever it needs (didnt change anything wtf)
+
 is it dateparser??
 test with python -v zmqtest.py
 
