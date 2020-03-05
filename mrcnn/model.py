@@ -31,7 +31,7 @@ try:
 except ImportError:
     # Keras before 2.2 used the 'topology' namespace.
     from keras.engine import topology as saving
-from mrcnn.parallel_model import ParallelModel
+# from mrcnn.parallel_model import ParallelModel
 from mrcnn import utils
 
 # Requires TensorFlow 1.3+ and Keras 2.0.8+.
@@ -43,7 +43,7 @@ assert LooseVersion(keras.__version__) >= LooseVersion('2.0.8')
 ############################################################
 #  Utility Functions
 ############################################################
-'''
+
 def log(text, array=None):
     """Prints a text message. And, optionally, if a Numpy array is provided it
     prints it's shape, min, and max values.
@@ -92,7 +92,7 @@ def compute_backbone_shapes(config, image_shape):
         [[int(math.ceil(image_shape[0] / stride)),
             int(math.ceil(image_shape[1] / stride))]
             for stride in config.BACKBONE_STRIDES])
-'''
+
 
 ############################################################
 #  Resnet Graph
@@ -100,7 +100,7 @@ def compute_backbone_shapes(config, image_shape):
 
 # Code adopted from:
 # https://github.com/fchollet/deep-learning-models/blob/master/resnet50.py
-'''
+
 def identity_block(input_tensor, kernel_size, filters, stage, block,
                    use_bias=True, train_bn=True):
     """The identity_block is the block that has no conv layer at shortcut
@@ -213,12 +213,12 @@ def resnet_graph(input_image, architecture, stage5=False, train_bn=True):
     else:
         C5 = None
     return [C1, C2, C3, C4, C5]
-'''
+
 
 ############################################################
 #  Proposal Layer
 ############################################################
-'''
+
 def apply_box_deltas_graph(boxes, deltas):
     """Applies the given deltas to the given boxes.
     boxes: [N, (y1, x1, y2, x2)] boxes to update
@@ -339,12 +339,12 @@ class ProposalLayer(KE.Layer):
 
     def compute_output_shape(self, input_shape):
         return (None, self.proposal_count, 4)
-'''
+
 
 ############################################################
 #  ROIAlign Layer
 ############################################################
-'''
+
 def log2_graph(x):
     """Implementation of Log2. TF doesn't have a native implementation."""
     return tf.log(x) / tf.log(2.0)
@@ -457,7 +457,7 @@ class PyramidROIAlign(KE.Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1], )
-'''
+
 
 ############################################################
 #  Detection Target Layer
@@ -835,7 +835,7 @@ class DetectionLayer(KE.Layer):
 ############################################################
 #  Region Proposal Network (RPN)
 ############################################################
-'''
+
 def rpn_graph(feature_map, anchors_per_location, anchor_stride):
     """Builds the computation graph of Region Proposal Network.
 
@@ -900,12 +900,12 @@ def build_rpn_model(anchor_stride, anchors_per_location, depth):
                                  name="input_rpn_feature_map")
     outputs = rpn_graph(input_feature_map, anchors_per_location, anchor_stride)
     return KM.Model([input_feature_map], outputs, name="rpn_model")
-'''
+
 
 ############################################################
 #  Feature Pyramid Network Heads
 ############################################################
-'''
+
 def fpn_classifier_graph(rois, feature_maps, image_meta,
                          pool_size, num_classes, train_bn=True,
                          fc_layers_size=1024):
@@ -1012,7 +1012,7 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
     x = KL.TimeDistributed(KL.Conv2D(num_classes, (1, 1), strides=1, activation="sigmoid"),
                            name="mrcnn_mask")(x)
     return x
-'''
+
 
 ############################################################
 #  Loss Functions
@@ -2067,39 +2067,9 @@ class MaskRCNN():
 
         # Add multi-GPU support.
         if config.GPU_COUNT > 1:
-            
             model = ParallelModel(model, config.GPU_COUNT)
-
         return model
-'''
-    def find_last(self):
-        """Finds the last checkpoint file of the last trained model in the
-        model directory.
-        Returns:
-            The path of the last checkpoint file
-        """
-        # Get directory names. Each directory corresponds to a model
-        dir_names = next(os.walk(self.model_dir))[1]
-        key = self.config.NAME.lower()
-        dir_names = filter(lambda f: f.startswith(key), dir_names)
-        dir_names = sorted(dir_names)
-        if not dir_names:
-            
-            raise FileNotFoundError(
-                errno.ENOENT,
-                "Could not find model directory under {}".format(self.model_dir))
-        # Pick last directory
-        dir_name = os.path.join(self.model_dir, dir_names[-1])
-        # Find the last checkpoint
-        checkpoints = next(os.walk(dir_name))[2]
-        checkpoints = filter(lambda f: f.startswith("mask_rcnn"), checkpoints)
-        checkpoints = sorted(checkpoints)
-        if not checkpoints:
-            raise FileNotFoundError(
-                errno.ENOENT, "Could not find weight files in {}".format(dir_name))
-        checkpoint = os.path.join(dir_name, checkpoints[-1])
-        return checkpoint
-'''
+
     def load_weights(self, filepath, by_name=False, exclude=None):
         """Modified version of the corresponding Keras function with
         the addition of multi-GPU support and the ability to exclude
@@ -2138,246 +2108,7 @@ class MaskRCNN():
 
         # Update the log directory
         self.set_log_dir(filepath)
-'''
-    def get_imagenet_weights(self):
-        """Downloads ImageNet trained weights from Keras.
-        Returns path to weights file.
-        """
-        
-        TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/'\
-                                 'releases/download/v0.2/'\
-                                 'resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
-        weights_path = get_file('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5',
-                                TF_WEIGHTS_PATH_NO_TOP,
-                                cache_subdir='models',
-                                md5_hash='a268eb855778b3df3c7506639542a6af')
-        return weights_path
 
-    def compile(self, learning_rate, momentum):
-        """Gets the model ready for training. Adds losses, regularization, and
-        metrics. Then calls the Keras compile() function.
-        """
-        # Optimizer object
-        optimizer = keras.optimizers.SGD(
-            lr=learning_rate, momentum=momentum,
-            clipnorm=self.config.GRADIENT_CLIP_NORM)
-        # Add Losses
-        # First, clear previously set losses to avoid duplication
-        self.keras_model._losses = []
-        self.keras_model._per_input_losses = {}
-        loss_names = [
-            "rpn_class_loss",  "rpn_bbox_loss",
-            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
-        for name in loss_names:
-            layer = self.keras_model.get_layer(name)
-            if layer.output in self.keras_model.losses:
-                continue
-            loss = (
-                tf.reduce_mean(layer.output, keepdims=True)
-                * self.config.LOSS_WEIGHTS.get(name, 1.))
-            self.keras_model.add_loss(loss)
-
-        # Add L2 Regularization
-        # Skip gamma and beta weights of batch normalization layers.
-        reg_losses = [
-            keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
-            for w in self.keras_model.trainable_weights
-            if 'gamma' not in w.name and 'beta' not in w.name]
-        self.keras_model.add_loss(tf.add_n(reg_losses))
-
-        # Compile
-        self.keras_model.compile(
-            optimizer=optimizer,
-            loss=[None] * len(self.keras_model.outputs))
-
-        # Add metrics for losses
-        for name in loss_names:
-            if name in self.keras_model.metrics_names:
-                continue
-            layer = self.keras_model.get_layer(name)
-            self.keras_model.metrics_names.append(name)
-            loss = (
-                tf.reduce_mean(layer.output, keepdims=True)
-                * self.config.LOSS_WEIGHTS.get(name, 1.))
-            self.keras_model.metrics_tensors.append(loss)
-
-    def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
-        """Sets model layers as trainable if their names match
-        the given regular expression.
-        """
-        # Print message on the first call (but not on recursive calls)
-        if verbose > 0 and keras_model is None:
-            log("Selecting layers to train")
-
-        keras_model = keras_model or self.keras_model
-
-        # In multi-GPU training, we wrap the model. Get layers
-        # of the inner model because they have the weights.
-        layers = keras_model.inner_model.layers if hasattr(keras_model, "inner_model")\
-            else keras_model.layers
-
-        for layer in layers:
-            # Is the layer a model?
-            if layer.__class__.__name__ == 'Model':
-                print("In model: ", layer.name)
-                self.set_trainable(
-                    layer_regex, keras_model=layer, indent=indent + 4)
-                continue
-
-            if not layer.weights:
-                continue
-            # Is it trainable?
-            trainable = bool(re.fullmatch(layer_regex, layer.name))
-            # Update layer. If layer is a container, update inner layer.
-            if layer.__class__.__name__ == 'TimeDistributed':
-                layer.layer.trainable = trainable
-            else:
-                layer.trainable = trainable
-            # Print trainable layer names
-            if trainable and verbose > 0:
-                log("{}{:20}   ({})".format(" " * indent, layer.name,
-                                            layer.__class__.__name__))
-
-    def set_log_dir(self, model_path=None):
-        """Sets the model log directory and epoch counter.
-
-        model_path: If None, or a format different from what this code uses
-            then set a new log directory and start epochs from 0. Otherwise,
-            extract the log directory and the epoch counter from the file
-            name.
-        """
-        # Set date and epoch counter as if starting a new model
-        self.epoch = 0
-        now = datetime.datetime.now()
-
-        # If we have a model path with date and epochs use them
-        if model_path:
-            # Continue from we left of. Get epoch and date from the file name
-            # A sample model path might look like:
-            # \path\to\logs\coco20171029T2315\mask_rcnn_coco_0001.h5 (Windows)
-            # /path/to/logs/coco20171029T2315/mask_rcnn_coco_0001.h5 (Linux)
-            regex = r".*[/\\][\w-]+(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})[/\\]mask\_rcnn\_[\w-]+(\d{4})\.h5"
-            m = re.match(regex, model_path)
-            if m:
-                now = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),
-                                        int(m.group(4)), int(m.group(5)))
-                # Epoch number in file is 1-based, and in Keras code it's 0-based.
-                # So, adjust for that then increment by one to start from the next epoch
-                self.epoch = int(m.group(6)) - 1 + 1
-                print('Re-starting from epoch %d' % self.epoch)
-
-        # Directory for training logs
-        self.log_dir = os.path.join(self.model_dir, "{}{:%Y%m%dT%H%M}".format(
-            self.config.NAME.lower(), now))
-
-        # Path to save after each epoch. Include placeholders that get filled by Keras.
-        self.checkpoint_path = os.path.join(self.log_dir, "mask_rcnn_{}_*epoch*.h5".format(
-            self.config.NAME.lower()))
-        self.checkpoint_path = self.checkpoint_path.replace(
-            "*epoch*", "{epoch:04d}")
-
-    def train(self, train_dataset, val_dataset, learning_rate, epochs, layers,
-              augmentation=None, custom_callbacks=None, no_augmentation_sources=None):
-        """Train the model.
-        train_dataset, val_dataset: Training and validation Dataset objects.
-        learning_rate: The learning rate to train with
-        epochs: Number of training epochs. Note that previous training epochs
-                are considered to be done alreay, so this actually determines
-                the epochs to train in total rather than in this particaular
-                call.
-        layers: Allows selecting wich layers to train. It can be:
-            - A regular expression to match layer names to train
-            - One of these predefined values:
-              heads: The RPN, classifier and mask heads of the network
-              all: All the layers
-              3+: Train Resnet stage 3 and up
-              4+: Train Resnet stage 4 and up
-              5+: Train Resnet stage 5 and up
-        augmentation: Optional. An imgaug (https://github.com/aleju/imgaug)
-            augmentation. For example, passing imgaug.augmenters.Fliplr(0.5)
-            flips images right/left 50% of the time. You can pass complex
-            augmentations as well. This augmentation applies 50% of the
-            time, and when it does it flips images right/left half the time
-            and adds a Gaussian blur with a random sigma in range 0 to 5.
-
-                augmentation = imgaug.augmenters.Sometimes(0.5, [
-                    imgaug.augmenters.Fliplr(0.5),
-                    imgaug.augmenters.GaussianBlur(sigma=(0.0, 5.0))
-                ])
-	    custom_callbacks: Optional. Add custom callbacks to be called
-	        with the keras fit_generator method. Must be list of type keras.callbacks.
-        no_augmentation_sources: Optional. List of sources to exclude for
-            augmentation. A source is string that identifies a dataset and is
-            defined in the Dataset class.
-        """
-        assert self.mode == "training", "Create model in training mode."
-
-        # Pre-defined layer regular expressions
-        layer_regex = {
-            # all layers but the backbone
-            "heads": r"(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
-            # From a specific Resnet stage and up
-            "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
-            "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
-            "5+": r"(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
-            # All layers
-            "all": ".*",
-        }
-        if layers in layer_regex.keys():
-            layers = layer_regex[layers]
-
-        # Data generators
-        train_generator = data_generator(train_dataset, self.config, shuffle=True,
-                                         augmentation=augmentation,
-                                         batch_size=self.config.BATCH_SIZE,
-                                         no_augmentation_sources=no_augmentation_sources)
-        val_generator = data_generator(val_dataset, self.config, shuffle=True,
-                                       batch_size=self.config.BATCH_SIZE)
-
-        # Create log_dir if it does not exist
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
-
-        # Callbacks
-        callbacks = [
-            keras.callbacks.TensorBoard(log_dir=self.log_dir,
-                                        histogram_freq=0, write_graph=True, write_images=False),
-            keras.callbacks.ModelCheckpoint(self.checkpoint_path,
-                                            verbose=1, save_weights_only=True),
-        ]
-
-        # Add custom callbacks to the list
-        if custom_callbacks:
-            callbacks += custom_callbacks
-
-        # Train
-        log("\nStarting at epoch {}. LR={}\n".format(self.epoch, learning_rate))
-        log("Checkpoint Path: {}".format(self.checkpoint_path))
-        self.set_trainable(layers)
-        self.compile(learning_rate, self.config.LEARNING_MOMENTUM)
-
-        # Work-around for Windows: Keras fails on Windows when using
-        # multiprocessing workers. See discussion here:
-        # https://github.com/matterport/Mask_RCNN/issues/13#issuecomment-353124009
-        if os.name is 'nt':
-            workers = 0
-        else:
-            workers = multiprocessing.cpu_count()
-
-        self.keras_model.fit_generator(
-            train_generator,
-            initial_epoch=self.epoch,
-            epochs=epochs,
-            steps_per_epoch=self.config.STEPS_PER_EPOCH, # of train samples / batch size (1)
-            callbacks=callbacks,
-            validation_data=val_generator,
-            validation_steps=83, #self.config.VALIDATION_STEPS, # validation samples / batch size
-            max_queue_size=100,
-            workers=workers,
-            use_multiprocessing=True,
-        )
-        self.epoch = max(self.epoch, epochs)
-'''
     def mold_inputs(self, images):
         """Takes a list of images and modifies them to the format expected
         as an input to the neural network.
@@ -2497,10 +2228,10 @@ class MaskRCNN():
         assert len(
             images) == self.config.BATCH_SIZE, "len(images) must be equal to BATCH_SIZE"
 
-        if verbose:
-            log("Processing {} images".format(len(images)))
-            for image in images:
-                log("image", image)
+        # if verbose:
+        #     log("Processing {} images".format(len(images)))
+        #     for image in images:
+        #         log("image", image)
 
         # Mold inputs to format expected by the neural network
         molded_images, image_metas, windows = self.mold_inputs(images)
@@ -2518,10 +2249,10 @@ class MaskRCNN():
         # TODO: can this be optimized to avoid duplicating the anchors?
         anchors = np.broadcast_to(anchors, (self.config.BATCH_SIZE,) + anchors.shape)
 
-        if verbose:
-            log("molded_images", molded_images)
-            log("image_metas", image_metas)
-            log("anchors", anchors)
+        # if verbose:
+        #     log("molded_images", molded_images)
+        #     log("image_metas", image_metas)
+        #     log("anchors", anchors)
         # Run object detection
         detections, _, _, mrcnn_mask, _, _, _ =\
             self.keras_model.predict([molded_images, image_metas, anchors], verbose=0)
@@ -2540,6 +2271,272 @@ class MaskRCNN():
             })
         return results
 
+    def get_anchors(self, image_shape):
+        """Returns anchor pyramid for the given image size."""
+        backbone_shapes = compute_backbone_shapes(self.config, image_shape)
+        # Cache anchors and reuse if image shape is the same
+        if not hasattr(self, "_anchor_cache"):
+            self._anchor_cache = {}
+        if not tuple(image_shape) in self._anchor_cache:
+            # Generate Anchors
+            a = utils.generate_pyramid_anchors(
+                self.config.RPN_ANCHOR_SCALES,
+                self.config.RPN_ANCHOR_RATIOS,
+                backbone_shapes,
+                self.config.BACKBONE_STRIDES,
+                self.config.RPN_ANCHOR_STRIDE)
+            # Keep a copy of the latest anchors in pixel coordinates because
+            # it's used in inspect_model notebooks.
+            # TODO: Remove this after the notebook are refactored to not use it
+            self.anchors = a
+            # Normalize coordinates
+            self._anchor_cache[tuple(image_shape)] = utils.norm_boxes(a, image_shape[:2])
+        return self._anchor_cache[tuple(image_shape)]
+
+    def set_log_dir(self, model_path=None):
+        """Sets the model log directory and epoch counter.
+
+        model_path: If None, or a format different from what this code uses
+            then set a new log directory and start epochs from 0. Otherwise,
+            extract the log directory and the epoch counter from the file
+            name.
+        """
+        # Set date and epoch counter as if starting a new model
+        self.epoch = 0
+        now = datetime.datetime.now()
+
+        # If we have a model path with date and epochs use them
+        if model_path:
+            # Continue from we left of. Get epoch and date from the file name
+            # A sample model path might look like:
+            # \path\to\logs\coco20171029T2315\mask_rcnn_coco_0001.h5 (Windows)
+            # /path/to/logs/coco20171029T2315/mask_rcnn_coco_0001.h5 (Linux)
+            regex = r".*[/\\][\w-]+(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})[/\\]mask\_rcnn\_[\w-]+(\d{4})\.h5"
+            m = re.match(regex, model_path)
+            if m:
+                now = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),
+                                        int(m.group(4)), int(m.group(5)))
+                # Epoch number in file is 1-based, and in Keras code it's 0-based.
+                # So, adjust for that then increment by one to start from the next epoch
+                self.epoch = int(m.group(6)) - 1 + 1
+                print('Re-starting from epoch %d' % self.epoch)
+
+        # Directory for training logs
+        self.log_dir = os.path.join(self.model_dir, "{}{:%Y%m%dT%H%M}".format(
+            self.config.NAME.lower(), now))
+
+        # Path to save after each epoch. Include placeholders that get filled by Keras.
+        self.checkpoint_path = os.path.join(self.log_dir, "mask_rcnn_{}_*epoch*.h5".format(
+            self.config.NAME.lower()))
+        self.checkpoint_path = self.checkpoint_path.replace(
+            "*epoch*", "{epoch:04d}")
+
+'''
+    def get_imagenet_weights(self):
+        """Downloads ImageNet trained weights from Keras.
+        Returns path to weights file.
+        """
+        
+        TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/'\
+                                 'releases/download/v0.2/'\
+                                 'resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
+        weights_path = get_file('resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5',
+                                TF_WEIGHTS_PATH_NO_TOP,
+                                cache_subdir='models',
+                                md5_hash='a268eb855778b3df3c7506639542a6af')
+        return weights_path
+
+    def compile(self, learning_rate, momentum):
+        """Gets the model ready for training. Adds losses, regularization, and
+        metrics. Then calls the Keras compile() function.
+        """
+        # Optimizer object
+        optimizer = keras.optimizers.SGD(
+            lr=learning_rate, momentum=momentum,
+            clipnorm=self.config.GRADIENT_CLIP_NORM)
+        # Add Losses
+        # First, clear previously set losses to avoid duplication
+        self.keras_model._losses = []
+        self.keras_model._per_input_losses = {}
+        loss_names = [
+            "rpn_class_loss",  "rpn_bbox_loss",
+            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
+        for name in loss_names:
+            layer = self.keras_model.get_layer(name)
+            if layer.output in self.keras_model.losses:
+                continue
+            loss = (
+                tf.reduce_mean(layer.output, keepdims=True)
+                * self.config.LOSS_WEIGHTS.get(name, 1.))
+            self.keras_model.add_loss(loss)
+
+        # Add L2 Regularization
+        # Skip gamma and beta weights of batch normalization layers.
+        reg_losses = [
+            keras.regularizers.l2(self.config.WEIGHT_DECAY)(w) / tf.cast(tf.size(w), tf.float32)
+            for w in self.keras_model.trainable_weights
+            if 'gamma' not in w.name and 'beta' not in w.name]
+        self.keras_model.add_loss(tf.add_n(reg_losses))
+
+        # Compile
+        self.keras_model.compile(
+            optimizer=optimizer,
+            loss=[None] * len(self.keras_model.outputs))
+
+        # Add metrics for losses
+        for name in loss_names:
+            if name in self.keras_model.metrics_names:
+                continue
+            layer = self.keras_model.get_layer(name)
+            self.keras_model.metrics_names.append(name)
+            loss = (
+                tf.reduce_mean(layer.output, keepdims=True)
+                * self.config.LOSS_WEIGHTS.get(name, 1.))
+            self.keras_model.metrics_tensors.append(loss)
+
+    def set_trainable(self, layer_regex, keras_model=None, indent=0, verbose=1):
+        """Sets model layers as trainable if their names match
+        the given regular expression.
+        """
+        # Print message on the first call (but not on recursive calls)
+        if verbose > 0 and keras_model is None:
+            log("Selecting layers to train")
+
+        keras_model = keras_model or self.keras_model
+
+        # In multi-GPU training, we wrap the model. Get layers
+        # of the inner model because they have the weights.
+        layers = keras_model.inner_model.layers if hasattr(keras_model, "inner_model")\
+            else keras_model.layers
+
+        for layer in layers:
+            # Is the layer a model?
+            if layer.__class__.__name__ == 'Model':
+                print("In model: ", layer.name)
+                self.set_trainable(
+                    layer_regex, keras_model=layer, indent=indent + 4)
+                continue
+
+            if not layer.weights:
+                continue
+            # Is it trainable?
+            trainable = bool(re.fullmatch(layer_regex, layer.name))
+            # Update layer. If layer is a container, update inner layer.
+            if layer.__class__.__name__ == 'TimeDistributed':
+                layer.layer.trainable = trainable
+            else:
+                layer.trainable = trainable
+            # Print trainable layer names
+            if trainable and verbose > 0:
+                log("{}{:20}   ({})".format(" " * indent, layer.name,
+                                            layer.__class__.__name__))
+'''
+
+'''
+    def train(self, train_dataset, val_dataset, learning_rate, epochs, layers,
+              augmentation=None, custom_callbacks=None, no_augmentation_sources=None):
+        """Train the model.
+        train_dataset, val_dataset: Training and validation Dataset objects.
+        learning_rate: The learning rate to train with
+        epochs: Number of training epochs. Note that previous training epochs
+                are considered to be done alreay, so this actually determines
+                the epochs to train in total rather than in this particaular
+                call.
+        layers: Allows selecting wich layers to train. It can be:
+            - A regular expression to match layer names to train
+            - One of these predefined values:
+              heads: The RPN, classifier and mask heads of the network
+              all: All the layers
+              3+: Train Resnet stage 3 and up
+              4+: Train Resnet stage 4 and up
+              5+: Train Resnet stage 5 and up
+        augmentation: Optional. An imgaug (https://github.com/aleju/imgaug)
+            augmentation. For example, passing imgaug.augmenters.Fliplr(0.5)
+            flips images right/left 50% of the time. You can pass complex
+            augmentations as well. This augmentation applies 50% of the
+            time, and when it does it flips images right/left half the time
+            and adds a Gaussian blur with a random sigma in range 0 to 5.
+
+                augmentation = imgaug.augmenters.Sometimes(0.5, [
+                    imgaug.augmenters.Fliplr(0.5),
+                    imgaug.augmenters.GaussianBlur(sigma=(0.0, 5.0))
+                ])
+	    custom_callbacks: Optional. Add custom callbacks to be called
+	        with the keras fit_generator method. Must be list of type keras.callbacks.
+        no_augmentation_sources: Optional. List of sources to exclude for
+            augmentation. A source is string that identifies a dataset and is
+            defined in the Dataset class.
+        """
+        assert self.mode == "training", "Create model in training mode."
+
+        # Pre-defined layer regular expressions
+        layer_regex = {
+            # all layers but the backbone
+            "heads": r"(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
+            # From a specific Resnet stage and up
+            "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "5+": r"(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
+            # All layers
+            "all": ".*",
+        }
+        if layers in layer_regex.keys():
+            layers = layer_regex[layers]
+
+        # Data generators
+        train_generator = data_generator(train_dataset, self.config, shuffle=True,
+                                         augmentation=augmentation,
+                                         batch_size=self.config.BATCH_SIZE,
+                                         no_augmentation_sources=no_augmentation_sources)
+        val_generator = data_generator(val_dataset, self.config, shuffle=True,
+                                       batch_size=self.config.BATCH_SIZE)
+
+        # Create log_dir if it does not exist
+        if not os.path.exists(self.log_dir):
+            os.makedirs(self.log_dir)
+
+        # Callbacks
+        callbacks = [
+            keras.callbacks.TensorBoard(log_dir=self.log_dir,
+                                        histogram_freq=0, write_graph=True, write_images=False),
+            keras.callbacks.ModelCheckpoint(self.checkpoint_path,
+                                            verbose=1, save_weights_only=True),
+        ]
+
+        # Add custom callbacks to the list
+        if custom_callbacks:
+            callbacks += custom_callbacks
+
+        # Train
+        log("\nStarting at epoch {}. LR={}\n".format(self.epoch, learning_rate))
+        log("Checkpoint Path: {}".format(self.checkpoint_path))
+        self.set_trainable(layers)
+        self.compile(learning_rate, self.config.LEARNING_MOMENTUM)
+
+        # Work-around for Windows: Keras fails on Windows when using
+        # multiprocessing workers. See discussion here:
+        # https://github.com/matterport/Mask_RCNN/issues/13#issuecomment-353124009
+        if os.name is 'nt':
+            workers = 0
+        else:
+            workers = multiprocessing.cpu_count()
+
+        self.keras_model.fit_generator(
+            train_generator,
+            initial_epoch=self.epoch,
+            epochs=epochs,
+            steps_per_epoch=self.config.STEPS_PER_EPOCH, # of train samples / batch size (1)
+            callbacks=callbacks,
+            validation_data=val_generator,
+            validation_steps=83, #self.config.VALIDATION_STEPS, # validation samples / batch size
+            max_queue_size=100,
+            workers=workers,
+            use_multiprocessing=True,
+        )
+        self.epoch = max(self.epoch, epochs)
+'''
+
+'''
     def detect_molded(self, molded_images, image_metas, verbose=0):
         """Runs the detection pipeline, but expect inputs that are
         molded already. Used mostly for debugging and inspecting
@@ -2597,28 +2594,8 @@ class MaskRCNN():
                 "masks": final_masks,
             })
         return results
+'''
 
-    def get_anchors(self, image_shape):
-        """Returns anchor pyramid for the given image size."""
-        backbone_shapes = compute_backbone_shapes(self.config, image_shape)
-        # Cache anchors and reuse if image shape is the same
-        if not hasattr(self, "_anchor_cache"):
-            self._anchor_cache = {}
-        if not tuple(image_shape) in self._anchor_cache:
-            # Generate Anchors
-            a = utils.generate_pyramid_anchors(
-                self.config.RPN_ANCHOR_SCALES,
-                self.config.RPN_ANCHOR_RATIOS,
-                backbone_shapes,
-                self.config.BACKBONE_STRIDES,
-                self.config.RPN_ANCHOR_STRIDE)
-            # Keep a copy of the latest anchors in pixel coordinates because
-            # it's used in inspect_model notebooks.
-            # TODO: Remove this after the notebook are refactored to not use it
-            self.anchors = a
-            # Normalize coordinates
-            self._anchor_cache[tuple(image_shape)] = utils.norm_boxes(a, image_shape[:2])
-        return self._anchor_cache[tuple(image_shape)]
 '''
     def ancestor(self, tensor, name, checked=None):
         """Finds the ancestor of a TF tensor in the computation graph.
@@ -2724,7 +2701,7 @@ class MaskRCNN():
 ############################################################
 #  Data Formatting
 ############################################################
-'''
+
 def compose_image_meta(image_id, original_image_shape, image_shape,
                        window, scale, active_class_ids):
     """Takes attributes of an image and puts them in one 1D array.
@@ -2796,7 +2773,7 @@ def parse_image_meta_graph(meta):
         "scale": scale,
         "active_class_ids": active_class_ids,
     }
-'''
+
 
 def mold_image(images, config):
     """Expects an RGB image (or array of images) and subtracts
@@ -2814,7 +2791,7 @@ def unmold_image(normalized_images, config):
 ############################################################
 #  Miscellenous Graph Functions
 ############################################################
-'''
+
 def trim_zeros_graph(boxes, name='trim_zeros'):
     """Often boxes are represented with matrices of shape [N, 4] and
     are padded with zeros. This removes zero boxes.
@@ -2869,4 +2846,4 @@ def denorm_boxes_graph(boxes, shape):
     scale = tf.concat([h, w, h, w], axis=-1) - tf.constant(1.0)
     shift = tf.constant([0., 0., 1., 1.])
     return tf.cast(tf.round(tf.multiply(boxes, scale) + shift), tf.int32)
-'''
+
