@@ -9,7 +9,6 @@ Written by Waleed Abdulla
 
 import numpy as np
 
-
 # Base Configuration Class
 # Don't use this class directly. Instead, sub-class it and override
 # the configurations you need to change.

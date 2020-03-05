@@ -2,16 +2,18 @@
 # Main function for UI and uses Detector class
 
 import sys
-# sys.path.append('/usr/local/lib/python2.7/site-packages')
+# sys.path.append('C:\Users\natha\Anaconda3\envs\tensorflow\lib\site-packages')
 from os import listdir, system
 from tkinter import *
 # from tkinter import Label, Entry, Button, Tk, StringVar, TOP, X, Toplevel
 # from tkinter import ttk
 # from matplotlib import pyplot as plt
+import subprocess
 from tkinter import filedialog
 import shutil
+from detector import Detector
 
-versionNumber = '1.1'
+versionNumber = '1.2'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -66,7 +68,6 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     if video_path==None:
         error(2)
 
-    from detector import Detector
     video_instance = Detector(weights_path='')
     video_instance.video_create(image_path=video_path, dcp_path=dcp_dir)
     print('Process complete!')
@@ -91,7 +92,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(2)
     
     #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
-    from detector import Detector
+    
 
     # print('Initializing Detector class')
     detect_instance = Detector(weights_path=weights_path)
@@ -125,15 +126,14 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     if(num_jpgs > 0):
         label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
         label2.pack(side=TOP, fill=X, pady=10, padx=5)
-    dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
-    dcprun.pack(pady=10)
+    # dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
+    # dcprun.pack(pady=10)
     okbutton = Button(popup, text='Ok', command=popup.destroy)
     okbutton.pack()
     popup.mainloop()
 
 # subprocess to automatically run DCP. However, DCP does not do anything when called from here so not adding this yet
 def run_dcp(dcp_dir=None):
-    import subprocess
     subprocess.call(dcp_dir + '/main.exe')
 
 

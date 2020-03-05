@@ -18,6 +18,7 @@ import datetime
 import numpy as np
 import skimage.draw
 import imgaug
+import argparse
 # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 # os.environ["OMP_NUM_THREADS"] = "4"
 
@@ -56,7 +57,7 @@ class HentaiConfig(Config):
     STEPS_PER_EPOCH = 297
 
     # Skip detections with < 75% confidence TODO: tinker with this value, I would go lower
-    DETECTION_MIN_CONFIDENCE = 0.75
+    DETECTION_MIN_CONFIDENCE = 0.70
 
 
 ############################################################
@@ -160,7 +161,7 @@ class HentaiDataset(utils.Dataset):
         else:
             super(self.__class__, self).image_reference(image_id)
 
-
+'''
 def train(model):
     """Train the model."""
     # Training dataset.
@@ -199,13 +200,11 @@ def train(model):
                 epochs=54,
                 layers='all',
                 augmentation=augmentation)
+'''
 
-############################################################
-#  Training
-############################################################
 
 if __name__ == '__main__':
-    import argparse
+    
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(

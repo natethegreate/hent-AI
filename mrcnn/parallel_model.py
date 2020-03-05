@@ -18,6 +18,12 @@ import keras.backend as K
 import keras.layers as KL
 import keras.models as KM
 
+import os
+import numpy as np
+import keras.optimizers
+from keras.datasets import mnist
+from keras.preprocessing.image import ImageDataGenerator
+
 
 class ParallelModel(KM.Model):
     """Subclasses the standard Keras Model and adds multi-GPU support.
@@ -111,11 +117,6 @@ if __name__ == "__main__":
     #
     # python3 parallel_model.py
 
-    import os
-    import numpy as np
-    import keras.optimizers
-    from keras.datasets import mnist
-    from keras.preprocessing.image import ImageDataGenerator
 
     GPU_COUNT = 2
 

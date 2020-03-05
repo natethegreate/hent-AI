@@ -22,7 +22,16 @@ import keras.backend as K
 import keras.layers as KL
 import keras.engine as KE
 import keras.models as KM
-
+import errno
+import imgaug
+import h5py
+from keras.utils.data_utils import get_file
+try:
+    from keras.engine import saving
+except ImportError:
+    # Keras before 2.2 used the 'topology' namespace.
+    from keras.engine import topology as saving
+from mrcnn.parallel_model import ParallelModel
 from mrcnn import utils
 
 # Requires TensorFlow 1.3+ and Keras 2.0.8+.
@@ -34,7 +43,7 @@ assert LooseVersion(keras.__version__) >= LooseVersion('2.0.8')
 ############################################################
 #  Utility Functions
 ############################################################
-
+'''
 def log(text, array=None):
     """Prints a text message. And, optionally, if a Numpy array is provided it
     prints it's shape, min, and max values.
@@ -83,7 +92,7 @@ def compute_backbone_shapes(config, image_shape):
         [[int(math.ceil(image_shape[0] / stride)),
             int(math.ceil(image_shape[1] / stride))]
             for stride in config.BACKBONE_STRIDES])
-
+'''
 
 ############################################################
 #  Resnet Graph
@@ -91,7 +100,7 @@ def compute_backbone_shapes(config, image_shape):
 
 # Code adopted from:
 # https://github.com/fchollet/deep-learning-models/blob/master/resnet50.py
-
+'''
 def identity_block(input_tensor, kernel_size, filters, stage, block,
                    use_bias=True, train_bn=True):
     """The identity_block is the block that has no conv layer at shortcut
@@ -204,12 +213,12 @@ def resnet_graph(input_image, architecture, stage5=False, train_bn=True):
     else:
         C5 = None
     return [C1, C2, C3, C4, C5]
-
+'''
 
 ############################################################
 #  Proposal Layer
 ############################################################
-
+'''
 def apply_box_deltas_graph(boxes, deltas):
     """Applies the given deltas to the given boxes.
     boxes: [N, (y1, x1, y2, x2)] boxes to update
@@ -330,12 +339,12 @@ class ProposalLayer(KE.Layer):
 
     def compute_output_shape(self, input_shape):
         return (None, self.proposal_count, 4)
-
+'''
 
 ############################################################
 #  ROIAlign Layer
 ############################################################
-
+'''
 def log2_graph(x):
     """Implementation of Log2. TF doesn't have a native implementation."""
     return tf.log(x) / tf.log(2.0)
@@ -448,12 +457,12 @@ class PyramidROIAlign(KE.Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1], )
-
+'''
 
 ############################################################
 #  Detection Target Layer
 ############################################################
-
+'''
 def overlaps_graph(boxes1, boxes2):
     """Computes IoU overlaps between two sets of boxes.
     boxes1, boxes2: [N, (y1, x1, y2, x2)].
@@ -617,7 +626,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, config)
     masks = tf.pad(masks, [[0, N + P], (0, 0), (0, 0)])
 
     return rois, roi_gt_class_ids, deltas, masks
-
+'''
 
 class DetectionTargetLayer(KE.Layer):
     """Subsamples proposals and generates target box refinement, class_ids,
@@ -826,7 +835,7 @@ class DetectionLayer(KE.Layer):
 ############################################################
 #  Region Proposal Network (RPN)
 ############################################################
-
+'''
 def rpn_graph(feature_map, anchors_per_location, anchor_stride):
     """Builds the computation graph of Region Proposal Network.
 
@@ -891,12 +900,12 @@ def build_rpn_model(anchor_stride, anchors_per_location, depth):
                                  name="input_rpn_feature_map")
     outputs = rpn_graph(input_feature_map, anchors_per_location, anchor_stride)
     return KM.Model([input_feature_map], outputs, name="rpn_model")
-
+'''
 
 ############################################################
 #  Feature Pyramid Network Heads
 ############################################################
-
+'''
 def fpn_classifier_graph(rois, feature_maps, image_meta,
                          pool_size, num_classes, train_bn=True,
                          fc_layers_size=1024):
@@ -1003,12 +1012,12 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
     x = KL.TimeDistributed(KL.Conv2D(num_classes, (1, 1), strides=1, activation="sigmoid"),
                            name="mrcnn_mask")(x)
     return x
-
+'''
 
 ############################################################
 #  Loss Functions
 ############################################################
-
+'''
 def smooth_l1_loss(y_true, y_pred):
     """Implements Smooth-L1 loss.
     y_true and y_pred are typically: [N, 4], but could be any shape.
@@ -1177,12 +1186,12 @@ def mrcnn_mask_loss_graph(target_masks, target_class_ids, pred_masks):
                     tf.constant(0.0))
     loss = K.mean(loss)
     return loss
-
+'''
 
 ############################################################
 #  Data Generator
 ############################################################
-
+'''
 def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
                   use_mini_mask=False):
     """Load and return ground truth data for an image (image, mask, bounding boxes).
@@ -1230,7 +1239,7 @@ def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
     # Augmentation
     # This requires the imgaug lib (https://github.com/aleju/imgaug)
     if augmentation:
-        import imgaug
+        
 
         # Augmenters that are safe to apply to masks
         # Some, such as Affine, have settings that make them unsafe, so always
@@ -1811,7 +1820,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
             error_count += 1
             if error_count > 5:
                 raise
-
+'''
 
 ############################################################
 #  MaskRCNN Class
@@ -2058,11 +2067,11 @@ class MaskRCNN():
 
         # Add multi-GPU support.
         if config.GPU_COUNT > 1:
-            from mrcnn.parallel_model import ParallelModel
+            
             model = ParallelModel(model, config.GPU_COUNT)
 
         return model
-
+'''
     def find_last(self):
         """Finds the last checkpoint file of the last trained model in the
         model directory.
@@ -2075,7 +2084,7 @@ class MaskRCNN():
         dir_names = filter(lambda f: f.startswith(key), dir_names)
         dir_names = sorted(dir_names)
         if not dir_names:
-            import errno
+            
             raise FileNotFoundError(
                 errno.ENOENT,
                 "Could not find model directory under {}".format(self.model_dir))
@@ -2086,26 +2095,20 @@ class MaskRCNN():
         checkpoints = filter(lambda f: f.startswith("mask_rcnn"), checkpoints)
         checkpoints = sorted(checkpoints)
         if not checkpoints:
-            import errno
             raise FileNotFoundError(
                 errno.ENOENT, "Could not find weight files in {}".format(dir_name))
         checkpoint = os.path.join(dir_name, checkpoints[-1])
         return checkpoint
-
+'''
     def load_weights(self, filepath, by_name=False, exclude=None):
         """Modified version of the corresponding Keras function with
         the addition of multi-GPU support and the ability to exclude
         some layers from loading.
         exclude: list of layer names to exclude
         """
-        import h5py
+        
         # Conditional import to support versions of Keras before 2.2
         # TODO: remove in about 6 months (end of 2018)
-        try:
-            from keras.engine import saving
-        except ImportError:
-            # Keras before 2.2 used the 'topology' namespace.
-            from keras.engine import topology as saving
 
         if exclude:
             by_name = True
@@ -2135,12 +2138,12 @@ class MaskRCNN():
 
         # Update the log directory
         self.set_log_dir(filepath)
-
+'''
     def get_imagenet_weights(self):
         """Downloads ImageNet trained weights from Keras.
         Returns path to weights file.
         """
-        from keras.utils.data_utils import get_file
+        
         TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/'\
                                  'releases/download/v0.2/'\
                                  'resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'
@@ -2374,7 +2377,7 @@ class MaskRCNN():
             use_multiprocessing=True,
         )
         self.epoch = max(self.epoch, epochs)
-
+'''
     def mold_inputs(self, images):
         """Takes a list of images and modifies them to the format expected
         as an input to the neural network.
@@ -2616,7 +2619,7 @@ class MaskRCNN():
             # Normalize coordinates
             self._anchor_cache[tuple(image_shape)] = utils.norm_boxes(a, image_shape[:2])
         return self._anchor_cache[tuple(image_shape)]
-
+'''
     def ancestor(self, tensor, name, checked=None):
         """Finds the ancestor of a TF tensor in the computation graph.
         tensor: TensorFlow symbolic tensor.
@@ -2716,12 +2719,12 @@ class MaskRCNN():
         for k, v in outputs_np.items():
             log(k, v)
         return outputs_np
-
+'''
 
 ############################################################
 #  Data Formatting
 ############################################################
-
+'''
 def compose_image_meta(image_id, original_image_shape, image_shape,
                        window, scale, active_class_ids):
     """Takes attributes of an image and puts them in one 1D array.
@@ -2793,7 +2796,7 @@ def parse_image_meta_graph(meta):
         "scale": scale,
         "active_class_ids": active_class_ids,
     }
-
+'''
 
 def mold_image(images, config):
     """Expects an RGB image (or array of images) and subtracts
@@ -2811,7 +2814,7 @@ def unmold_image(normalized_images, config):
 ############################################################
 #  Miscellenous Graph Functions
 ############################################################
-
+'''
 def trim_zeros_graph(boxes, name='trim_zeros'):
     """Often boxes are represented with matrices of shape [N, 4] and
     are padded with zeros. This removes zero boxes.
@@ -2866,3 +2869,4 @@ def denorm_boxes_graph(boxes, shape):
     scale = tf.concat([h, w, h, w], axis=-1) - tf.constant(1.0)
     shift = tf.constant([0., 0., 1., 1.])
     return tf.cast(tf.round(tf.multiply(boxes, scale) + shift), tf.int32)
+'''

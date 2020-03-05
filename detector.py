@@ -25,6 +25,7 @@ from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 sys.path.insert(1, 'samples/hentai/')
 from hentai import HentaiConfig
+from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
@@ -79,7 +80,7 @@ class Detector():
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
         
-        from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
+        
         # Video capture to get shapes and stats
         # Only supports 1 video at a time, but this can still get mp4 only
         
@@ -135,7 +136,7 @@ class Detector():
         
         if is_video: # TODO: video capabilities will come later
             # from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
-            import cv2
+            
             # Video capture
             video_path = image_path
             vcapture = VideoCapture(video_path)
