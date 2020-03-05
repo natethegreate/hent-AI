@@ -50,8 +50,8 @@ class HentaiConfig(Config):
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 297
 
-    # Skip detections with < 75% confidence TODO: tinker with this value, I would go lower
-    DETECTION_MIN_CONFIDENCE = 0.70
+    # Skip detections with < 65% confidence NOTE: lowered this because its better for false positives
+    DETECTION_MIN_CONFIDENCE = 0.65
 
 class Detector():
     # at startup, dont create model yet
@@ -92,7 +92,7 @@ class Detector():
             cover = np.where(mask, image, green).astype(np.uint8)
         else:
             # error case, return image
-            cover = green.astype(np.uint8)
+            cover = image
         return cover
 
     def get_non_png(self):
@@ -210,7 +210,7 @@ class Detector():
                 image = image[..., :3]
             # Detect objects
             r = self.model.detect([image], verbose=0)[0]
-            # Color splash
+            
             cov = self.apply_cover(image, r['masks'])
             # Save output
             file_name = save_path + fname
