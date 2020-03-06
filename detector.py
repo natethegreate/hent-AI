@@ -10,7 +10,7 @@ Written by Nathan Cueto
 import os
 import sys
 import json
-import datetime # not really useful so remove soon pls
+# import datetime # not really useful so remove soon pls
 import numpy as np
 import skimage.draw
 import imgaug # should augment this improt as well haha
@@ -95,7 +95,7 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = "build_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
+        file_name = fname + "_out.avi"
         vwriter = VideoWriter(file_name,
                                     VideoWriter_fourcc(*'MJPG'),
                                     fps, (width, height))
@@ -144,7 +144,7 @@ class Detector():
             fps = vcapture.get(CAP_PROP_FPS)
     
             # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-            file_name = "splash_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
+            file_name = fname + "_mask.avi"
             vwriter = VideoWriter(file_name,
                                       VideoWriter_fourcc(*'MJPG'),
                                       fps, (width, height))
