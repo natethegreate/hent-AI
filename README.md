@@ -69,7 +69,10 @@ Latest model is model 161, available [here](https://drive.google.com/open?id=1gy
 Please keep it named as weights.h5
 
 ## Requirements
-I would reccomend running these on a virtual environment, with Anaconda3.
+
+The executable should not have any requirements, other than Windows.
+
+(Code only) I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
 
 You need DeepCreamPy, this repo, and the weights.h5 (see above). 
@@ -100,18 +103,28 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
-## Versions
+## Versions and Downloads
 
 * v1.0: Initial release for 2020 HackIllinois Demo
 
 * v1.1: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
+
+* [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
 
 ## Installation directions
 
 For detailed instructions, follow Install_and_Tutorial.txt
 
-NOTE: An executable is in the works. Releasing soon.
+Executable:
+
+* Install from the links above
+
+* Extract to some folder
+
+* Follow Install_and _tutorial for more
+
+Code:
 
 * After cloning this repo, first install the requirements:
 
