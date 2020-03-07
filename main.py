@@ -21,6 +21,7 @@ root.withdraw()
 current_window = None
 counter = 0
 
+
 # for compiling fix
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -37,7 +38,10 @@ def resource_path(relative_path):
 # 3 - no DCP dir
 # 4 - write error
 # 5 - DCP directory invalid
+
+
 def error(errcode):
+
     # popup success message
     popup = Tk()
     popup.title('Error')
