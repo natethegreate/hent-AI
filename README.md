@@ -7,7 +7,7 @@ This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/170
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
 
 Development news will be posted on my Twitter (NSFW).
-[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
+[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/nate_of_hent_ai)
 
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
