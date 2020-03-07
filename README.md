@@ -7,7 +7,7 @@ This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/170
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
 
 Development news will be posted on my Twitter (NSFW).
-[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
+[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/nate_of_hent_ai)
 
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
@@ -64,6 +64,8 @@ I experimented with other pre-trained models, but ended transfer learning with t
 Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4). Latest weights model will come with each release.
 
 Please keep it named as weights.h5, in the root directory with main.py or main.exe.
+
+I have the events file if you would like to see the latest training events with tensorboard [here](https://drive.google.com/open?id=1bH0YcGZQh-hZgGvUpJZc7f9Pblvo3ctE)
 
 ## Requirements
 
