@@ -61,24 +61,20 @@ Currently, the model needs more training. I have access to high-end computers on
 
 I experimented with other pre-trained models, but ended transfer learning with the imagenet model. 
 
-I have a prototype model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45). I will continue adding more trained models as I continue training.
+Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4). Latest weights model will come with each release.
 
-Another model ready for inference is model 107. I will continue training models, and models I am comfortable with will be made available here.
-
-Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
-
-Please keep it named as weights.h5
+Please keep it named as weights.h5, in the root directory with main.py or main.exe.
 
 ## Requirements
 
-The executable should not have any requirements, other than Windows.
+You will need to download and install DeepCreamPy, which is linked in the intro.
 
-(Code only) I would reccomend running these on a virtual environment, with Anaconda3.
+The executable itself should not have any requirements on Windows. For linux, clone the repo and follow the provided instructions for getting its requirements.
+
+(Source code on Windows) I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
 
-You need DeepCreamPy, this repo, and the weights.h5 (see above). 
-
-* For now, DCP is required (until I can create my own alternative). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
+* For now, DCP is required until I can create my own alternative. This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
 * DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
 
@@ -119,11 +115,11 @@ For detailed instructions, follow Install_and_Tutorial.txt
 
 Executable:
 
-* Install from the links above
+* Install from the links directly above
 
-* Extract to some folder
+* Extract the downloaded file to some folder
 
-* Follow Install_and _tutorial for more
+* Follow Install_and _tutorial for more 
 
 Code:
 
@@ -169,3 +165,5 @@ Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chaine
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
 
 Dataset created with numerous doujins and hentai
+
+Sample asset images from artist @ao_beni, 落書き色々まとめ, and @paxiti respectively. Screentone girl is from artist soranosuzume.
