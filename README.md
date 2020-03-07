@@ -65,6 +65,8 @@ Latest model is model 161, available [here](https://drive.google.com/open?id=1gy
 
 Please keep it named as weights.h5, in the root directory with main.py or main.exe.
 
+I have the events file if you would like to see the latest training events with tensorboard [here](https://drive.google.com/open?id=1bH0YcGZQh-hZgGvUpJZc7f9Pblvo3ctE)
+
 ## Requirements
 
 You will need to download and install DeepCreamPy, which is linked in the intro.
