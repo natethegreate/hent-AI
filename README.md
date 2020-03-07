@@ -4,8 +4,6 @@ Illustrated adult content created in Japan is required to be censored by law. Tw
 
 This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
 
-NOTE: Despite the title, this project does not actually use AI.
-
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
 
 Development news will be posted on my Twitter (NSFW).
