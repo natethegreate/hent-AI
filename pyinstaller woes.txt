@@ -1,6 +1,9 @@
 conda install -c conda-forge pyinstaller (remove it from pip too)
 
-is it dateparser??
+try pyinstaller ... --paths=PATH, try the env Lib folder, maybe more
+
+is it dateparser?? unlikely
+
 test with python -v zmqtest.py
 
 pyinstaller  --noconfirm --log-level=WARN ^
