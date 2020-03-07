@@ -90,7 +90,7 @@ class Detector():
         else:
             # error case, return image
             cover = image
-        return cover
+        return cover, mask
 
     def get_non_png(self):
         return self.dcp_compat
@@ -147,7 +147,7 @@ class Detector():
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
     # image_path = path of input file, image or video
-    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None):
+    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None, save_mask=False):
         assert image_path
         assert fname # replace these with something better?
         
@@ -183,18 +183,18 @@ class Detector():
                     skimage.io.imsave(file_name, image)
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
-                    # Color splash
-                    splash = self.apply_cover(image, r['masks'])
+                    # Apply cover
+                    cov, mask = self.apply_cover(image, r['masks'])
                     
                     # save covered frame into input for decensoring path
                     file_name = save_path + im_name + str(count).zfill(7) + '.png'
                     # print('saving covered frame as ', file_name)
-                    skimage.io.imsave(file_name, splash)
+                    skimage.io.imsave(file_name, cov)
 
                     # RGB -> BGR to save image to video
-                    splash = splash[..., ::-1]
+                    cov = cov[..., ::-1]
                     # Add image to video writer
-                    vwriter.write(splash)
+                    vwriter.write(cov)
                     count += 1
 
             vwriter.release()
@@ -205,17 +205,21 @@ class Detector():
             # Read image
             image = skimage.io.imread(image_path) # problems with strange shapes
             if image.shape[-1] == 4:
-                image = image[..., :3]
+                image = image[..., :3] # strip alpha channel
             # Detect objects
             r = self.model.detect([image], verbose=0)[0]
             
-            cov = self.apply_cover(image, r['masks'])
+            cov, mask = self.apply_cover(image, r['masks'])
             # Save output
             file_name = save_path + fname
             skimage.io.imsave(file_name, cov)
             # print("Saved to ", file_name)
 
-    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None):
+            # Option to save ask separately not working rn
+            # if(save_mask==True):
+            #     skimage.io.imsave(file_name+'_mask', skimage.img_as_uint(mask)) # save to default input dir for now
+
+    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, save_mask=False):
         assert input_folder
         assert output_folder # replace with catches and popups
 
@@ -228,6 +232,7 @@ class Detector():
                     vid_list.append((input_folder + '/' + file, file))
             
             for vid_path, vid_name in vid_list:
+                # video will not support separate mask saves
                 self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder)
                 print('detection on video', file_counter, 'is complete')
                 file_counter += 1
@@ -244,7 +249,7 @@ class Detector():
 
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
-                self.detect_and_cover(img_path, img_name, output_folder)
+                self.detect_and_cover(img_path, img_name, output_folder, save_mask=save_mask)
                 print('detection on image', file_counter, 'is complete')
                 file_counter += 1
             # return 0
@@ -265,7 +270,7 @@ class Detector():
                         help='Folder of images to apply mask coverage on')
     # parser.add_argument('--video', required=False,
     #                     metavar="path or URL to video",
-    #                     help='Video to apply the color splash effect on')
+    #                     help='Video to apply effect on')
     args = parser.parse_args()
     weights_path = args.weights
     images_path = args.imagedir

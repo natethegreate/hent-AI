@@ -87,7 +87,7 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     okbutton.pack()
     popup.mainloop()
 
-def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False):
+def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False, save_mask=False):
     # Create new window? Can show loading bar
     # hent_win = new_window()
     # info_label = Label(hent_win, text="Beginning detection")
@@ -98,6 +98,8 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(5)
     if in_path==None:
         error(2)
+
+    # print(save_mask)
     
     #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
     
@@ -132,7 +134,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
         load_label.pack(side=TOP, fill=X, pady=10, padx=20)
         loader.update()
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False)
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, save_mask=save_mask)
         loader.destroy()
 
 
@@ -195,10 +197,13 @@ def bar_detect():
     dir_button = Button(bar_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False))
-    go_button.grid(row=3, columnspan=2, pady=10)
+    boolv = BooleanVar()
+    # cb = Checkbutton(bar_win, text='Save masks separately?', variable = boolv)
+    # cb.grid(row=3,column=2, padx=5)
+    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, save_mask=boolv.get()))
+    go_button.grid(row=3, column=1, pady=10)
     back_button = Button(bar_win, text="Back", command = backMain)
-    back_button.grid(row=3, padx=10)
+    back_button.grid(row=3,column=0, padx=10)
 
     bar_win.mainloop()
 
@@ -222,10 +227,14 @@ def mosaic_detect():
     dir_button = Button(mos_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False))
-    go_button.grid(row=3, columnspan=2, pady=10)
+    boolv = BooleanVar()
+    # cb = Checkbutton(mos_win, text='Save masks separately?', variable = boolv)
+    # cb.grid(row=3,column=3, padx=5)
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False, save_mask=boolv.get()))
+    go_button.grid(row=3,column=1, pady=10)
     back_button = Button(mos_win, text="Back", command = backMain)
-    back_button.grid(row=3, padx=10)
+    back_button.grid(row=3,column=0, padx=10)
+
 
     mos_win.mainloop()
 
@@ -252,7 +261,7 @@ def video_detect():
     go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=True))
     go_button.grid(row=3, columnspan=2, pady=5)
 
-    vid_label = Label(vid_win, text= 'If you finished the video uncensoring, put images from DCP output back into video format. Check README for usage.')
+    vid_label = Label(vid_win, text= 'If you finished the video uncensoring, make images from DCP output back into video format. Check README for usage.')
     vid_label.grid(row=4, pady=5, padx=4)
     vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
     vid_button.grid(row=5, pady=5, padx=10, column=1)
