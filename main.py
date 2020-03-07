@@ -176,7 +176,9 @@ def bar_detect():
     dir_button.grid(row=2, column=2, padx=20)
 
     go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False))
-    go_button.grid( columnspan=2, pady=10)
+    go_button.grid(row=3, columnspan=2, pady=10)
+    back_button = Button(bar_win, text="Back", command = backMain)
+    back_button.grid(row=3, padx=10)
 
     bar_win.mainloop()
 
@@ -201,7 +203,9 @@ def mosaic_detect():
     dir_button.grid(row=2, column=2, padx=20)
 
     go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False))
-    go_button.grid( columnspan=2, pady=10)
+    go_button.grid(row=3, columnspan=2, pady=10)
+    back_button = Button(mos_win, text="Back", command = backMain)
+    back_button.grid(row=3, padx=10)
 
     mos_win.mainloop()
 
@@ -232,6 +236,8 @@ def video_detect():
     vid_label.grid(row=4, pady=5, padx=4)
     vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
     vid_button.grid(row=5, pady=5, padx=10)
+    back_button = Button(vid_win, text="Back", command = backMain)
+    back_button.grid(row=5, padx=10)
 
     vid_win.mainloop()
 
@@ -255,6 +261,26 @@ def  replace_window(root):
     # exit the application.
     current_window.wm_protocol("WM_DELETE_WINDOW", root.destroy)
     return current_window
+
+# This main funct to fall back on
+def backMain():
+    title_window = new_window()
+    title_window.title("hentAI v." + versionNumber)
+
+    # dvar = StringVar(root)
+    # ovar = StringVar(root)
+
+    intro_label = Label(title_window, text='Welcome to hentAI! Please select a censor type: ')
+    intro_label.pack(pady=10)
+    bar_button = Button(title_window, text="Bar", command=bar_detect)
+    bar_button.pack(pady=10)
+    mosaic_button = Button(title_window, text="Mosaic", command=mosaic_detect)
+    mosaic_button.pack(pady=10)
+    video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
+    video_button.pack(pady=10, padx=10)
+
+    title_window.geometry("300x200")
+    title_window.mainloop()
 
 if __name__ == "__main__":
     title_window = new_window()

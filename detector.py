@@ -182,7 +182,7 @@ class Detector():
                     im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
                     file_name = orig_video_folder + im_name + str(count).zfill(6) + '.png' # NOTE Should be adequite for having 10^6 frames, which is more than enough for even 30 mintues total.
                     
-                    print('saving frame as ', file_name)
+                    # print('saving frame as ', file_name)
                     skimage.io.imsave(file_name, image)
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
@@ -191,7 +191,7 @@ class Detector():
                     
                     # save covered frame into input for decensoring path
                     file_name = save_path + im_name + str(count).zfill(7) + '.png'
-                    print('saving covered frame as ', file_name)
+                    # print('saving covered frame as ', file_name)
                     skimage.io.imsave(file_name, splash)
 
                     # RGB -> BGR to save image to video
@@ -203,7 +203,8 @@ class Detector():
             vwriter.release()
             print('video complete')
         else:
-            print("Running on {}".format(image_path))
+            # print("Running on ", end='')
+            # print(image_path)
             # Read image
             image = skimage.io.imread(image_path) # problems with strange shapes
             if image.shape[-1] == 4:
@@ -215,12 +216,13 @@ class Detector():
             # Save output
             file_name = save_path + fname
             skimage.io.imsave(file_name, cov)
-            print("Saved to ", file_name)
+            # print("Saved to ", file_name)
 
     def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None):
         assert input_folder
         assert output_folder # replace with catches and popups
 
+        file_counter = 0
         if(is_video == True):
             # support for multiple videos if your computer can even handle that
             vid_list = []
@@ -229,7 +231,9 @@ class Detector():
                     vid_list.append((input_folder + '/' + file, file))
             
             for vid_path, vid_name in vid_list:
-                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder), 
+                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder)
+                print('detection on video', file_counter, 'is complete')
+                file_counter += 1
         else:
             # obtain inputs from the input folder
             img_list = []
@@ -244,6 +248,8 @@ class Detector():
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
                 self.detect_and_cover(img_path, img_name, output_folder)
+                print('detection on image', file_counter, 'is complete')
+                file_counter += 1
             # return 0
 
 

@@ -28,7 +28,7 @@ The model packaged here is model 161. The weights are used to run the detections
 
 2. Use my Screentone Remover (on my github) if you want to decensor non-colored doujins with screentones.
 	
-3. Run main.exe
+3. Run main.exe. A terminal should open, and may remain blank for a minute. Just allow it to load, the program will start soon.
 
 4. Select the kind of censor you have in your input folder, bar or mosaic
 
