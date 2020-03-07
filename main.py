@@ -69,7 +69,15 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
         error(2)
 
     video_instance = Detector(weights_path='')
+
+    loader = Tk()
+    loader.title('Running video creator')
+    load_label = Label(loader, text='Now creating video. Please wait a moment.')
+    load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+    loader.update()
+
     video_instance.video_create(image_path=video_path, dcp_path=dcp_dir)
+    loader.destroy()
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
@@ -110,10 +118,22 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     # Run detection
     if(is_video==True):
         print('running video detection')
+        loader = Tk()
+        loader.title('Running detections')
+        load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
+        load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+        loader.update()
         detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/')
+        loader.destroy()
     else:
         print('running detection, outputting to dcp input')
+        loader = Tk()
+        loader.title('Running detections')
+        load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
+        load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+        loader.update()
         detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False)
+        loader.destroy()
 
 
     # Announce completion, offer to run DCP from DCP directory
@@ -148,7 +168,7 @@ otext = ""
 
 # both functions used to get and set directories
 def dcp_newdir():
-    dtext = filedialog.askdirectory(title='Choose directory for DCP installation')
+    dtext = filedialog.askdirectory(title='Choose directory for DeepCreamPy installation')
     dvar.set(dtext)
 
 def input_newdir():
@@ -168,7 +188,7 @@ def bar_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(bar_win, text = 'DCP install folder (usually called dist1): ')
+    d_label = Label(bar_win, text = 'DeepCreamPy install folder (usually called dist1): ')
     d_label.grid(row=2, padx=20, pady=10)
     d_entry = Entry(bar_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
@@ -195,7 +215,7 @@ def mosaic_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(mos_win, text = 'DCP install folder (usually called dist1): ')
+    d_label = Label(mos_win, text = 'DeepCreamPy install folder (usually called dist1): ')
     d_label.grid(row=2, padx=20, pady=20)
     d_entry = Entry(mos_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
@@ -222,7 +242,7 @@ def video_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(vid_win, text = 'DCP install folder (usually called dist1): ')
+    d_label = Label(vid_win, text = 'DeepCreamPy install folder (usually called dist1): ')
     d_label.grid(row=2, padx=20, pady=20)
     d_entry = Entry(vid_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
@@ -235,9 +255,9 @@ def video_detect():
     vid_label = Label(vid_win, text= 'If you finished the video uncensoring, put images from DCP output back into video format. Check README for usage.')
     vid_label.grid(row=4, pady=5, padx=4)
     vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
-    vid_button.grid(row=5, pady=5, padx=10)
+    vid_button.grid(row=5, pady=5, padx=10, column=1)
     back_button = Button(vid_win, text="Back", command = backMain)
-    back_button.grid(row=5, padx=10)
+    back_button.grid(row=5, padx=10, column=0)
 
     vid_win.mainloop()
 
