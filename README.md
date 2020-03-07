@@ -54,7 +54,8 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
-If you wish to train on your own, you can contact me and I might send you the current dataset (~415 images). All i ask is that you send a pull request or send me the trained weights file should it detect better than the current one. I am also open to any help in increasing the dataset.
+Currently, the model needs more training. I have access to high-end computers on campus, but someone with a working Google cloud or similar can definitely help. In that case, contact me so I can provide the current dataset. 
+[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current set.
 
 # The Model
 
