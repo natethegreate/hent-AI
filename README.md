@@ -110,6 +110,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
+* v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
+
 
 ## Installation directions
 
