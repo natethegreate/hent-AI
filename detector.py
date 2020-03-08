@@ -187,7 +187,7 @@ class Detector():
                     cov, mask = self.apply_cover(image, r['masks'])
                     
                     # save covered frame into input for decensoring path
-                    file_name = save_path + im_name + str(count).zfill(7) + '.png'
+                    file_name = save_path + im_name + str(count).zfill(6) + '.png'
                     # print('saving covered frame as ', file_name)
                     skimage.io.imsave(file_name, cov)
 
