@@ -88,9 +88,9 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 ## Important Notes (READ BEFORE USING)
 
-* I highly reccommend running hentAI on batches, for example one doujin or a few doujins at once. The slowest part of hentAI is the initialization, so the first inference takes time but the rest will be quick. 
+* I highly reccommend running hent-AI on batches, for example one doujin or a few doujins at once. The slowest part of hent-AI is the initialization, so the first inference takes time but the rest will be quick. 
 
-* The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hentAI.
+* The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hent-AI.
 
 * This model is not trained in recognizing full censorship, where genetalia is not drawn at all. Non-standard censoring is also not supported. 
 
@@ -108,11 +108,11 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * v1.1: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
 
-* [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
+* [v1.2](https://github.com/natethegreate/hent-AI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
 * v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
 
-* [v1.4](https://github.com/natethegreate/hentAI/releases/tag/v1.4): Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
+* [v1.4](https://github.com/natethegreate/hent-AI/releases/tag/v1.4): Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
 
 
 ## Installation directions
@@ -141,7 +141,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-* To run hentAI, run
+* To run hent-AI, run
 
 ```
 python main.py
