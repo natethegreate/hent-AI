@@ -2,16 +2,18 @@
 # Main function for UI and uses Detector class
 
 import sys
-# sys.path.append('/usr/local/lib/python2.7/site-packages')
+# sys.path.append('C:\Users\natha\Anaconda3\envs\tensorflow\lib\site-packages')
 from os import listdir, system
 from tkinter import *
 # from tkinter import Label, Entry, Button, Tk, StringVar, TOP, X, Toplevel
 # from tkinter import ttk
 # from matplotlib import pyplot as plt
+import subprocess
 from tkinter import filedialog
 import shutil
+from detector import Detector
 
-versionNumber = '1.1'
+versionNumber = '1.3'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -66,9 +68,16 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     if video_path==None:
         error(2)
 
-    from detector import Detector
     video_instance = Detector(weights_path='')
+
+    loader = Tk()
+    loader.title('Running video creator')
+    load_label = Label(loader, text='Now creating video. Please wait a moment.')
+    load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+    loader.update()
+
     video_instance.video_create(image_path=video_path, dcp_path=dcp_dir)
+    loader.destroy()
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
@@ -78,7 +87,7 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     okbutton.pack()
     popup.mainloop()
 
-def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False):
+def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False, save_mask=False):
     # Create new window? Can show loading bar
     # hent_win = new_window()
     # info_label = Label(hent_win, text="Beginning detection")
@@ -89,9 +98,11 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(5)
     if in_path==None:
         error(2)
+
+    # print(save_mask)
     
     #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
-    from detector import Detector
+    
 
     # print('Initializing Detector class')
     detect_instance = Detector(weights_path=weights_path)
@@ -109,10 +120,22 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     # Run detection
     if(is_video==True):
         print('running video detection')
+        loader = Tk()
+        loader.title('Running detections')
+        load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
+        load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+        loader.update()
         detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/')
+        loader.destroy()
     else:
         print('running detection, outputting to dcp input')
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False)
+        loader = Tk()
+        loader.title('Running detections')
+        load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
+        load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+        loader.update()
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, save_mask=save_mask)
+        loader.destroy()
 
 
     # Announce completion, offer to run DCP from DCP directory
@@ -125,15 +148,14 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     if(num_jpgs > 0):
         label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
         label2.pack(side=TOP, fill=X, pady=10, padx=5)
-    dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
-    dcprun.pack(pady=10)
+    # dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
+    # dcprun.pack(pady=10)
     okbutton = Button(popup, text='Ok', command=popup.destroy)
     okbutton.pack()
     popup.mainloop()
 
 # subprocess to automatically run DCP. However, DCP does not do anything when called from here so not adding this yet
 def run_dcp(dcp_dir=None):
-    import subprocess
     subprocess.call(dcp_dir + '/main.exe')
 
 
@@ -148,7 +170,7 @@ otext = ""
 
 # both functions used to get and set directories
 def dcp_newdir():
-    dtext = filedialog.askdirectory(title='Choose directory for DCP installation')
+    dtext = filedialog.askdirectory(title='Choose directory for DeepCreamPy installation')
     dvar.set(dtext)
 
 def input_newdir():
@@ -168,15 +190,20 @@ def bar_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(bar_win, text = 'DCP install folder (usually called dist1): ')
+    d_label = Label(bar_win, text = 'DeepCreamPy install folder (usually called dist1): ')
     d_label.grid(row=2, padx=20, pady=10)
     d_entry = Entry(bar_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
     dir_button = Button(bar_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False))
-    go_button.grid( columnspan=2, pady=10)
+    boolv = BooleanVar()
+    # cb = Checkbutton(bar_win, text='Save masks separately?', variable = boolv)
+    # cb.grid(row=3,column=2, padx=5)
+    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, save_mask=boolv.get()))
+    go_button.grid(row=3, column=1, pady=10)
+    back_button = Button(bar_win, text="Back", command = backMain)
+    back_button.grid(row=3,column=0, padx=10)
 
     bar_win.mainloop()
 
@@ -193,15 +220,21 @@ def mosaic_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(mos_win, text = 'DCP install folder (usually called dist1): ')
+    d_label = Label(mos_win, text = 'DeepCreamPy install folder (usually called dist1): ')
     d_label.grid(row=2, padx=20, pady=20)
     d_entry = Entry(mos_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
     dir_button = Button(mos_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False))
-    go_button.grid( columnspan=2, pady=10)
+    boolv = BooleanVar()
+    # cb = Checkbutton(mos_win, text='Save masks separately?', variable = boolv)
+    # cb.grid(row=3,column=3, padx=5)
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False, save_mask=boolv.get()))
+    go_button.grid(row=3,column=1, pady=10)
+    back_button = Button(mos_win, text="Back", command = backMain)
+    back_button.grid(row=3,column=0, padx=10)
+
 
     mos_win.mainloop()
 
@@ -218,7 +251,7 @@ def video_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(vid_win, text = 'DCP install folder (usually called dist1): ')
+    d_label = Label(vid_win, text = 'DeepCreamPy install folder (usually called dist1): ')
     d_label.grid(row=2, padx=20, pady=20)
     d_entry = Entry(vid_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
@@ -228,10 +261,12 @@ def video_detect():
     go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=True))
     go_button.grid(row=3, columnspan=2, pady=5)
 
-    vid_label = Label(vid_win, text= 'If you finished the video uncensoring, put images from DCP output back into video format. Check README for usage.')
+    vid_label = Label(vid_win, text= 'If you finished the video uncensoring, make images from DCP output back into video format. Check README for usage.')
     vid_label.grid(row=4, pady=5, padx=4)
     vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
-    vid_button.grid(row=5, pady=5, padx=10)
+    vid_button.grid(row=5, pady=5, padx=10, column=1)
+    back_button = Button(vid_win, text="Back", command = backMain)
+    back_button.grid(row=5, padx=10, column=0)
 
     vid_win.mainloop()
 
@@ -255,6 +290,26 @@ def  replace_window(root):
     # exit the application.
     current_window.wm_protocol("WM_DELETE_WINDOW", root.destroy)
     return current_window
+
+# This main funct to fall back on
+def backMain():
+    title_window = new_window()
+    title_window.title("hentAI v." + versionNumber)
+
+    # dvar = StringVar(root)
+    # ovar = StringVar(root)
+
+    intro_label = Label(title_window, text='Welcome to hentAI! Please select a censor type: ')
+    intro_label.pack(pady=10)
+    bar_button = Button(title_window, text="Bar", command=bar_detect)
+    bar_button.pack(pady=10)
+    mosaic_button = Button(title_window, text="Mosaic", command=mosaic_detect)
+    mosaic_button.pack(pady=10)
+    video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
+    video_button.pack(pady=10, padx=10)
+
+    title_window.geometry("300x200")
+    title_window.mainloop()
 
 if __name__ == "__main__":
     title_window = new_window()

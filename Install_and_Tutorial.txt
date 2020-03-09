@@ -1,112 +1,126 @@
+Information needed to run hentAI.
+
 --Prereqs
 
-First install DeepCreamPy. You can install the exe or code.
+First install DeepCreamPy (I will refer to this as DCP). You can install the exe (preffered) or source code.
 
 You should check the github page to see if there is a newer weights model available. This is the h5 file.
-Latest model is 161.
 
---Installation (You probably want the executable)--
---hentAI Executable:
-Unzip the downloaded folder, run main.exe and follow the tutorial
+The model packaged here is model 161. The weights are used to run the detections.
 
-You should use the provided input_images folder to place the images you want to decensor. Remember that you must
-decensor content with bar censors and mosaic censors separately. Images must be in .png format.
-Also, make sure to clear out the input folder between runs so you dont decensor the same things.
-Use my Screentone Remover (on my github) if you want to decensor non-colored doujins with screentones.
+	!!!!!!   IMAGES NEED TO BE IN .png FORMAT   !!!!!
 
---hentAI Code (for fellow developers or contributors, possibly linux users):
-Install Anaconda3.
 
-Open anaconda prompt, create virtual environment via
+
+--Installation for hentAI Executable:
+
+1. Unzip the downloaded folder, run main.exe
+
+2. You should see a black terminal show up. This means the libraries are being loaded. Wait until you see some 
+   unimportant text show up, then the main GUI will soon appear. Should not take more than 1 minute.
+
+
+--- Tutorial for hentAI executable
+
+1. You should use the provided input_images folder to place the images you want to decensor. Remember that you must
+   decensor content with bar censors and mosaic censors separately. Images must be in .png format.
+   Also, make sure to clear out the input folder between runs so you dont decensor the same things.
+
+2. Use my Screentone Remover (on my github) if you want to decensor non-colored doujins with screentones.
+	
+3. Run main.exe. A terminal should open, and may remain blank for a minute. Just allow it to load, the program will start soon.
+
+4. Select the kind of censor you have in your input folder, bar or mosaic
+
+5. For "Your own input image folder", select the folder with your images in it.
+   For "DCP install directory", selec the parent directory of DeepCreamPy (usually called dist 1)
+
+6. Now you can hit the Go button. Loading the nueral network will take some time. 
+   The image detections will also take some time, up to a minute per image once it gets rolling depending on your computer.
+
+7. The images with the detected censors should have automatically been placed into the 
+   corresponding folders in your DeepCreamPy directory.
+
+8. Now you should run DeepCreamPy, and you can close hentAI. Be sure to select the appropriate censor type in DCP.
+	
+--- hentAI video detecting (Experimental, mosaic only)
+1. Place the input .mp4 into its own folder. 
+   Keep the video as SHORT as possible. You will need to do some video editing.
+
+2. Open hentAI, enter the video detection, then select the source video folder and the DCP folder.
+
+3. First, run Begin Detection
+   hentAI will automatically place frames into the DCP directories.
+   It will take a long time, regardless of your setup. If you have a compatible Nvidia GPU,
+   you can install tensorflow 1.9.0 and it should use your GPU to run detections.
+
+4. After the process ends and you get the popup, run DCP. This will take some time to load its nueral network, but is faster per image.
+
+5. After DCP finishes, go back to hentAI and run the Video Maker.
+
+6. This will take the output of DCP and peice it together as a video.
+   As of now, sound will be lost. But you can simply just get the sound from the source video.
+
+
+---hentAI Code (for fellow developers or contributors, possibly linux users):
+1. Install Anaconda3.
+
+2. Open anaconda prompt, create virtual environment via
 	conda create --name hentai python=3.5
-Activate that environment
+3. Activate that environment
 	conda activate hentai
 
-Navigate to your hentAI install directory within conda
+4. Navigate to your hentAI install directory within conda
 	cd *path to hentAI folder*
 
-Install requirements and Mask Rcnn
+5. Install requirements
 	pip install -r requirements.txt
+6. Install Mask Rcnn
 	python setup.py install
 
-Optionally, create an input folder.
+7. Optionally, create an input folder.
 
->>Tutorial: 
+---Tutorial for code: 
 	For Screentone Remover, instructions are in its own file. Use this if you are using 
 	non-colored images with the printed effect. 
 	NOTE: If the doujin was tagged as [Digital] and does not have the screentone effect, you
 	do not need to use Screentone Remover.
 	
-	First, have an input folder ready with whatever images you want to decensor.
-	Do not have bar censors and mosaic censors in the same folder.
+1. First, have an input folder ready with whatever images you want to decensor.
+   Do not have bar censors and mosaic censors in the same folder.
 
-	!!!!!!   IMAGES NEED TO BE IN .png FORMAT   !!!!!
+2. To detect, simply run the main script
+	python main.py
 
---hentAI executable
-	Run main.exe
-
-	Select the kind of censor you have in your input folder
-
-	For "Your own input image folder", select the folder with your images in it.
-	For "DCP install directory", selec the parent directory of DeepCreamPy (usually called dist1)
-
-	Now you can hit the Go button. Loading the nueral network will take some time. 
-		The image detections will also take some time.
-		Depending on your computer, this can take a few minutes or more.
-
-	The images with the detected censors should have automatically been placed into the 
-		corresponding folders in your DeepCreamPy directory.
-
-	Now you should run DeepCreamPy, and you can close hentAI. Be sure to select the appropriate censor type.
-	
---hentAI video detecting (Experimental)
-	Place the input .mp4 into its own folder. 
-		Keep the video as SHORT as possible. You will need to do some video editing.
-
-	Open hentAI, enter the video detection, then select the source video folder and the DCP folder.
-
-	First, run Begin Detection
-	hentAI will automatically place frames into the DCP directories.
-	It will take a long time, regardless of your setup. If you have a compatible Nvidia GPU,
-	You can install tensorflow 1.9.0 and it should use your GPU to run detections.
-
-	After the process ends and you get the popup, run DCP. This will also be kinda slow.
-
-	After DCP finishes, go back to hentAI and run the Video Maker.
-
-	This will take the output of DCP and peice it together as a video.
-	As of now, sound will be lost.
-
---Training:
+3. Training:
 **If you are interested in training, please contact me and I may provide you with
 the current dataset. All I ask is that you also send me your trained model should
 you improve on the latest detections. **
 
-Add to the dataset with VGG annotator. Class definitions are on the readme / github page.
+4. Add to the dataset with VGG annotator. Class definitions are on the readme / github page.
 
-Place dataset into the dataset_img folder. Please have a train and val folder.
-Dataset annotation format should be on Readme or the hentAI git page.
+5. Place dataset into the dataset_img folder. Please have a train and val folder.
+   Dataset annotation format should be on Readme or the hentAI git page.
 
-Optionally, you can inspect the dataset with the samples\hentai\inspect_h_data.ipynb
-This is meant for jupyter notebook.
+6. Optionally, you can inspect the dataset with the samples\hentai\inspect_h_data.ipynb
+   This is meant for jupyter notebook.
 
-From parent directory of hentAI:
-tensorflow==1.9.0 is HIGHLY reccomended to get any useful training progress.
-You will need a powerful Nvidia gpu, like around a gtx 1080 or better.
+7. From parent directory of hentAI:
+   tensorflow==1.9.0 is HIGHLY reccomended to get any useful training progress.
+   You will need a powerful Nvidia gpu, like around a gtx 1080 or better.
 
 	pip install tensorflow==1.9.0
 
-	python samples\hentai\hentai.py train --dataset=dataset_img/ --weights=weights.h5
+8.	python samples\hentai\hentai.py train --dataset=dataset_img/ --weights=weights.h5
 		can also use --weights=last if you have another trained model.
 
-There will be a lot of compatibility warnings and such. But the training will still run.
-Model should be placed in a logs folder, outside the hentAI folder.
-You can use tensorboard to inspect the loss graph visuals.
+9. There will be a lot of compatibility warnings and such. But the training will still run.
+   Model should be placed in a logs folder, outside the hentAI folder.
+   You can use tensorboard to inspect the loss graph visuals.
 
-Inspect the model detections with either hentAI or sampels\hentai\inspect_h_model.ipynb
-You may modify the jupyter notebook to test the current model and your new model
-simultaneously. Again, if you procure better results, you may create a pull request or just
-send it to me!
-	
+10. Inspect the model detections with either hentAI or sampels\hentai\inspect_h_model.ipynb
+    You may modify the jupyter notebook to test the current model and your new model
+    simultaneously. Again, if you procure better results, you may create a pull request or just
+    send it to me!
 	
 	

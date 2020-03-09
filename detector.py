@@ -1,16 +1,14 @@
 """
 detector
-
 Copyright (c) 2020 Nathan Cueto
 Licensed under the MIT License (see LICENSE for details)
 Written by Nathan Cueto
-
 """
 
 import os
 import sys
 import json
-import datetime # not really useful so remove soon pls
+# import datetime # not really useful so remove soon pls
 import numpy as np
 import skimage.draw
 import imgaug # should augment this improt as well haha
@@ -23,13 +21,35 @@ ROOT_DIR = os.path.abspath("../../")
 sys.path.append(ROOT_DIR)  # To find local version of the library
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
-sys.path.insert(1, 'samples/hentai/')
-from hentai import HentaiConfig
+# sys.path.insert(1, 'samples/hentai/')
+# from hentai import HentaiConfig
+from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Path to trained weights
 WEIGHTS_PATH = os.path.join(ROOT_DIR, "weights.h5")
+
+# taking this from hentai to avoid import
+class HentaiConfig(Config):
+    """Configuration for training on the toy  dataset.
+    Derives from the base Config class and overrides some values.
+    """
+    # Give the configuration a recognizable name
+    NAME = "hentai"
+
+    # We use a GPU with 12GB memory, which can fit two images.
+    # Adjust down if you use a smaller GPU.
+    IMAGES_PER_GPU = 1
+
+    # Number of classes (including background)
+    NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
+
+    # Number of training steps per epoch, equal to dataset train size
+    STEPS_PER_EPOCH = 297
+
+    # Skip detections with < 65% confidence NOTE: lowered this because its better for false positives
+    DETECTION_MIN_CONFIDENCE = 0.55
 
 class Detector():
     # at startup, dont create model yet
@@ -56,7 +76,6 @@ class Detector():
         """Apply cover over image. Based off of Mask-RCNN Balloon color splash function
         image: RGB image [height, width, 3]
         mask: instance segmentation mask [height, width, instance count]
-
         Returns result covered image.
         """
         # Copy color pixels from the original color image where mask is set
@@ -70,8 +89,8 @@ class Detector():
             cover = np.where(mask, image, green).astype(np.uint8)
         else:
             # error case, return image
-            cover = green.astype(np.uint8)
-        return cover
+            cover = image
+        return cover, mask
 
     def get_non_png(self):
         return self.dcp_compat
@@ -79,7 +98,6 @@ class Detector():
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
         
-        from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
         # Video capture to get shapes and stats
         # Only supports 1 video at a time, but this can still get mp4 only
         
@@ -95,7 +113,7 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = "build_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
+        file_name = "uncensored_video.avi"
         vwriter = VideoWriter(file_name,
                                     VideoWriter_fourcc(*'MJPG'),
                                     fps, (width, height))
@@ -117,7 +135,7 @@ class Detector():
         for img in img_list:
             print("frame: ", count)
             # Read next image
-            image = skimage.io.imread(img)
+            image = skimage.io.imread(img) # Should be no alpha channel in created image
             # Add image to video writer, after flipping R and B value
             image = image[..., ::-1]
             vwriter.write(image)
@@ -129,13 +147,13 @@ class Detector():
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
     # image_path = path of input file, image or video
-    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None):
+    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None, save_mask=False):
         assert image_path
         assert fname # replace these with something better?
         
-        if is_video: # TODO: video capabilities will come later
+        if is_video: # TODO: video capabilities will finalize later
             # from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
-            import cv2
+            
             # Video capture
             video_path = image_path
             vcapture = VideoCapture(video_path)
@@ -144,7 +162,7 @@ class Detector():
             fps = vcapture.get(CAP_PROP_FPS)
     
             # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-            file_name = "splash_{:%Y%m%dT%H%M%S}.avi".format(datetime.datetime.now())
+            file_name = fname + "_with_censor_masks.avi"
             vwriter = VideoWriter(file_name,
                                       VideoWriter_fourcc(*'MJPG'),
                                       fps, (width, height))
@@ -161,45 +179,51 @@ class Detector():
                     im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
                     file_name = orig_video_folder + im_name + str(count).zfill(6) + '.png' # NOTE Should be adequite for having 10^6 frames, which is more than enough for even 30 mintues total.
                     
-                    print('saving frame as ', file_name)
+                    # print('saving frame as ', file_name)
                     skimage.io.imsave(file_name, image)
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
-                    # Color splash
-                    splash = self.apply_cover(image, r['masks'])
+                    # Apply cover
+                    cov, mask = self.apply_cover(image, r['masks'])
                     
                     # save covered frame into input for decensoring path
-                    file_name = save_path + im_name + str(count).zfill(7) + '.png'
-                    print('saving covered frame as ', file_name)
-                    skimage.io.imsave(file_name, splash)
+                    file_name = save_path + im_name + str(count).zfill(6) + '.png'
+                    # print('saving covered frame as ', file_name)
+                    skimage.io.imsave(file_name, cov)
 
                     # RGB -> BGR to save image to video
-                    splash = splash[..., ::-1]
+                    cov = cov[..., ::-1]
                     # Add image to video writer
-                    vwriter.write(splash)
+                    vwriter.write(cov)
                     count += 1
 
             vwriter.release()
             print('video complete')
         else:
-            print("Running on {}".format(image_path))
+            # print("Running on ", end='')
+            # print(image_path)
             # Read image
-            image = skimage.io.imread(image_path)
+            image = skimage.io.imread(image_path) # problems with strange shapes
+            if image.shape[-1] == 4:
+                image = image[..., :3] # strip alpha channel
             # Detect objects
             r = self.model.detect([image], verbose=0)[0]
-            # Color splash
-            cov = self.apply_cover(image, r['masks'])
+            
+            cov, mask = self.apply_cover(image, r['masks'])
             # Save output
             file_name = save_path + fname
             skimage.io.imsave(file_name, cov)
-            print("Saved to ", file_name)
+            # print("Saved to ", file_name)
 
-    # return 0 means all good
-    # return 1 means jpgs found
-    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None):
+            # Option to save ask separately not working rn
+            # if(save_mask==True):
+            #     skimage.io.imsave(file_name+'_mask', skimage.img_as_uint(mask)) # save to default input dir for now
+
+    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, save_mask=False):
         assert input_folder
         assert output_folder # replace with catches and popups
 
+        file_counter = 0
         if(is_video == True):
             # support for multiple videos if your computer can even handle that
             vid_list = []
@@ -208,7 +232,10 @@ class Detector():
                     vid_list.append((input_folder + '/' + file, file))
             
             for vid_path, vid_name in vid_list:
-                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder), 
+                # video will not support separate mask saves
+                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder)
+                print('detection on video', file_counter, 'is complete')
+                file_counter += 1
         else:
             # obtain inputs from the input folder
             img_list = []
@@ -222,7 +249,9 @@ class Detector():
 
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
-                self.detect_and_cover(img_path, img_name, output_folder)
+                self.detect_and_cover(img_path, img_name, output_folder, save_mask=save_mask)
+                print('detection on image', file_counter, 'is complete')
+                file_counter += 1
             # return 0
 
 
@@ -241,18 +270,15 @@ class Detector():
                         help='Folder of images to apply mask coverage on')
     # parser.add_argument('--video', required=False,
     #                     metavar="path or URL to video",
-    #                     help='Video to apply the color splash effect on')
+    #                     help='Video to apply effect on')
     args = parser.parse_args()
-
     weights_path = args.weights
     images_path = args.imagedir
     output_dir = "temp_out/"
-
     print('Initializing Detector class')
     detect_instance = Detector(weights_path=args.weights)
     print('loading weights')
     detect_instance.load_weights()
     print('running detect on in and out folder')
     detect_instance.run_on_folder(input_folder=images_path, output_folder=output_dir)
-
     print("Fin")'''
