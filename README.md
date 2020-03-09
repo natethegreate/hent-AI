@@ -4,12 +4,10 @@ Illustrated adult content created in Japan is required to be censored by law. Tw
 
 This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
 
-NOTE: Despite the title, this project does not actually use AI.
-
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
 
 Development news will be posted on my Twitter (NSFW).
-[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
+[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/nate_of_hent_ai)
 
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
@@ -56,30 +54,29 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
-If you wish to train on your own, you can contact me and I might send you the current dataset (~415 images). All i ask is that you send a pull request or send me the trained weights file should it detect better than the current one. I am also open to any help in increasing the dataset.
+Currently, the model needs more training. I have access to high-end computers on campus, but someone with a working Google cloud or similar can definitely help. In that case, contact me so I can provide the current dataset. 
+[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current set.
 
 # The Model
 
 I experimented with other pre-trained models, but ended transfer learning with the imagenet model. 
 
-I have a prototype model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45). I will continue adding more trained models as I continue training.
+Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4). Latest weights model will come with each release.
 
-Another model ready for inference is model 107. I will continue training models, and models I am comfortable with will be made available here.
+Please keep it named as weights.h5, in the root directory with main.py or main.exe.
 
-Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
-
-Please keep it named as weights.h5
+I have the events file if you would like to see the latest training events with tensorboard [here](https://drive.google.com/open?id=1bH0YcGZQh-hZgGvUpJZc7f9Pblvo3ctE)
 
 ## Requirements
 
-The executable should not have any requirements, other than Windows.
+You will need to download and install DeepCreamPy, which is linked in the intro.
 
-(Code only) I would reccomend running these on a virtual environment, with Anaconda3.
+The executable itself should not have any requirements on Windows. For linux, clone the repo and follow the provided instructions for getting its requirements.
+
+(Source code on Windows) I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
 
-You need DeepCreamPy, this repo, and the weights.h5 (see above). 
-
-* For now, DCP is required (until I can create my own alternative). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
+* For now, DCP is required until I can create my own alternative. This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
 * DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
 
@@ -113,6 +110,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
+* v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
+
 
 ## Installation directions
 
@@ -120,11 +119,11 @@ For detailed instructions, follow Install_and_Tutorial.txt
 
 Executable:
 
-* Install from the links above
+* Install from the links directly above
 
-* Extract to some folder
+* Extract the downloaded file to some folder
 
-* Follow Install_and _tutorial for more
+* Follow Install_and _tutorial for more 
 
 Code:
 
@@ -170,3 +169,5 @@ Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chaine
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
 
 Dataset created with numerous doujins and hentai
+
+Sample asset images from artist @ao_beni, 落書き色々まとめ, and @paxiti respectively. Screentone girl is from artist soranosuzume.
