@@ -17,7 +17,8 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
-import imgaug
+# import imgaug
+from imgaug import augmenters as ia, ALL
 # os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 # os.environ["OMP_NUM_THREADS"] = "4"
 
@@ -52,11 +53,11 @@ class HentaiConfig(Config):
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
-    # Number of training steps per epoch, equal to dataset train size
+    # Number of training steps per epoch, NOTE: equal to dataset train size
     STEPS_PER_EPOCH = 297
 
     # Skip detections with < 75% confidence TODO: tinker with this value, I would go lower
-    DETECTION_MIN_CONFIDENCE = 0.75
+    DETECTION_MIN_CONFIDENCE = 0.70
 
 
 ############################################################
@@ -173,30 +174,48 @@ def train(model):
     dataset_val.load_hentai(args.dataset, "val")
     dataset_val.prepare()
 
+    # Advanced augmentation from https://github.com/matterport/Mask_RCNN/issues/1924#issuecomment-568200836
+    # Not all augments supported. Check model.py for supported safe augments
+    aug_max = 3 # apply 0 to max augmentations at once
+    augmentation = ia.SomeOf((0, aug_max), [
+        ia.Fliplr(.5),
+        ia.Flipud(.5),
+        ia.OneOf([ia.Affine(rotate = 30 * i) for i in range(0, 12)]),
+        ia.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
+        ia.CropAndPad(px=((0, 30), (0, 10), (0, 30), (0, 10)),pad_mode=ALL,pad_cval=(0, 128))
+        ])
+
+
     # Training - Stage 1 Heads only
-    augmentation = imgaug.augmenters.Fliplr(0.5) # only augment horizontal flipping, 50% chance
     print("Training network heads in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=17,
+                epochs=20,
                 layers='heads',
                 augmentation=augmentation)
 
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up
-    print("Fine tune Resnet stage 4 and up in hentai.py")
-    model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE,
-                epochs=34,
-                layers='4+',
-                augmentation=augmentation)
+    # print("Fine tune Resnet stage 4 and up in hentai.py")
+    # model.train(dataset_train, dataset_val,
+    #             learning_rate=config.LEARNING_RATE,
+    #             epochs=40,
+    #             layers='4+',
+    #             augmentation=augmentation)
 
     # Training - Stage 3
     # Fine tune all layers with lower learning rate
     print("Fine tune all layers in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE / 10,
-                epochs=54,
+                epochs=40,
+                layers='all',
+                augmentation=augmentation)
+
+    # Super fine tune
+    model.train(dataset_train, dataset_val,
+                learning_rate=config.LEARNING_RATE / 25,
+                epochs=65,
                 layers='all',
                 augmentation=augmentation)
 
