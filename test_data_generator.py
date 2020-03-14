@@ -87,27 +87,27 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
 
                     len_x = max_x-min_x
                     len_y = max_y-min_y
-                    #thickness 3-15%
-                    #wideness 30-75%
-                    #area 12-33%
+                    #thickness 3-15% from long side
+                    #wideness 30-75% from short side
+                    #score - 12-33% from area
                     #angle - +-15* from axis
-                    area = len_x*len_y
-                    score = random.uniform(area*0.12, area*0.33)
+                    area = len_x*len_y    #area of nudenet zone
+                    score = random.uniform(area*0.12, area*0.33)    #maximal area for rectangles
                     while score >= area*0.03:
-                        if len_x >= len_y:
-                            thickness = random.uniform(len_x*0.03, len_x*0.15)
-                            wideness = random.uniform(len_y*0.3, len_y*0.75)
-                            angle = 90
+                        if len_x >= len_y:    #decide the longest side
+                            thickness = random.uniform(len_x*0.03, len_x*0.15)    #thickness of the bar
+                            wideness = random.uniform(len_y*0.3, len_y*0.75)    #wideness of the bar
+                            angle = 90    #axis
                         else:
-                            thickness = random.uniform(len_y*0.3, len_y*0.75)
-                            wideness = random.uniform(len_x*0.03, len_x*0.15)
-                            angle = 0
+                            thickness = random.uniform(len_y*0.3, len_y*0.75)    #thickness of the bar
+                            wideness = random.uniform(len_x*0.03, len_x*0.15)    #wideness of the bar
+                            angle = 0    #axis
                         if thickness*wideness <= score + area*0.02:
-                            rotate = random.randint(angle-15, angle+15)
-                            bar_x = random.randint(min_x, max_x)
-                            bar_y = random.randint(min_y, max_y)
+                            rotate = random.randint(angle-15, angle+15)    #random angle within 15% from axis
+                            bar_x = random.randint(min_x, max_x)    #random bar_x
+                            bar_y = random.randint(min_y, max_y)    #random bar_y
                             points.append(draw_angled_rec(bar_x, bar_y, thickness, wideness, rotate, img_rgb))
-                            score -= thickness*wideness
+                            score -= thickness*wideness    #subtract last rectangle from maximal area for rectangles
                     #print(points)
 
                     output1x = []
