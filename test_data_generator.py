@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import cv2
-import random
 import math
 import csv
 import numpy as np
+import random
 import os
 import glob
 from PIL import Image
@@ -22,6 +22,22 @@ rgbvals = 255, 255, 255
 
 files = glob.glob(rootdir + '/**/*.png', recursive=True)
 err_files=[]
+
+def rand_color():
+    if(random.random() >=.5): # half chance for white 
+        r = random.randrange(235,255) # for now, all same color so no slight color tones. 
+        g = r
+        b = r
+        # print(r,g, b)
+        return r, g, b
+    else: #half chance for black
+        r = random.randrange(0, 60)
+        g = r
+        b = r
+        # print(r,g, b)
+        return r, g, b
+    # print('bug')
+    return 0,255,255 # bug color
 
 def draw_angled_rec(x0, y0, width, height, angle, img):
     points = []
@@ -42,8 +58,8 @@ def draw_angled_rec(x0, y0, width, height, angle, img):
     #write_annotation(points, annotation_file)
 
     ## Random color function - Want multiple shades of dark-grey to black, and white to super light grey
-    #random_color = rand_color()
-    cv2.fillConvexPoly(img, points, 0, 255, 0)
+    r, g, b = rand_color()
+    cv2.fillConvexPoly(img, points, color=(r, g, b))
     return(points)
 
 #Working with files
