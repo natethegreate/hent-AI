@@ -54,6 +54,10 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
+As of March 14, 2020, dataset will be primarily expanded using automated tools. We are utilizing [NudeNet](https://github.com/bedapudi6788/NudeNet) to detect uncensored areas on some image, and then generating random rectangles+corresponding annotation onto that region. We also are using [Green Mask Project](https://github.com/rekaXua/green_mask_project) for automatic mosaic annotation. 
+
+Images are acquired via [imgbrd-grabber](https://github.com/Bionus/imgbrd-grabber)
+
 If you wish to train on your own, you can contact me and I might send you the current dataset (~415 images). All i ask is that you send a pull request or send me the trained weights file should it detect better than the current one. I am also open to any help in increasing the dataset.
 
 # The Model
@@ -165,4 +169,3 @@ Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chaine
 
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
 
-Dataset created with numerous doujins and hentai
