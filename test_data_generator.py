@@ -21,17 +21,19 @@ os.makedirs(outdir, exist_ok=True)
 rgbvals = 255, 255, 255
 
 files = glob.glob(rootdir + '/**/*.png', recursive=True)
+files_jpg = glob.glob(rootdir + '/**/*.jpg', recursive=True)
+files.extend(files_jpg)
 err_files=[]
 
 def rand_color():
     if(random.random() >=.5): # half chance for white 
-        r = random.randrange(235,255) # for now, all same color so no slight color tones. 
+        r = random.randrange(239,255) # for now, all same color so no slight color tones. 
         g = r
         b = r
         # print(r,g, b)
         return r, g, b
     else: #half chance for black
-        r = random.randrange(0, 60)
+        r = random.randrange(0, 50)
         g = r
         b = r
         # print(r,g, b)
@@ -41,27 +43,36 @@ def rand_color():
 
 def draw_angled_rec(x0, y0, width, height, angle, img, color):
     points = []
+    points2 = []
     _angle = angle * math.pi / 180.0
     b = math.cos(_angle) * 0.5
     a = math.sin(_angle) * 0.5
     #print(str(b) + ", " + str(a) + " - cos, sin. Angle - " + str(_angle))    #DEBUG
 
-    x1 = [int(x0 - a * height - b * width),
-           int(y0 + b * height - a * width)]
-    y1 = [int(x0 + a * height - b * width),
-           int(y0 - b * height - a * width)]
+    # draw points with slightly smaller dimenstions, width and height difference due to different scaling
+    height_s = height*.86
+    width_s = width*.935
+    # also decreas the scale of b in the x calculation
+    x1 = [int(x0 - a * height_s - (b*.7) * width_s), int(y0 + (b) * height_s - a * width_s)]
+    y1 = [int(x0 + a * height_s - (b*.7) * width_s), int(y0 - (b) * height_s - a * width_s)]
     x2 = [int(2 * x0 - x1[0]), int(2 * y0 - x1[1])]
     y2 = [int(2 * x0 - y1[0]), int(2 * y0 - y1[1])]
-
     points = np.array((x1, y1, x2, y2))
 
-    ## Call function here to write annotations to file_name using the 4 points above as a polygon
-    #write_annotation(points, annotation_file)
+    # original size
+    x1s = [int(x0 - a * height - b * width), int(y0 + b * height - a * width)]
+    y1s = [int(x0 + a * height - b * width), int(y0 - b * height - a * width)]
+    x2s = [int(2 * x0 - x1s[0]), int(2 * y0 - x1s[1])]
+    y2s = [int(2 * x0 - y1s[0]), int(2 * y0 - y1s[1])]
+    points2 = np.array((x1s, y1s, x2s, y2s))
 
+    # print(points)
+    # print(points2)
     ## Random color function - Want multiple shades of dark-grey to black, and white to super light grey
     r, g, b = color
     cv2.fillConvexPoly(img, points, color=(r, g, b))
-    return(points)
+    # send original points
+    return(points2)
 
 #Working with files
 with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CSV
@@ -82,8 +93,12 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 detection = detector.detect(f)
                 label=['F_GENITALIA', 'M_GENITALIA']#
                 all_regions = [i['box'] for i in detection if i['label'] in label]#
+                if(all_regions == []):
+                    # skip entire detection, avoid saving 
+                    print('skipping image with failed nudenet detection')
+                    break
                 print(all_regions)#
-
+                
                 points = []
                 comp_array = []
                 for region in all_regions:
@@ -100,7 +115,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                     i=0
                     while score >= area*0.03:
                         if len_x >= len_y:    #decide the longest side
-                            print("vertical bar")
+                            # print("vertical bar")
                             thickness = random.triangular(len_x*0.03, len_x*0.15)    #thickness of the bar
                             wideness = random.triangular(len_y*0.3, len_y*0.75)    #wideness of the bar
                             angle = 0    #axis
@@ -109,7 +124,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                             #print(bar_x, bar_y)
                             comp_area = list(range(bar_x, bar_x+int(len_x*0.1),1))
                         else:
-                            print("horisontal bar")
+                            # print("horisontal bar")
                             thickness = random.triangular(len_y*0.03, len_y*0.15)    #thickness of the bar
                             wideness = random.triangular(len_x*0.3, len_x*0.75)    #wideness of the bar
                             angle = 90    #axis
