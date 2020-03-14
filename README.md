@@ -33,14 +33,16 @@ Only windows is supported, I do not yet have the funding to get an Apple product
 
 * [main.py](main.py) Contains GUI and all I/O handling and file parsing, along with basic error detection. Instantiates detector class.
 
-* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP.
+* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP. No longer needs hentai.py, and can run detections on its own.
 
-* [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Also handles training, and contains the Hentai configuration class.
+* [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Only needed for training.
 
 * [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is identical to the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
 
 * [inspect_h_data.ipynb](samples/hentai/inspect_h_data.ipynb)
 Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
+
+* [test_data_generator.py](test_data_generator.py) Script that automates bar censoring and annotation, more explained below. This is meant to be placed in a separate folder, and expects uncensored images in a folder called "decensored_input" and outputs the barred image into "decensored_input_original", and populates a csv with the annotations. You do not need to use this script, unless you want to help in expanding the dataset. In which case, join the discord and contact me.
 
 I have only worked on Windows platforms, and had not been able to train or work on other instances like Google colab and Google Cloud.
 
@@ -53,6 +55,10 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 ```
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
+
+As of March 14, 2020, dataset will be primarily expanded using automated tools. We are utilizing [NudeNet](https://github.com/bedapudi6788/NudeNet) to detect uncensored areas on some image, and then generating random rectangles+corresponding annotation onto that region. We also are using [Green Mask Project](https://github.com/rekaXua/green_mask_project) for automatic mosaic annotation. 
+
+Images are acquired via [imgbrd-grabber](https://github.com/Bionus/imgbrd-grabber)
 
 If you wish to train on your own, you can contact me and I might send you the current dataset (~415 images). All i ask is that you send a pull request or send me the trained weights file should it detect better than the current one. I am also open to any help in increasing the dataset.
 
@@ -165,4 +171,3 @@ Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chaine
 
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
 
-Dataset created with numerous doujins and hentai
