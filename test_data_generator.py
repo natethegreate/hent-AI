@@ -50,11 +50,11 @@ def draw_angled_rec(x0, y0, width, height, angle, img, color):
     #print(str(b) + ", " + str(a) + " - cos, sin. Angle - " + str(_angle))    #DEBUG
 
     # draw points with slightly smaller dimenstions, width and height difference due to different scaling
-    height_s = height*.86
-    width_s = width*.935
+    height_s = height -3
+    width_s = width -3
     # also decreas the scale of b in the x calculation
-    x1 = [int(x0 - a * height_s - (b*.7) * width_s), int(y0 + (b) * height_s - a * width_s)]
-    y1 = [int(x0 + a * height_s - (b*.7) * width_s), int(y0 - (b) * height_s - a * width_s)]
+    x1 = [int(x0 - a * height_s - b * width_s), int(y0 + b * height_s - a * width_s)]
+    y1 = [int(x0 + a * height_s - b * width_s), int(y0 - b * height_s - a * width_s)]
     x2 = [int(2 * x0 - x1[0]), int(2 * y0 - x1[1])]
     y2 = [int(2 * x0 - y1[0]), int(2 * y0 - y1[1])]
     points = np.array((x1, y1, x2, y2))
