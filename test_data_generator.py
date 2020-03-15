@@ -26,19 +26,70 @@ files.extend(files_jpg)
 err_files=[]
 
 def rand_color():
+    #color variation on 0, 1, or 2 of the 3 values. 
+    variation2 = random.randrange(0,1)
+    color_var = 0
     if(random.random() >=.5): # half chance for white 
-        r = random.randrange(239,255) # for now, all same color so no slight color tones. 
+        r = random.randrange(239,255)  
         g = r
         b = r
-        # print(r,g, b)
+        var_amnt = random.randrange(1,25) # ~half chance of >16, which is guaranteed overflow, so variation doesnt happen too much.
+        if r + var_amnt > 255:
+            var_amnt = 0 # cancel variation in case of overflow. 
+            # print('canceled')
+            return r, g, b # Early cancellation
+        if variation2 == 1: # Case where we vary 2 of the 3 values
+            color_var = random.randrange(0,2)   # r & g, g & b, or r & b
+            # print('variation')
+            if color_var == 0:
+                r += var_amnt
+                g += var_amnt
+            elif color_var == 1:
+                b += var_amnt
+                g += var_amnt
+            elif color_var == 2:
+                r += var_amnt
+                b += var_amnt
+        else:               # case where we vary only 1 of the 3 values
+            color_var = random.randrange(0,2)   # r, g, or b
+            # print('variation')
+            if color_var == 0:
+                r += var_amnt
+            elif color_var == 1:
+                g += var_amnt
+            elif color_var == 2:
+                b += var_amnt
         return r, g, b
     else: #half chance for black
         r = random.randrange(0, 50)
         g = r
         b = r
-        # print(r,g, b)
+        var_amnt = random.randrange(10,70) # same idea, part of range will guarantee no variation
+        if r + var_amnt > 50:
+            var_amnt = 0
+            print('canceled')
+            return r, g, b # Early cancellation
+        if variation2 == 1: # Case where we vary 2 of the 3 values
+            color_var = random.randrange(0,2) # r & g, g & b, or r & b
+
+            if color_var == 0:
+                r += var_amnt
+                g += var_amnt
+            elif color_var == 1:
+                b += var_amnt
+                g += var_amnt
+            elif color_var == 2:
+                r += var_amnt
+                b += var_amnt
+        else:
+            color_var = random.randrange(0,2) # r, g, or b
+            if color_var == 0:
+                r += var_amnt
+            elif color_var == 1:
+                g += var_amnt
+            elif color_var == 2:
+                b += var_amnt
         return r, g, b
-    # print('bug')
     return 0,255,255 # bug color
 
 def draw_angled_rec(x0, y0, width, height, angle, img, color):
