@@ -73,8 +73,8 @@ class HentaiDataset(utils.Dataset):
         NOTE: modified to support multiple classes, specifically class bar and mosaic
         """
         # Add classes. We have only one class to add.
-        self.add_class("hentai", 1, "bar")
-        self.add_class("hentai", 2, "mosaic")
+        self.add_class("censor", 1, "bar")
+        self.add_class("censor", 2, "mosaic")
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
