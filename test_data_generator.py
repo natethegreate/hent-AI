@@ -92,7 +92,13 @@ def rand_color():
         return r, g, b
     return 0,255,255 # bug color
 
-def draw_angled_rec(x0, y0, width, height, angle, img, color):
+''' draw angled rectangle function
+ x0,y0: center point of rectangle
+ height, width, angle, color: rectangle properties
+ img, img_x, img_y: source image and its dimensions
+ returns: will return np array of points, or None type
+'''
+def draw_angled_rec(x0, y0, width, height, angle, img, color, img_x, img_y):
     points = []
     points2 = []
     _angle = angle * math.pi / 180.0
@@ -117,6 +123,12 @@ def draw_angled_rec(x0, y0, width, height, angle, img, color):
     y2s = [int(2 * x0 - y1s[0]), int(2 * y0 - y1s[1])]
     points2 = np.array((x1s, y1s, x2s, y2s))
 
+    # verify rectangle is within borders
+    for pnt in points2:
+        if pnt[0] < 0 or pnt[0] > img_x:
+            return None
+        if pnt[1] < 0 or pnt[1] > img_y:
+            return None
     # print(points)
     # print(points2)
     ## Random color function - Want multiple shades of dark-grey to black, and white to super light grey
@@ -190,7 +202,11 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                                 rotate += 360
                             if not any(check in comp_area for check in comp_array):
                                 comp_array = comp_array + comp_area
-                                points.append(draw_angled_rec(bar_x, bar_y, thickness, wideness, rotate, img_rgb, color))
+                                rect_points = draw_angled_rec(bar_x, bar_y, thickness, wideness, rotate, img_rgb, color, x, y)
+                                if rect_points != None:
+                                    points.append(rect_points)
+                                else:
+                                    continue # in case of no rectangle drawn, simply go to next iteration
                                 score -= thickness*wideness    #subtract last rectangle from maximal area for rectangles
                             else:    #recursion prevention
                                 i += 1
