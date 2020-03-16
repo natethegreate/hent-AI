@@ -104,7 +104,7 @@ class HentaiDataset(utils.Dataset):
             image_path = os.path.join(dataset_dir, a['filename'])
             image = skimage.io.imread(image_path)
             height, width = image.shape[:2]
-            print(image_path)
+            # print(image_path)
             class_id = [r['region_attributes']['censor'] for r in a['regions']]
             # print('debug class_id load_h',class_id)
             self.add_image(
