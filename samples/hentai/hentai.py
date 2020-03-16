@@ -191,7 +191,7 @@ def train(model):
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=20,
-                layers='heads',
+                layers='4+',
                 augmentation=augmentation)
 
     # Training - Stage 2
