@@ -2,7 +2,7 @@
 
 Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
 
-This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
+This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870).
 
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
 
@@ -12,12 +12,12 @@ Development news will be posted on my Twitter (NSFW).
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
 
-You can join some discussion on my Discord channel: https://discord.gg/j4dPZ7W 
+You can join development discussion on the Discord channel: https://discord.gg/j4dPZ7W 
 
 Example of mosaic detection on dated (Feb 27,2020) model 107:
 ![Detection Sample](assets/detect_output4.jpg)
 
-Examples of bar detection on datad model 107:
+Examples of bar detection on dated model 107:
 ![Detection Sample2](assets/detect_output0.jpg)
 
 ![Detection Sample3](assets/detect_output1.jpg)
@@ -37,7 +37,7 @@ Only windows is supported, I do not yet have the funding to get an Apple product
 
 * [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Also handles training, and contains the Hentai configuration class.
 
-* [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is identical to the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
+* [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is based off the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
 
 * [inspect_h_data.ipynb](samples/hentai/inspect_h_data.ipynb)
 Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
@@ -54,14 +54,14 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
-Currently, the model needs more training. I have access to high-end computers on campus, but someone with a working Google cloud or similar can definitely help. In that case, contact me so I can provide the current dataset. 
-[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current set.
+Currently, the model needs a bigger database, namely with bar censors. Please contact me (Discord or Twitter) so I can provide the current dataset if you wish to train on your own. We are currently looking into dataset generation by censoring already uncensored images, as well as further image augmentation.
+[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current dataset.
 
 # The Model
 
 I experimented with other pre-trained models, but ended transfer learning with the imagenet model. 
 
-Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4). Latest weights model will come with each release.
+Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4). Latest weights model will come with each release. Please note that training is still in progress, and do expect better models to release soon.
 
 Please keep it named as weights.h5, in the root directory with main.py or main.exe.
 
@@ -88,13 +88,13 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 ## Important Notes (READ BEFORE USING)
 
-* I highly reccommend running hentAI on batches, for example one doujin or a few doujins at once. The slowest part of hentAI is the initialization, so the first inference takes time but the rest will be quick. 
+* I highly reccommend running hent-AI on batches, for example one doujin or a few doujins at once. The slowest part of hent-AI is the initialization, so the first inference takes time but the rest will be quick. 
 
-* The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hentAI.
+* The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hent-AI.
 
 * This model is not trained in recognizing full censorship, where genetalia is not drawn at all. Non-standard censoring is also not supported. 
 
-* The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works.
+* The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works. If you must decensor images with both, I would suggest decensoring the bars on one run, then the mosaics on a seconds run.
 
 * If you choose to try the video detection, PLEASE only do one SHORT clip at a time. More testing is needed with video detection.
 
@@ -108,9 +108,11 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * v1.1: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
 
-* [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
+* [v1.2](https://github.com/natethegreate/hent-AI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
 * v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
+
+* [v1.4](https://github.com/natethegreate/hent-AI/releases/tag/v1.4): Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
 
 
 ## Installation directions
@@ -139,7 +141,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-* To run hentAI, run
+* To run hent-AI, run
 
 ```
 python main.py
