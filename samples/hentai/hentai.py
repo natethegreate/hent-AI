@@ -177,14 +177,14 @@ def train(model):
     # Advanced augmentation from https://github.com/matterport/Mask_RCNN/issues/1924#issuecomment-568200836
     # Not all augments supported. Check model.py for supported safe augments
     aug_max = 3 # apply 0 to max augmentations at once
-    augmentation = ia.SomeOf((0, aug_max), [
-        ia.Fliplr(.5),
-        ia.Flipud(.5),
-        ia.OneOf([ia.Affine(rotate = 30 * i) for i in range(0, 12)]),
-        ia.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
-        ia.CropAndPad(px=((0, 30), (0, 10), (0, 30), (0, 10)),pad_mode=ALL,pad_cval=(0, 128))
-        ])
-
+    # augmentation = ia.SomeOf((0, aug_max), [
+        # ia.Fliplr(.5),
+        # ia.Flipud(.5),
+        # ia.OneOf([ia.Affine(rotate = 30 * i) for i in range(0, 12)]),
+        # ia.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
+        # ia.CropAndPad(px=((0, 30), (0, 10), (0, 30), (0, 10)),pad_mode=ALL,pad_cval=(0, 128))
+        # ])
+    augmentation = ia.Fliplr(.5)
 
     # Training - Stage 1 Heads only
     print("Training network heads in hentai.py")
