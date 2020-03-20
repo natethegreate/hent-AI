@@ -206,6 +206,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                                 if rect_points != None:
                                     points.append(rect_points)
                                 else:
+                                    print("skipping out of bounds rect spawn")
                                     continue # in case of no rectangle drawn, simply go to next iteration
                                 score -= thickness*wideness    #subtract last rectangle from maximal area for rectangles
                             else:    #recursion prevention
