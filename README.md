@@ -14,8 +14,8 @@ Development news will be posted on my Twitter (NSFW).
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
 
-Example of mosaic detection on dated (Feb 27,2020) model 107:
-![Detection Sample](assets/detect_output4.jpg)
+Example of bar detection on model 226:
+![Detection Sample](assets/dido_test1_o.jpg)
 
 Examples of bar detection on datad model 107:
 ![Detection Sample2](assets/detect_output0.jpg)
