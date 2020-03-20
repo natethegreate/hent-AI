@@ -115,7 +115,11 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
-* v1.3: Fixed greyscale shape error. Added support for jpg, as an option for jpg to png conversion. Added exception catching. Updated weights to model 226. New executable coming soon.
+* v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
+
+* v1.4: Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
+
+* v1.5: Fixed greyscale shape error. Added support for jpg, as an option for jpg to png conversion. Added exception catching. Updated weights to model 226. New executable coming soon.
 
 
 ## Installation directions
@@ -172,4 +176,8 @@ Mask Rcnn implementation from [Matterport](https://github.com/matterport/Mask_RC
 Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chainer-DCGAN)
 
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
+
+Sample asset images from artist @ao_beni, 落書き色々まとめ, and @paxiti respectively. Screentone girl is from artist soranosuzume.
+
+Current asset images from うぱ西まり子 and bibimbub on Pixiv.
 
