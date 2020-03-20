@@ -184,7 +184,7 @@ def train(model):
         # ia.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
         # ia.CropAndPad(px=((0, 30), (0, 10), (0, 30), (0, 10)),pad_mode=ALL,pad_cval=(0, 128))
         # ])
-    augmentation = ia.Flipud(.5)
+    augmentation = ia.Fliplr(.5)
 
     # Training - Stage 1 Heads only
     print("Training network heads in hentai.py")
@@ -215,7 +215,7 @@ def train(model):
     # Super fine tune
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=65,
+                epochs=75,
                 layers='all',
                 augmentation=augmentation)
 
