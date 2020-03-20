@@ -64,26 +64,26 @@ If you wish to train on your own, you can contact me and I might send you the cu
 
 # The Model
 
-I experimented with other pre-trained models, but ended transfer learning with the imagenet model. 
+I experimented with other pre-trained models, but ended transfer learning with the imagenet model. You will want the latest model for better accuracy.
 
-I have a prototype model with 45 epochs available [here](https://drive.google.com/open?id=1u8I-oRKxe8Mx8wENVkccliOvSj4MEr45). I will continue adding more trained models as I continue training.
+* [Model 161](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
 
-Another model ready for inference is model 107. I will continue training models, and models I am comfortable with will be made available here.
+* (Latest) [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights.zip?dl=0)
 
-Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
-
-Please keep it named as weights.h5
+Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
 ## Requirements
 
 The executable should not have any requirements, other than Windows.
 
 (Code only) I would reccomend running these on a virtual environment, with Anaconda3.
-Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
+Python 3.5.2, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0 (for Nvidia GPUs), and other common packages listed in `requirements.txt`.
 
 * For now, DCP is required (until I can create my own alternative). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
 * DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
+
+* If you have an Nvidia GPU, that is CUDA compatible, tensorflow will want to use that instead of the CPU. In that case, there are special instructions in the Install_and_Tutorial text. Basically, you need to install CUDA 9.0 toolkit, and uninstall tensorflow and protobuf. Keep tensorflow-gpu.
 
 * DCP is NOT compatible with screentones, or that dotted effect that is characteristic of printed works (see below). Simply refer to my other project, [Screentone Remover](https://github.com/natethegreate/Screentone-Remover), which will batch remove screentones using Digital Signal Processing techniques. This is the only way for printed non-colored images to be decensored.
 
@@ -114,6 +114,12 @@ Here is an example of a screentoned image, and what it looks like when removed b
 * v1.1: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
 
 * [v1.2](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
+
+* v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
+
+* v1.4: Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
+
+* v1.5: Fixed greyscale shape error. Added support for jpg, as an option for jpg to png conversion. Added exception catching. Updated weights to model 226. New executable coming soon.
 
 
 ## Installation directions
@@ -170,4 +176,8 @@ Mask Rcnn implementation from [Matterport](https://github.com/matterport/Mask_RC
 Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chainer-DCGAN)
 
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
+
+Sample asset images from artist @ao_beni, 落書き色々まとめ, and @paxiti respectively. Screentone girl is from artist soranosuzume.
+
+Current asset images from うぱ西まり子 and bibimbub on Pixiv.
 
