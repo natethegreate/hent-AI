@@ -222,8 +222,8 @@ class Detector():
             
             cov, mask = self.apply_cover(image, r['masks'])
             try:
-                # Save output
-                file_name = save_path + fname
+                # Save output, now force save as png
+                file_name = save_path + fname[:-4] + '.png'
                 skimage.io.imsave(file_name, cov)
             except:
                 print("ERROR in detect_and_cover: Image write. force_jpg=", force_jpg)
@@ -256,7 +256,7 @@ class Detector():
                     if force_jpg == False:
                         if file.endswith('.png') or file.endswith('.PNG'):
                             img_list.append((input_folder + '/' + file, file))
-                        elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
+                        elif file.endswith(".jpg") or file.endswith(".JPG"):
                             # img_list.append((input_folder + '/' + file, file)) # Do not add jpgs. Conversion to png must happen first
                             self.dcp_compat += 1
                     else:
