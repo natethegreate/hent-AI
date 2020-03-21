@@ -68,7 +68,6 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 
 
 
-
 ---hentAI Code (for fellow developers or contributors, linux users):
 ** If you have an nvidia, CUDA compatible card, there are special instructions for you below**
 
@@ -159,4 +158,6 @@ Get the right one for your computer
 
 	pip install tensorflow-gpu==1.9.0
 	
+4. (Training only) For training, you need cudnn 7.0 runtime. You need an Nvidia account to access the download, but it that is free.
+I dont have the exact link, but you can Google search or look for it here: https://developer.nvidia.com/ 
 	
