@@ -48,8 +48,8 @@ class HentaiConfig(Config):
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 1490
 
-    # Skip detections with < 65% confidence NOTE: lowered this because its better for false positives
-    DETECTION_MIN_CONFIDENCE = 0.90
+    # Skip detections with < 85% confidence NOTE: lowered this because its better for false positives
+    DETECTION_MIN_CONFIDENCE = 0.85
 
 class Detector():
     # at startup, dont create model yet
@@ -213,7 +213,7 @@ class Detector():
                 if image.shape[-1] == 4:
                     image = image[..., :3] # strip alpha channel
             except:
-                print("ERROR in detect_and_cover: Image read. force_jpg=", force_jpg)
+                print("ERROR in detect_and_cover: Image read. Skipping. force_jpg=", force_jpg)
             # Detect objects
             # try:
             r = self.model.detect([image], verbose=0)[0]
@@ -226,7 +226,7 @@ class Detector():
                 file_name = save_path + fname[:-4] + '.png'
                 skimage.io.imsave(file_name, cov)
             except:
-                print("ERROR in detect_and_cover: Image write. force_jpg=", force_jpg)
+                print("ERROR in detect_and_cover: Image write. Skipping. force_jpg=", force_jpg)
             # print("Saved to ", file_name)
 
     # Function for file parsing, calls the aboven detect_and_cover
