@@ -18,7 +18,7 @@ Example of bar detection on model 226:
 ![Detection Sample](assets/dido_test1_o.jpg)
 
 Examples of mosaic detection on model 236:
-![Detection Sample2](assets/detect_output0.jpg)
+![Detection Sample2](assets/dido_test5_o.jpg)
 
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
