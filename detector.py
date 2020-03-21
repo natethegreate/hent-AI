@@ -49,7 +49,7 @@ class HentaiConfig(Config):
     STEPS_PER_EPOCH = 297
 
     # Skip detections with < 65% confidence NOTE: lowered this because its better for false positives
-    DETECTION_MIN_CONFIDENCE = 0.55
+    DETECTION_MIN_CONFIDENCE = 0.85
 
 class Detector():
     # at startup, dont create model yet
