@@ -117,7 +117,7 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * v1.4: Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
 
-* v1.5: Fixed greyscale shape error. Fixed bug where video was copied to DCP folder. Added support for jpg, as an option for jpg to png conversion. Added better exception catching. Updated weights to model 236. 
+* [v1.5](https://github.com/natethegreate/hentAI/releases/tag/v1.5): Fixed greyscale shape error. Fixed bug where video was copied to DCP folder. Added support for jpg, as an option for jpg to png conversion. Added better exception catching. Updated weights to model 236. 
 
 
 ## Installation directions
