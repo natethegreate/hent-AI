@@ -17,10 +17,8 @@ You can join development discussion on the Discord channel: https://discord.gg/j
 Example of bar detection on model 226:
 ![Detection Sample](assets/dido_test1_o.jpg)
 
-Examples of bar detection on datad model 107:
+Examples of mosaic detection on model 236:
 ![Detection Sample2](assets/detect_output0.jpg)
-
-![Detection Sample3](assets/detect_output1.jpg)
 
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
@@ -68,7 +66,9 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 * [Model 161](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
 
-* (Latest) [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights.zip?dl=0)
+* [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights226.zip?dl=0)
+
+* (Latest) [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
@@ -119,7 +119,7 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * v1.4: Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
 
-* v1.5: Fixed greyscale shape error. Added support for jpg, as an option for jpg to png conversion. Added exception catching. Updated weights to model 226. New executable coming soon.
+* v1.5: Fixed greyscale shape error. Fixed bug where video was copied to DCP folder. Added support for jpg, as an option for jpg to png conversion. Added better exception catching. Updated weights to model 236. 
 
 
 ## Installation directions
