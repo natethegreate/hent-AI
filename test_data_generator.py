@@ -126,14 +126,14 @@ def draw_angled_rec(x0, y0, width, height, angle, img, color, img_x, img_y):
     # verify rectangle is within borders
     for pnt in points2:
         if pnt[0] < 0 or pnt[0] > img_x:
-            return None
+            return []
         if pnt[1] < 0 or pnt[1] > img_y:
-            return None
+            return []
     # print(points)
     # print(points2)
     ## Random color function - Want multiple shades of dark-grey to black, and white to super light grey
     r, g, b = color
-    cv2.fillConvexPoly(img, points, color=(r, g, b))
+    cv2.fillConvexPoly(img, points, color=(r, g, b), lineType=cv2.LINE_AA) 
     # send original points
     return(points2)
 
@@ -142,105 +142,105 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
     csv_output = csv.writer(f_output, quoting=csv.QUOTE_NONE, quotechar="", delimiter=",", escapechar=' ')     #CSV
     csv_output.writerow(['filename','file_size','file_attributes','region_count','region_id','region_shape_attributes','region_attributes'])     #CSV
     for f in files:
-        try:
-            while True:
-                print("Working on " + f)
-                img_C = Image.open(f).convert("RGB")
-                x, y = img_C.size
-                card = np.array(Image.new("RGB", (x, y), (rgbvals)))
-                img_C = np.array(img_C) 
-                img_rgb = img_C[:, :, ::-1].copy() 
-                
-                color = rand_color()
+        # try:
+        while True:
+            print("Working on " + f)
+            img_C = Image.open(f).convert("RGB")
+            x, y = img_C.size
+            card = np.array(Image.new("RGB", (x, y), (rgbvals)))
+            img_C = np.array(img_C) 
+            img_rgb = img_C[:, :, ::-1].copy() 
+            
+            color = rand_color()
 
-                detection = detector.detect(f)
-                label=['F_GENITALIA', 'M_GENITALIA']#
-                all_regions = [i['box'] for i in detection if i['label'] in label]#
-                if(all_regions == []):
-                    # skip entire detection, avoid saving 
-                    print('skipping image with failed nudenet detection')
-                    break
-                print(all_regions)#
-                
-                points = []
-                comp_array = []
-                for region in all_regions:
-                    min_x, min_y, max_x, max_y = region 
-
-                    len_x = max_x-min_x
-                    len_y = max_y-min_y
-                    #thickness 3-15% from long side
-                    #wideness 30-75% from short side
-                    #score - 15-30% from area
-                    #angle - +-15* from axis
-                    area = len_x*len_y    #area of nudenet zone
-                    score = random.triangular(area*0.15, area*0.3)    #maximal area for rectangles
-                    i=0
-                    while score >= area*0.03:
-                        if len_x >= len_y:    #decide the longest side
-                            # print("vertical bar")
-                            thickness = random.triangular(len_x*0.03, len_x*0.15)    #thickness of the bar
-                            wideness = random.triangular(len_y*0.3, len_y*0.75)    #wideness of the bar
-                            angle = 0    #axis
-                            bar_x = int(random.uniform(min_x, max_x))    #random bar_x
-                            bar_y = int(random.triangular(min_y, max_y))#, min_y+(max_y-min_y)/2-wideness/2))    #random bar_y
-                            #print(bar_x, bar_y)
-                            comp_area = list(range(bar_x, bar_x+int(len_x*0.1),1))
-                        else:
-                            # print("horisontal bar")
-                            thickness = random.triangular(len_y*0.03, len_y*0.15)    #thickness of the bar
-                            wideness = random.triangular(len_x*0.3, len_x*0.75)    #wideness of the bar
-                            angle = 90    #axis
-                            bar_x = int(random.triangular(min_x, max_x))#, min_x+(max_x-min_x)/2-wideness/2))    #random bar_x
-                            bar_y = int(random.uniform(min_y, max_y))    #random bar_y
-                            #print(bar_x, bar_y)
-                            comp_area = list(range(bar_y, bar_y+int(len_y*0.1),1))
-                        if thickness*wideness <= score + area*0.02:
-                            rotate = random.randint(angle-15, angle+15)    #random angle within 15% from axis
-                            #print(rotate)
-                            if rotate < 0:
-                                rotate += 360
-                            if not any(check in comp_area for check in comp_array):
-                                comp_array = comp_array + comp_area
-                                rect_points = draw_angled_rec(bar_x, bar_y, thickness, wideness, rotate, img_rgb, color, x, y)
-                                if rect_points != None:
-                                    points.append(rect_points)
-                                else:
-                                    print("skipping out of bounds rect spawn")
-                                    continue # in case of no rectangle drawn, simply go to next iteration
-                                score -= thickness*wideness    #subtract last rectangle from maximal area for rectangles
-                            else:    #recursion prevention
-                                i += 1
-                                if i == 25:
-                                    print(str(score) + " of area left")
-                                    break
-                    #print(points)
-
-                    output1x = []
-                    output1y = []
-                    for idx,conturJ in enumerate(points):
-                        outputX = []
-                        outputY = []
-                        for idx2,temp in enumerate(conturJ):
-                            xt, yt = temp
-                            outputX.append(xt)
-                            outputY.append(yt)
-                        output1x.append(outputX)
-                        output1y.append(outputY)
-                    NudeNet_regions = zip(output1x, output1y)
-
-                #Save file
-                f=f.replace(rootdir, outdir, 1)
-                os.makedirs(os.path.dirname(f), exist_ok=True)
-                cv2.imwrite('temp_out.png', img_rgb)     #still a hack for non-unicode names
-                os.replace('temp_out.png', f)
-
-                for idx,_ in enumerate(NudeNet_regions):
-                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{}"'])     #CSV
+            detection = detector.detect(f)
+            label=['F_GENITALIA', 'M_GENITALIA']#
+            all_regions = [i['box'] for i in detection if i['label'] in label]#
+            if(all_regions == []):
+                # skip entire detection, avoid saving 
+                print('skipping image with failed nudenet detection')
                 break
-        except Exception as Exception:
-            err_files.append(os.path.basename(f) + ": " + str(Exception))
-            pass
+            print(all_regions)#
+            
+            points = []
+            comp_array = []
+            for region in all_regions:
+                min_x, min_y, max_x, max_y = region 
+
+                len_x = max_x-min_x
+                len_y = max_y-min_y
+                #thickness 3-15% from long side
+                #wideness 30-75% from short side
+                #score - 15-30% from area
+                #angle - +-15* from axis
+                area = len_x*len_y    #area of nudenet zone
+                score = random.triangular(area*0.15, area*0.3)    #maximal area for rectangles
+                i=0
+                while score >= area*0.03:
+                    if len_x >= len_y:    #decide the longest side
+                        # print("vertical bar")
+                        thickness = random.triangular(len_x*0.03, len_x*0.15)    #thickness of the bar
+                        wideness = random.triangular(len_y*0.3, len_y*0.75)    #wideness of the bar
+                        angle = 0    #axis
+                        bar_x = int(random.uniform(min_x, max_x))    #random bar_x
+                        bar_y = int(random.triangular(min_y, max_y))#, min_y+(max_y-min_y)/2-wideness/2))    #random bar_y
+                        #print(bar_x, bar_y)
+                        comp_area = list(range(bar_x, bar_x+int(len_x*0.1),1))
+                    else:
+                        # print("horisontal bar")
+                        thickness = random.triangular(len_y*0.03, len_y*0.15)    #thickness of the bar
+                        wideness = random.triangular(len_x*0.3, len_x*0.75)    #wideness of the bar
+                        angle = 90    #axis
+                        bar_x = int(random.triangular(min_x, max_x))#, min_x+(max_x-min_x)/2-wideness/2))    #random bar_x
+                        bar_y = int(random.uniform(min_y, max_y))    #random bar_y
+                        #print(bar_x, bar_y)
+                        comp_area = list(range(bar_y, bar_y+int(len_y*0.1),1))
+                    if thickness*wideness <= score + area*0.02:
+                        rotate = random.randint(angle-15, angle+15)    #random angle within 15% from axis
+                        #print(rotate)
+                        if rotate < 0:
+                            rotate += 360
+                        if not any(check in comp_area for check in comp_array):
+                            comp_array = comp_array + comp_area
+                            rect_points = draw_angled_rec(bar_x, bar_y, thickness, wideness, rotate, img_rgb, color, x, y)
+                            if len(rect_points) != 0:
+                                points.append(rect_points)
+                            else:
+                                print("skipping out of bounds rect spawn")
+                                continue # in case of no rectangle drawn, simply go to next iteration
+                            score -= thickness*wideness    #subtract last rectangle from maximal area for rectangles
+                        else:    #recursion prevention
+                            i += 1
+                            if i == 25:
+                                print(str(score) + " of area left")
+                                break
+                #print(points)
+
+                output1x = []
+                output1y = []
+                for idx,conturJ in enumerate(points):
+                    outputX = []
+                    outputY = []
+                    for idx2,temp in enumerate(conturJ):
+                        xt, yt = temp
+                        outputX.append(xt)
+                        outputY.append(yt)
+                    output1x.append(outputX)
+                    output1y.append(outputY)
+                NudeNet_regions = zip(output1x, output1y)
+
+            #Save file
+            f=f.replace(rootdir, outdir, 1)
+            os.makedirs(os.path.dirname(f), exist_ok=True)
+            cv2.imwrite('temp_out.png', img_rgb)     #still a hack for non-unicode names
+            os.replace('temp_out.png', f)
+
+            for idx,_ in enumerate(NudeNet_regions):
+                csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{}"'])     #CSV
+            break
+        # except Exception as Exception:
+        #     err_files.append(os.path.basename(f) + ": " + str(Exception))
+        #     pass
 
 #Error list    
 if err_files:

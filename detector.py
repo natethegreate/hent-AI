@@ -73,7 +73,7 @@ class Detector():
                                         model_dir=DEFAULT_LOGS_DIR)
             self.model.load_weights(self.weights_path, by_name=True)
         except:
-            print("Error in load_weights: Model Load. Ensure you have your weights.h5 file!")
+            print("ERROR in load_weights: Model Load. Ensure you have your weights.h5 file!")
 
     def apply_cover(self, image, mask):
         """Apply cover over image. Based off of Mask-RCNN Balloon color splash function
@@ -263,7 +263,7 @@ class Detector():
                         if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
                             img_list.append((input_folder + '/' + file, file))
             except:
-                print("Error in run_on_folder: File parsing. input_folder=", input_folder)
+                print("ERROR in run_on_folder: File parsing. input_folder=", input_folder)
 
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
