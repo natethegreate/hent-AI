@@ -5,7 +5,7 @@ cython
 matplotlib
 scikit-image
 tensorflow==1.5.0
-tensorflow-gpu==1.9
+tensorflow-gpu==1.15.2
 keras==2.2.0
 opencv-python
 h5py
