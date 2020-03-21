@@ -46,10 +46,10 @@ class HentaiConfig(Config):
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
     # Number of training steps per epoch, equal to dataset train size
-    STEPS_PER_EPOCH = 297
+    STEPS_PER_EPOCH = 1490
 
     # Skip detections with < 65% confidence NOTE: lowered this because its better for false positives
-    DETECTION_MIN_CONFIDENCE = 0.85
+    DETECTION_MIN_CONFIDENCE = 0.90
 
 class Detector():
     # at startup, dont create model yet
@@ -134,7 +134,7 @@ class Detector():
             # TODO: check what other filetpyes supported
             if file.endswith('.png') or file.endswith('.PNG'):
                 img_list.append(input_path  + file)
-                print('adding image ', input_path  + file)
+                # print('adding image ', input_path  + file)
         for img in img_list:
             print("frame: ", count)
             # Read next image
@@ -181,9 +181,9 @@ class Detector():
                     # save frame into decensor input original. Need to keep names persistent.
                     im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
                     file_name = orig_video_folder + im_name + str(count).zfill(6) + '.png' # NOTE Should be adequite for having 10^6 frames, which is more than enough for even 30 mintues total.
-                    
                     # print('saving frame as ', file_name)
                     skimage.io.imsave(file_name, image)
+                    
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
                     # Apply cover

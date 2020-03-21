@@ -106,7 +106,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     detect_instance = Detector(weights_path=weights_path)
     # print('loading weights')
     detect_instance.load_weights()
-    if(is_mosaic == True):
+    if(is_mosaic == True and is_video==False):
         # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
         print('copying inputs into input_original dcp folder')
         # print(in_path)
