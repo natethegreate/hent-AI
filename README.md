@@ -2,20 +2,20 @@
 
 Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
 
-This is an implementation of Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), modified to my liking. 
+This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870).
 
-NOTE: Despite the title, this project does not actually use AI.
-
-Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
+Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on old model 161. 
 
 Development news will be posted on my Twitter (NSFW).
-[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/pecanpie112/)
+[![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/nate_of_hent_ai)
 
 Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CGF4Q3FK2Q2SU&currency_code=USD&source=url)
 
-Example of mosaic detection on dated (Feb 27,2020) model 107:
-![Detection Sample](assets/detect_output4.jpg)
+You can join development discussion on the Discord channel: https://discord.gg/j4dPZ7W 
+
+Example of bar detection on model 226:
+![Detection Sample](assets/dido_test1_o.jpg)
 
 Examples of bar detection on datad model 107:
 ![Detection Sample2](assets/detect_output0.jpg)
