@@ -48,8 +48,8 @@ class HentaiConfig(Config):
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 1490
 
-    # Skip detections with < 85% confidence NOTE: lowered this because its better for false positives
-    DETECTION_MIN_CONFIDENCE = 0.85
+    # Skip detections with < 75% confidence NOTE: lowered this because its better for false positives
+    DETECTION_MIN_CONFIDENCE = 0.75
 
 class Detector():
     # at startup, dont create model yet
@@ -260,7 +260,7 @@ class Detector():
                             # img_list.append((input_folder + '/' + file, file)) # Do not add jpgs. Conversion to png must happen first
                             self.dcp_compat += 1
                     else:
-                        if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
+                        if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG"):
                             img_list.append((input_folder + '/' + file, file))
             except:
                 print("ERROR in run_on_folder: File parsing. input_folder=", input_folder)
