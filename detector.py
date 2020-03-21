@@ -46,10 +46,10 @@ class HentaiConfig(Config):
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
     # Number of training steps per epoch, equal to dataset train size
-    STEPS_PER_EPOCH = 297
+    STEPS_PER_EPOCH = 1490
 
-    # Skip detections with < 65% confidence NOTE: lowered this because its better for false positives
-    DETECTION_MIN_CONFIDENCE = 0.55
+    # Skip detections with < 75% confidence NOTE: lowered this because its better for false positives
+    DETECTION_MIN_CONFIDENCE = 0.75
 
 class Detector():
     # at startup, dont create model yet
@@ -68,9 +68,12 @@ class Detector():
 
     # Make sure this is called before using model weights
     def load_weights(self):
-        self.model = modellib.MaskRCNN(mode="inference", config=self.config,
-                                      model_dir=DEFAULT_LOGS_DIR)
-        self.model.load_weights(self.weights_path, by_name=True)
+        try:
+            self.model = modellib.MaskRCNN(mode="inference", config=self.config,
+                                        model_dir=DEFAULT_LOGS_DIR)
+            self.model.load_weights(self.weights_path, by_name=True)
+        except:
+            print("ERROR in load_weights: Model Load. Ensure you have your weights.h5 file!")
 
     def apply_cover(self, image, mask):
         """Apply cover over image. Based off of Mask-RCNN Balloon color splash function
@@ -131,7 +134,7 @@ class Detector():
             # TODO: check what other filetpyes supported
             if file.endswith('.png') or file.endswith('.PNG'):
                 img_list.append(input_path  + file)
-                print('adding image ', input_path  + file)
+                # print('adding image ', input_path  + file)
         for img in img_list:
             print("frame: ", count)
             # Read next image
@@ -147,7 +150,7 @@ class Detector():
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
     # image_path = path of input file, image or video
-    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None, save_mask=False):
+    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None, force_jpg=False):
         assert image_path
         assert fname # replace these with something better?
         
@@ -178,9 +181,9 @@ class Detector():
                     # save frame into decensor input original. Need to keep names persistent.
                     im_name = fname[:-4] # if we get this far, we definitely have a .mp4. Remove that, add count and .png ending
                     file_name = orig_video_folder + im_name + str(count).zfill(6) + '.png' # NOTE Should be adequite for having 10^6 frames, which is more than enough for even 30 mintues total.
-                    
                     # print('saving frame as ', file_name)
                     skimage.io.imsave(file_name, image)
+                    
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
                     # Apply cover
@@ -203,23 +206,31 @@ class Detector():
             # print("Running on ", end='')
             # print(image_path)
             # Read image
-            image = skimage.io.imread(image_path) # problems with strange shapes
-            if image.shape[-1] == 4:
-                image = image[..., :3] # strip alpha channel
+            try:
+                image = skimage.io.imread(image_path) # problems with strange shapes
+                if image.ndim != 3: 
+                    image = skimage.color.gray2rgb(image) # convert to rgb if greyscale
+                if image.shape[-1] == 4:
+                    image = image[..., :3] # strip alpha channel
+            except:
+                print("ERROR in detect_and_cover: Image read. Skipping. force_jpg=", force_jpg)
             # Detect objects
+            # try:
             r = self.model.detect([image], verbose=0)[0]
+            # except:
+            #     print("ERROR in detect_and_cover: Model detect")
             
             cov, mask = self.apply_cover(image, r['masks'])
-            # Save output
-            file_name = save_path + fname
-            skimage.io.imsave(file_name, cov)
+            try:
+                # Save output, now force save as png
+                file_name = save_path + fname[:-4] + '.png'
+                skimage.io.imsave(file_name, cov)
+            except:
+                print("ERROR in detect_and_cover: Image write. Skipping. force_jpg=", force_jpg)
             # print("Saved to ", file_name)
 
-            # Option to save ask separately not working rn
-            # if(save_mask==True):
-            #     skimage.io.imsave(file_name+'_mask', skimage.img_as_uint(mask)) # save to default input dir for now
-
-    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, save_mask=False):
+    # Function for file parsing, calls the aboven detect_and_cover
+    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, force_jpg=False):
         assert input_folder
         assert output_folder # replace with catches and popups
 
@@ -239,20 +250,26 @@ class Detector():
         else:
             # obtain inputs from the input folder
             img_list = []
-            for file in os.listdir(input_folder):
-                # TODO: check what other filetpyes supported
-                if file.endswith('.png') or file.endswith('.PNG'):
-                    img_list.append((input_folder + '/' + file, file))
-                elif file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".jpeg"):
-                    # img_list.append((input_folder + '/' + file, file)) # Do not add jpgs. Conversion to png must happen first
-                    self.dcp_compat += 1
+            try:
+                for file in os.listdir(input_folder):
+                    # TODO: check what other filetpyes supported
+                    if force_jpg == False:
+                        if file.endswith('.png') or file.endswith('.PNG'):
+                            img_list.append((input_folder + '/' + file, file))
+                        elif file.endswith(".jpg") or file.endswith(".JPG"):
+                            # img_list.append((input_folder + '/' + file, file)) # Do not add jpgs. Conversion to png must happen first
+                            self.dcp_compat += 1
+                    else:
+                        if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG"):
+                            img_list.append((input_folder + '/' + file, file))
+            except:
+                print("ERROR in run_on_folder: File parsing. input_folder=", input_folder)
 
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
-                self.detect_and_cover(img_path, img_name, output_folder, save_mask=save_mask)
+                self.detect_and_cover(img_path, img_name, output_folder, force_jpg=force_jpg)  #sending force_jpg for debugging
                 print('detection on image', file_counter, 'is complete')
                 file_counter += 1
-            # return 0
 
 
 

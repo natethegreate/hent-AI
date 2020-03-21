@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.3'
+versionNumber = '1.5'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -87,8 +87,8 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     okbutton.pack()
     popup.mainloop()
 
-def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False, save_mask=False):
-    # Create new window? Can show loading bar
+def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False, force_jpg=False):
+    # TODO: Create new window? Can show loading bar
     # hent_win = new_window()
     # info_label = Label(hent_win, text="Beginning detection")
     # info_label.pack(padx=10,pady=10)
@@ -99,23 +99,28 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     if in_path==None:
         error(2)
 
-    # print(save_mask)
-    
-    #Import the big guns here. It can take a while for tensorflow, and a laggy initial bringup can look sketchy tbh
-    
+    # print(force_jpg) #debug
+    # return    
 
     # print('Initializing Detector class')
     detect_instance = Detector(weights_path=weights_path)
     # print('loading weights')
     detect_instance.load_weights()
-    if(is_mosaic == True):
+    if(is_mosaic == True and is_video==False):
         # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
         print('copying inputs into input_original dcp folder')
         # print(in_path)
         # print(listdir(in_path))
         for file in listdir(in_path):
             # kinda dumb but check if same file
-            shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/')
+            if force_jpg==True:
+                try:
+                    shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/' + file[:-4] + '.png')
+                except:
+                    print("ERROR in hentAI_detection: Mosaic copy + png conversion to decensor_input_original failed!")
+                    return
+            else:
+                shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/')
 
     # Run detection
     if(is_video==True):
@@ -125,7 +130,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
         load_label.pack(side=TOP, fill=X, pady=10, padx=20)
         loader.update()
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/')
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/') #no jpg for video detect
         loader.destroy()
     else:
         print('running detection, outputting to dcp input')
@@ -134,18 +139,19 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
         load_label.pack(side=TOP, fill=X, pady=10, padx=20)
         loader.update()
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, save_mask=save_mask)
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, force_jpg=force_jpg)
         loader.destroy()
 
 
-    # Announce completion, offer to run DCP from DCP directory
+    # Announce completion, TODO: offer to run DCP from DCP directory
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
     label = Label(popup, text='Process executed successfully! Now you can run DeepCreamPy.')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
     num_jpgs = detect_instance.get_non_png()
-    if(num_jpgs > 0):
+    # Popup for unprocessed jpgs
+    if(num_jpgs > 0 and force_jpg==False):
         label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
         label2.pack(side=TOP, fill=X, pady=10, padx=5)
     # dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
@@ -198,9 +204,9 @@ def bar_detect():
     dir_button.grid(row=2, column=2, padx=20)
 
     boolv = BooleanVar()
-    # cb = Checkbutton(bar_win, text='Save masks separately?', variable = boolv)
-    # cb.grid(row=3,column=2, padx=5)
-    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, save_mask=boolv.get()))
+    cb = Checkbutton(bar_win, text='Force use jpg (will save as png)?', variable = boolv)
+    cb.grid(row=3,column=2, padx=5)
+    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, force_jpg=boolv.get()))
     go_button.grid(row=3, column=1, pady=10)
     back_button = Button(bar_win, text="Back", command = backMain)
     back_button.grid(row=3,column=0, padx=10)
@@ -228,9 +234,9 @@ def mosaic_detect():
     dir_button.grid(row=2, column=2, padx=20)
 
     boolv = BooleanVar()
-    # cb = Checkbutton(mos_win, text='Save masks separately?', variable = boolv)
-    # cb.grid(row=3,column=3, padx=5)
-    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False, save_mask=boolv.get()))
+    cb = Checkbutton(mos_win, text='Force use jpg (will save as png)?', variable = boolv)
+    cb.grid(row=3,column=2, padx=5)
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False, force_jpg=boolv.get()))
     go_button.grid(row=3,column=1, pady=10)
     back_button = Button(mos_win, text="Back", command = backMain)
     back_button.grid(row=3,column=0, padx=10)
