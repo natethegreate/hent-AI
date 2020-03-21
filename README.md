@@ -25,7 +25,7 @@ For both of those examples, the newest model 161 provides far more accurate mask
 # Getting Started
 You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line. 
 
-Only windows is supported, I do not yet have the funding to get an Apple product for development there.
+Only windows is supported for the executable. You can pull this code for linux.
 
 # The code
 
@@ -54,11 +54,8 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
-As of March 14, 2020, dataset will be primarily expanded using automated tools. We are utilizing [NudeNet](https://github.com/bedapudi6788/NudeNet) to detect uncensored areas on some image, and then generating random rectangles+corresponding annotation onto that region. We also are using [Green Mask Project](https://github.com/rekaXua/green_mask_project) for automatic mosaic annotation. 
-
-Images are acquired via [imgbrd-grabber](https://github.com/Bionus/imgbrd-grabber)
-
-If you wish to train on your own, you can contact me and I might send you the current dataset (~415 images). All i ask is that you send a pull request or send me the trained weights file should it detect better than the current one. I am also open to any help in increasing the dataset.
+Currently, the model needs a bigger database, namely with bar censors. Please contact me (Discord or Twitter) so I can provide the current dataset if you wish to train on your own. We are currently looking into dataset generation by censoring already uncensored images, as well as further image augmentation.
+[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current dataset.
 
 # The Model
 
@@ -74,16 +71,16 @@ Simply delete your current weights.h5 file, and replace with the new one. Please
 
 ## Requirements
 
-The executable should not have any requirements, other than Windows.
+You will need to download and install DeepCreamPy, which is linked in the intro.
 
-(Code only) I would reccomend running these on a virtual environment, with Anaconda3.
-Python 3.5.2, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0 (for Nvidia GPUs), and other common packages listed in `requirements.txt`.
+The executable itself should not have any requirements on Windows. For linux, clone the repo and follow the provided instructions for getting its requirements.
 
-* For now, DCP is required (until I can create my own alternative). This project expects to use the DCP directory. You can install the executable or the source code, either should work.
+(Source code on Windows) I would reccomend running these on a virtual environment, with Anaconda3.
+Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
+
+* For now, DCP is required until I can create my own alternative. This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
 * DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
-
-* If you have an Nvidia GPU, that is CUDA compatible, tensorflow will want to use that instead of the CPU. In that case, there are special instructions in the Install_and_Tutorial text. Basically, you need to install CUDA 9.0 toolkit, and uninstall tensorflow and protobuf. Keep tensorflow-gpu.
 
 * DCP is NOT compatible with screentones, or that dotted effect that is characteristic of printed works (see below). Simply refer to my other project, [Screentone Remover](https://github.com/natethegreate/Screentone-Remover), which will batch remove screentones using Digital Signal Processing techniques. This is the only way for printed non-colored images to be decensored.
 
@@ -93,19 +90,20 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 ## Important Notes (READ BEFORE USING)
 
-* I highly reccommend running hentAI on batches, for example one doujin or a few doujins at once. The slowest part of hentAI is the initialization, so the first inference takes time but the rest will be quick. 
+* I highly reccommend running hent-AI on batches, for example one doujin or a few doujins at once. The slowest part of hent-AI is the initialization, so the first inference takes time but the rest will be quick. 
 
-* The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hentAI.
+* The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hent-AI.
 
 * This model is not trained in recognizing full censorship, where genetalia is not drawn at all. Non-standard censoring is also not supported. 
 
-* The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works.
+* The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works. If you must decensor images with both, I would suggest decensoring the bars on one run, then the mosaics on a seconds run.
 
 * If you choose to try the video detection, PLEASE only do one SHORT clip at a time. More testing is needed with video detection.
 
 * The Video Maker button creates a video from the output of DCP in decensored_output. Run this after DCP completes. Note you still need to select the directories for the source video, and the DCP install directory.
 
 * Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
+
 
 ## Versions and Downloads
 
@@ -164,7 +162,7 @@ Alternatively, you can resume training using --weights=last
 
 
 ## Contributing
-I only have a bare understanding of convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome.
+I am very new to convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome, so I would encourage joining the Discord.
 
 
 # Acknowledgements
