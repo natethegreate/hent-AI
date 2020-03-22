@@ -110,18 +110,18 @@ def draw_angled_rec(x0, y0, width, height, angle, img, color, img_x, img_y):
     height_s = height -3
     width_s = width -3
     # also decreas the scale of b in the x calculation
-    x1 = [int(x0 - a * height_s - b * width_s), int(y0 + b * height_s - a * width_s)]
-    y1 = [int(x0 + a * height_s - b * width_s), int(y0 - b * height_s - a * width_s)]
-    x2 = [int(2 * x0 - x1[0]), int(2 * y0 - x1[1])]
-    y2 = [int(2 * x0 - y1[0]), int(2 * y0 - y1[1])]
-    points = np.array((x1, y1, x2, y2))
+    bl = [int(x0 - a * height_s - b * width_s), int(y0 + b * height_s - a * width_s)]
+    ul = [int(x0 + a * height_s - b * width_s), int(y0 - b * height_s - a * width_s)]
+    ur = [int(2 * x0 - bl[0]), int(2 * y0 - bl[1])]
+    br = [int(2 * x0 - ul[0]), int(2 * y0 - ul[1])]
+    points = np.array((bl, ul, ur, br))
 
     # original size
-    x1s = [int(x0 - a * height - b * width), int(y0 + b * height - a * width)]
-    y1s = [int(x0 + a * height - b * width), int(y0 - b * height - a * width)]
-    x2s = [int(2 * x0 - x1s[0]), int(2 * y0 - x1s[1])]
-    y2s = [int(2 * x0 - y1s[0]), int(2 * y0 - y1s[1])]
-    points2 = np.array((x1s, y1s, x2s, y2s))
+    bls = [int(x0 - a * height - b * width), int(y0 + b * height - a * width)]
+    uls = [int(x0 + a * height - b * width), int(y0 - b * height - a * width)]
+    urs = [int(2 * x0 - bls[0]), int(2 * y0 - bls[1])]
+    brs = [int(2 * x0 - uls[0]), int(2 * y0 - uls[1])]
+    points2 = np.array((bls, uls, urs, brs))
 
     # verify rectangle is within borders
     for pnt in points2:
