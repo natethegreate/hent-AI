@@ -213,7 +213,8 @@ class Detector():
                 if image.shape[-1] == 4:
                     image = image[..., :3] # strip alpha channel
             except:
-                print("ERROR in detect_and_cover: Image read. Skipping. force_jpg=", force_jpg)
+                print("ERROR in detect_and_cover: Image read. Skipping. image_path=", image_path)
+                return
             # Detect objects
             # try:
             r = self.model.detect([image], verbose=0)[0]
@@ -226,7 +227,7 @@ class Detector():
                 file_name = save_path + fname[:-4] + '.png'
                 skimage.io.imsave(file_name, cov)
             except:
-                print("ERROR in detect_and_cover: Image write. Skipping. force_jpg=", force_jpg)
+                print("ERROR in detect_and_cover: Image write. Skipping. image_path=", image_path)
             # print("Saved to ", file_name)
 
     # Function for file parsing, calls the aboven detect_and_cover
@@ -250,9 +251,9 @@ class Detector():
         else:
             # obtain inputs from the input folder
             img_list = []
-            try:
-                for file in os.listdir(input_folder):
-                    # TODO: check what other filetpyes supported
+            for file in os.listdir(input_folder):
+                # TODO: check what other filetpyes supported
+                try:
                     if force_jpg == False:
                         if file.endswith('.png') or file.endswith('.PNG'):
                             img_list.append((input_folder + '/' + file, file))
@@ -262,8 +263,9 @@ class Detector():
                     else:
                         if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG"):
                             img_list.append((input_folder + '/' + file, file))
-            except:
-                print("ERROR in run_on_folder: File parsing. input_folder=", input_folder)
+                except:
+                    print("ERROR in run_on_folder: File parsing. file=", file)
+            
 
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
