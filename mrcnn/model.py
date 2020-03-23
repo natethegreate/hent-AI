@@ -2365,10 +2365,10 @@ class MaskRCNN():
             train_generator,
             initial_epoch=self.epoch,
             epochs=epochs,
-            steps_per_epoch=self.config.STEPS_PER_EPOCH, # of train samples / batch size (1)
+            steps_per_epoch=self.config.STEPS_PER_EPOCH,
             callbacks=callbacks,
             validation_data=val_generator,
-            validation_steps=83, #self.config.VALIDATION_STEPS, # validation samples / batch size
+            validation_steps=self.config.VALIDATION_STEPS,
             max_queue_size=100,
             workers=workers,
             use_multiprocessing=True,

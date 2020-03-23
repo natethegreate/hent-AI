@@ -4,7 +4,7 @@ Illustrated adult content created in Japan is required to be censored by law. Tw
 
 This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870).
 
-Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on current model 161. 
+Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on old model 161. 
 
 Development news will be posted on my Twitter (NSFW).
 [![Twitter Follow](https://img.shields.io/twitter/follow/deeppomf.svg?label=Follow&style=social)](https://twitter.com/nate_of_hent_ai)
@@ -14,33 +14,33 @@ Like what you see? You can send me a tip! (Proceeds also go to my tuition)
 
 You can join development discussion on the Discord channel: https://discord.gg/j4dPZ7W 
 
-Example of mosaic detection on dated (Feb 27,2020) model 107:
-![Detection Sample](assets/detect_output4.jpg)
+Example of bar detection on model 226:
+![Detection Sample](assets/dido_test1_o.jpg)
 
-Examples of bar detection on dated model 107:
-![Detection Sample2](assets/detect_output0.jpg)
-
-![Detection Sample3](assets/detect_output1.jpg)
+Examples of mosaic detection on model 236:
+![Detection Sample2](assets/dido_test5_o.jpg)
 
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
 # Getting Started
 You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line. 
 
-Only windows is supported, I do not yet have the funding to get an Apple product for development there.
+Only windows is supported for the executable. You can pull this code for linux.
 
 # The code
 
 * [main.py](main.py) Contains GUI and all I/O handling and file parsing, along with basic error detection. Instantiates detector class.
 
-* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP.
+* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP. No longer needs hentai.py, and can run detections on its own.
 
-* [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Also handles training, and contains the Hentai configuration class.
+* [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Only needed for training.
 
 * [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is based off the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
 
 * [inspect_h_data.ipynb](samples/hentai/inspect_h_data.ipynb)
 Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
+
+* [test_data_generator.py](test_data_generator.py) Script that automates bar censoring and annotation, more explained below. This is meant to be placed in a separate folder, and expects uncensored images in a folder called "decensored_input" and outputs the barred image into "decensored_input_original", and populates a csv with the annotations. You do not need to use this script, unless you want to help in expanding the dataset. In which case, join the discord and contact me.
 
 I have only worked on Windows platforms, and had not been able to train or work on other instances like Google colab and Google Cloud.
 
@@ -59,13 +59,15 @@ Currently, the model needs a bigger database, namely with bar censors. Please co
 
 # The Model
 
-I experimented with other pre-trained models, but ended transfer learning with the imagenet model. 
+I experimented with other pre-trained models, but ended transfer learning with the imagenet model. You will want the latest model for better accuracy.
 
-Latest model is model 161, available [here](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4). Latest weights model will come with each release. Please note that training is still in progress, and do expect better models to release soon.
+* [Model 161](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
 
-Please keep it named as weights.h5, in the root directory with main.py or main.exe.
+* [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights226.zip?dl=0)
 
-I have the events file if you would like to see the latest training events with tensorboard [here](https://drive.google.com/open?id=1bH0YcGZQh-hZgGvUpJZc7f9Pblvo3ctE)
+* (Latest) [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
+
+Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
 ## Requirements
 
@@ -102,17 +104,22 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
+
 ## Versions and Downloads
 
-* v1.0: Initial release for 2020 HackIllinois Demo
+* v1.0.0: Initial release for 2020 HackIllinois Demo
 
-* v1.1: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
+* v1.1.0: Cleaned code, removed unneeded library imports, added install instructions and tutorial. Added error detection.
 
-* [v1.2](https://github.com/natethegreate/hent-AI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
+* [v1.2.0](https://github.com/natethegreate/hentAI/releases/tag/v1.2): Executable release based off of the detect-only branch. Training and redundant libraries have been removed or relocated. Bug where entire image returns green fixed. Lowered detection threshold.
 
-* v1.3: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
+* v1.3.0: (exe not released yet) Removed non-unicode error. Added loading screen popup. Lowered detection threshold. Minor UI changes.
 
-* [v1.4](https://github.com/natethegreate/hent-AI/releases/tag/v1.4): Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
+* v1.4.0: Fixed video detector incorrectly naming files. Added loading popup. UI tweaks. Lowered detection threshold.
+
+* [v1.5.0](https://github.com/natethegreate/hentAI/releases/tag/v1.5): Fixed greyscale shape error. Fixed bug where video was copied to DCP folder. Added support for jpg, as an option for jpg to png conversion. Added better exception catching. Updated weights to model 236. 
+
+* [v1.5.2](https://github.com/natethegreate/hentAI/releases/tag/v1.5.2): Upgraded tensorflow to 1.8 in preparation for future video detection features. Image errors no longer stop program and get skipped. Terminal printing is more informative. UI Tweaks.
 
 
 ## Installation directions
@@ -157,7 +164,7 @@ Alternatively, you can resume training using --weights=last
 
 
 ## Contributing
-I only have a bare understanding of convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome.
+I am very new to convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome, so I would encourage joining the Discord.
 
 
 # Acknowledgements
@@ -170,6 +177,7 @@ Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chaine
 
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
 
-Dataset created with numerous doujins and hentai
-
 Sample asset images from artist @ao_beni, 落書き色々まとめ, and @paxiti respectively. Screentone girl is from artist soranosuzume.
+
+Current asset images from うぱ西まり子 and bibimbub on Pixiv.
+
