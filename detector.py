@@ -68,10 +68,12 @@ class Detector():
 
     # Make sure this is called before using model weights
     def load_weights(self):
+        print('Loading weights...', end='  ')
         try:
             self.model = modellib.MaskRCNN(mode="inference", config=self.config,
                                         model_dir=DEFAULT_LOGS_DIR)
             self.model.load_weights(self.weights_path, by_name=True)
+            print("Weights loaded")
         except:
             print("ERROR in load_weights: Model Load. Ensure you have your weights.h5 file!")
 
@@ -106,8 +108,12 @@ class Detector():
         
         vid_list = []
         for file in os.listdir(image_path):
+            if len(vid_list) == 1:
+                print("WARNING: More than 1 video in input directory! Assuming you want the first video.")
+                break
             if file.endswith('mp4') or file.endswith('MP4'):
                 vid_list.append(image_path + '/' + file)
+            
         
         video_path = vid_list[0] # ONLY works with 1 video for now
         vcapture = VideoCapture(video_path)
@@ -116,7 +122,7 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = "uncensored_video.avi"
+        file_name = str(file) + '_uncensored.avi'
         vwriter = VideoWriter(file_name,
                                     VideoWriter_fourcc(*'MJPG'),
                                     fps, (width, height))
@@ -171,6 +177,7 @@ class Detector():
                                       fps, (width, height))
             count = 0
             success = True
+            print("Video read complete, starting video detection:")
             while success:
                 print("frame: ", count)
                 # Read next image
@@ -235,6 +242,9 @@ class Detector():
         assert input_folder
         assert output_folder # replace with catches and popups
 
+        if force_jpg==True:
+            print("WARNING: force_jpg=True. jpg support is not guaranteed, beware.")
+
         file_counter = 0
         if(is_video == True):
             # support for multiple videos if your computer can even handle that
@@ -270,7 +280,7 @@ class Detector():
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
                 self.detect_and_cover(img_path, img_name, output_folder, force_jpg=force_jpg)  #sending force_jpg for debugging
-                print('detection on image', file_counter, 'is complete')
+                print('Detection on image', file_counter, 'is complete')
                 file_counter += 1
 
 

@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.5'
+versionNumber = '1.5.2'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -124,7 +124,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
 
     # Run detection
     if(is_video==True):
-        print('running video detection')
+        print('Running video detection')
         loader = Tk()
         loader.title('Running detections')
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
@@ -133,7 +133,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/') #no jpg for video detect
         loader.destroy()
     else:
-        print('running detection, outputting to dcp input')
+        print('Running detection, outputting to dcp input')
         loader = Tk()
         loader.title('Running detections')
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
@@ -188,7 +188,7 @@ def bar_detect():
     bar_win.title('Bar Detection')
 
     # input image directory label, entry, and button
-    o_label = Label(bar_win, text = 'Your own input image (.png) folder: ')
+    o_label = Label(bar_win, text = 'Your own input image folder: ')
     o_label.grid(row=1, padx=20 ,pady=10)
     o_entry = Entry(bar_win, textvariable=ovar)
     o_entry.grid(row=1, column=1)
@@ -218,7 +218,7 @@ def mosaic_detect():
     mos_win.title('Mosaic Detection')
 
     # input image directory label, entry, and button
-    o_label = Label(mos_win, text = 'Your own input image (.png) folder: ')
+    o_label = Label(mos_win, text = 'Your own input image folder: ')
     o_label.grid(row=1, padx=20 ,pady=10)
     o_entry = Entry(mos_win, textvariable=ovar)
     o_entry.grid(row=1, column=1)
@@ -249,7 +249,7 @@ def video_detect():
     vid_win.title('Video Detection (Experimental)')
 
     # input video(s) directory label, entry, and button
-    o_label = Label(vid_win, text = 'Your own input video (???) folder: ')
+    o_label = Label(vid_win, text = 'Your input video folder: ')
     o_label.grid(row=1, padx=20 ,pady=10)
     o_entry = Entry(vid_win, textvariable=ovar)
     o_entry.grid(row=1, column=1)
