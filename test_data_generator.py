@@ -110,7 +110,7 @@ def draw_angled_rec(x0, y0, width, height, angle, img, color, img_x, img_y, mode
             angl_mod = 10*random.gauss(mu, sigma)
             #print(angl_mod)
             if quantity == 2:
-                height = height*0.5*(math.sin(angle)+math.cos(angle))
+                height = height*0.5*(abs(math.sin(angle))+abs(math.cos(angle)))
                 #print(height)
                 card = np.array(Image.new('RGB', (img_x, img_y), (0, 0, 0)))
                 _angle = (angle+angl_mod-2*(angle-90)) * math.pi / 180.0
