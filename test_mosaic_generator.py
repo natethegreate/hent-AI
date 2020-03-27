@@ -24,7 +24,7 @@ def pixelate(image, ratio, mosaic_kernel):
     # Desired "pixelated" size
     h, w = (mosaic_kernel, int(mosaic_kernel*ratio))
     # Resize image to "pixelated" size
-    temp = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)
+    temp = cv2.resize(image, (w, h), interpolation=cv2.INTER_LINEAR)    #cv2.INTER_AREA, cv2.INTER_CUBIC, cv2.INTER_LANCZOS4, cv2.INTER_NEAREST, cv2.INTER_LINEAR
     # Initialize output image
     return cv2.resize(temp, (width, height), interpolation=cv2.INTER_NEAREST)
 
@@ -45,7 +45,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 label=['F_GENITALIA', 'M_GENITALIA']#
                 all_regions = [i['box'] for i in detection if i['label'] in label]#
                 print(all_regions)#
-                mosaic_kernel = int(random.triangular(3, 35, 16))    #mosaic resolution
+                mosaic_kernel = int(random.triangular(3, 42, 16))    #mosaic resolution
                 if random.random() <= 0.5:    #probability for ajasting to ratio
                     calculate = True
                 else:
