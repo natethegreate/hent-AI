@@ -32,7 +32,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
     csv_output = csv.writer(f_output, quoting=csv.QUOTE_NONE, quotechar="", delimiter=",", escapechar=' ')     #CSV
     csv_output.writerow(['filename','file_size','file_attributes','region_count','region_id','region_shape_attributes','region_attributes'])     #CSV
     for f in files:
-        #try:
+        try:
             while True:
                 print("Working on " + f)
                 img_C = Image.open(f).convert("RGB")
@@ -99,12 +99,12 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 for idx,_ in enumerate(NudeNet_regions):
                     csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{}"'])     #CSV
                 break
-        #except Exception as Exception:
-        #    err_files.append(os.path.basename(f) + ": " + str(Exception))
-        #    pass
+        except Exception as Exception:
+            err_files.append(os.path.basename(f) + ": " + str(Exception))
+            pass
 
-#Error list    
-#if err_files:
-#    print("\n" + "NudeNet failed: ") 
-#    for f in err_files:
-#        print(f)
+Error list    
+if err_files:
+    print("\n" + "NudeNet failed: ") 
+    for f in err_files:
+        print(f)
