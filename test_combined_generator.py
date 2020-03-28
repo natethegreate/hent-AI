@@ -13,9 +13,10 @@ detector = NudeDetector()    #detector = Detector()
 rootdir = "./decensor_input"
 outdir_mosaics = "./decensor_input_mosaics"
 outdir_bars = "./decensor_input_bars"
+rejected = "./decensor_nudenet_rejected"
 os.makedirs(rootdir, exist_ok=True)
 os.makedirs(outdir_mosaics, exist_ok=True)
-os.makedirs(outdir_bars, exist_ok=True)
+os.makedirs(rejected, exist_ok=True)
 
 files = glob.glob(rootdir + '/**/*.png', recursive=True)
 files_jpg = glob.glob(rootdir + '/**/*.jpg', recursive=True)
@@ -245,7 +246,8 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
 
                 if all_regions == []:
                     # skip entire detection, avoid saving 
-                    #os.remove(f)    #to remove file from input
+                    #os.remove(f, )    #to remove file from input
+                    os.rename(f, f.replace(rootdir, rejected, 1))    #to remove file from input to rejected
                     print('skipping image with failed nudenet detection')
                     break
                 print(all_regions)#
@@ -296,13 +298,13 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 NudeNet_regions = zip(output1x, output1y)
 
                 #Save file
-                f=f.replace(rootdir, outdir_mosaics, 1)
+                f=f.replace(rootdir, outdir_bars, 1)
                 os.makedirs(os.path.dirname(f), exist_ok=True)
                 cv2.imwrite('temp_out.png', image)     #still a hack for non-unicode names
                 os.replace('temp_out.png', f)
 
                 for idx,_ in enumerate(NudeNet_regions):
-                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""mosaic""}"'])     #CSV
+                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""bar""}"'])     #CSV
                 points = []
                 comp_array = []
                 for region in all_regions:
@@ -381,13 +383,13 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                     NudeNet_regions = zip(output1x, output1y)
 
                 #Save file
-                f=f.replace(outdir_mosaics, outdir_bars, 1)
+                f=f.replace(outdir_bars, outdir_mosaics, 1)
                 os.makedirs(os.path.dirname(f), exist_ok=True)
                 cv2.imwrite('temp_out.png', img_rgb)     #still a hack for non-unicode names
                 os.replace('temp_out.png', f)
 
                 for idx,_ in enumerate(NudeNet_regions):
-                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""bar""}"'])     #CSV
+                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""mosaic""}"'])     #CSV
                 break
 
         except Exception as Exception:
