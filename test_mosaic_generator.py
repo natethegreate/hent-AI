@@ -103,7 +103,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
             err_files.append(os.path.basename(f) + ": " + str(Exception))
             pass
 
-Error list    
+#Error list    
 if err_files:
     print("\n" + "NudeNet failed: ") 
     for f in err_files:
