@@ -161,50 +161,40 @@ class Detector():
             # Now we have the mask from detection, begin TGAN by first resizing img into temp folder. 
             try:
                 mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
-                mini_blur = bilateralFilter(mini_img, 3, 70, 70)
-                # mini_blur = GaussianBlur(mini_img, (3,3), 0)
                 # sharp_low = -.75
                 # sharp_point = 4 # default sharpening values from my screentone remover
                 # s_kernel = np.array([[0, sharp_low, 0], [sharp_low, sharp_point, sharp_low], [0, sharp_low, 0]]) # filter convolution applies sharpening
                 # sharpened = filter2D(mini_blur, -1, s_kernel)
-                # bil2 = bilateralFilter(sharpened, 3, 70, 70)
+                # bil2 = bilateralFilter(sharpened, 3, 70, 70) 
                 file_name = self.temp_path + img_name[:-4] + '.png' # need to save a sequence of pngs for TGAN operation
-                skimage.io.imsave(file_name, mini_blur)
-            except:
-                print("ERROR in TGAN: resize. Skipping. image_path=",img_path)
+                skimage.io.imsave(file_name, mini_img)
+            except Exception as e:
+                print("ERROR in TGAN: resize. Skipping. image_path=",img_path, e)
                 return
-            # Double tecoGAN runs to super resolute by 16x
+            # Each tecoGAN runs to super resolute by 4x
             TecoGAN.main.TGAN_inference(self.flags) 
             # blur the middle image using code from MY screentone remover
             gan1_out = skimage.io.imread(self.out_path + img_name[:-4] + '.png')
             # gan_blurred = GaussianBlur(gan1_out, (3,3), 0) 
-            
-            # sharp_low = -1
-            # sharp_point = 9.0 # default sharpening values from my screentone remover
-            # s_kernel = np.array([[-1, sharp_low, -1], [sharp_low, sharp_point, sharp_low], [-1, sharp_low, -1]]) # filter convolution applies sharpening
-            # sharpened = filter2D(gan1_out, -1, s_kernel)
-            bi_blur = bilateralFilter(gan1_out, 5, 70, 70) #apply two blur types
+
+            bi_blur = bilateralFilter(gan1_out, 7, 70, 70) # apply bilateral filter to rid small noises
 
             skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', bi_blur) #save to temp2 path
             TecoGAN.main.TGAN_inference(self.flags, second=True)
-            # resize again, from out_path to to temp_path2
-            # half_image = skimage.io.imread(os.path.join(out_path, img_name))
-            # mini_img2 = resize(half_image, (int(image.shape[1]/4), int(image.shape[0]/4)), interpolation=INTER_NEAREST)
-            # file_name = temp_path2 + img_name[:-4] + '.png' # need to save a sequence of pngs for TGAN operation
-            # skimage.io.imsave(file_name, mini_img2)
+
             # Image splice the detected region over the source image
             gan_img_path = self.out2_path + img_name[:-4] + '.png' # will be forced to png in tgan
             gan_image = skimage.io.imread(gan_img_path)
             fin_img = self.splice(image, new_masks, gan_image)
 
-            # try:
-            # Save output, now force save as png
-            file_name = self.fin_path + img_name[:-4] + '.png'
-            skimage.io.imsave(file_name, fin_img)
-            print("Splice complete. Cleaning work directories...")
-            self.clean_work_dirs()
-            # except:
-            #     print("ERROR in TGAN: Image write. Skipping. image_path=", img_path)
+            try:
+                # Save output, now force save as png
+                file_name = self.fin_path + img_name[:-4] + '.png'
+                skimage.io.imsave(file_name, fin_img)
+                print("Splice complete. Cleaning work directories...")
+                self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+            except Exception as e:
+                print("ERROR in TGAN: Image write. Skipping. image_path=", img_path, e)
 
 
     # TGAN folder running function
@@ -218,8 +208,8 @@ class Detector():
             try:
                 if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".mp4"):
                     img_list.append((in_path + '/' + file, file))
-            except:
-                print("ERROR in run_TGAN: File parsing. file=", file)
+            except Exception as e:
+                print("ERROR in run_TGAN: File parsing. file=", file, e)
         # begin TGAN on every image
         file_counter=0
         for img_path, img_name in img_list:
@@ -323,9 +313,6 @@ class Detector():
 
                     # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
                     remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
-                    # new_class_ids = np.delete(r['class_ids'], indices_to_remove, axis=0)
-                    # new_rois = np.delete(r['rois'], indices_to_remove, axis=0)
-                    # new_scores = np.delete(r['scores'], indices_to_remove, axis=0)
                     new_masks = np.delete(r['masks'], remove_indices, axis=2)
 
                     # Apply cover
@@ -365,9 +352,6 @@ class Detector():
                 remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 2
             else:
                 remove_indices = np.where(r['class_ids'] != 1) # remove mosaic: class 1
-            # new_class_ids = np.delete(r['class_ids'], indices_to_remove, axis=0)
-            # new_rois = np.delete(r['rois'], indices_to_remove, axis=0)
-            # new_scores = np.delete(r['scores'], indices_to_remove, axis=0)
             new_masks = np.delete(r['masks'], remove_indices, axis=2)
             # except:
             #     print("ERROR in detect_and_cover: Model detect")
