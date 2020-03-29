@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.6.0'
+versionNumber = '1.6.1'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -157,11 +157,12 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     okbutton.pack()
     popup.mainloop()
 
+# helper function to call TGAN folder function. 
 def hentAI_TGAN(in_path=None, is_video=False, force_jpg=False):
     print("Starting TGAN detection and decensor")
     loader = Tk()
     loader.title('Running TecoGAN')
-    load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
+    load_label = Label(loader, text='Now running decensor. This can take a while. Please wait')
     load_label.pack(side=TOP, fill=X, pady=10, padx=20)
     loader.update()
     detect_instance.run_TGAN(in_path = in_path, is_video = is_video, force_jpg = force_jpg)
@@ -170,7 +171,7 @@ def hentAI_TGAN(in_path=None, is_video=False, force_jpg=False):
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
-    label = Label(popup, text='Process executed successfully! Now you can run DeepCreamPy.')
+    label = Label(popup, text='Process executed successfully!')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
     num_jpgs = detect_instance.get_non_png()
     # Popup for unprocessed jpgs
@@ -270,16 +271,30 @@ def mosaic_detect_TGAN():
     out_button = Button(mos_win, text="Browse", command=input_newdir)
     out_button.grid(row=1, column=2)
 
-    boolv = BooleanVar()
-    cb = Checkbutton(mos_win, text='Force use jpg (will save as png)?', variable = boolv)
-    cb.grid(row=2,column=2, padx=5)
-    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=False, force_jpg=boolv.get()))
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=False))
     go_button.grid(row=2,column=1, pady=10)
     back_button = Button(mos_win, text="Back", command = backMain)
     back_button.grid(row=2,column=0, padx=10)
 
 
     mos_win.mainloop()
+
+def video_detect_TGAN():
+    mos_win = new_window()
+    mos_win.title('TecoGAN Video Full decensor')
+
+    # input image directory label, entry, and button
+    o_label = Label(mos_win, text = 'Your own input video (.mp4) folder: ')
+    o_label.grid(row=1, padx=20 ,pady=10)
+    o_entry = Entry(mos_win, textvariable=ovar)
+    o_entry.grid(row=1, column=1, padx=10)
+    out_button = Button(mos_win, text="Browse", command=input_newdir)
+    out_button.grid(row=1, column=2)
+
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=True))
+    go_button.grid(row=2,column=1, pady=10)
+    back_button = Button(mos_win, text="Back", command = backMain)
+    back_button.grid(row=2,column=0, padx=10)
 
 def video_detect():
     vid_win = new_window()
@@ -373,8 +388,8 @@ if __name__ == "__main__":
     mosaic_TG_button.pack(pady=10)
     video_button = Button(title_window, text='Video (DCP)', command=video_detect)
     video_button.pack(pady=10, padx=10)
-    # video_TG_button = Button(title_window, text='Video (TecoGAN)', command=        )
-    # video_button.pack(pady=10, padx=10)
+    video_TG_button = Button(title_window, text="Video (TecoGAN)", command=video_detect_TGAN) # separate window for future functionality changes
+    video_TG_button.pack(pady=10, padx=10)
     detect_instance = Detector(weights_path=weights_path)
     detect_instance.load_weights()
     title_window.geometry("300x300")

@@ -185,17 +185,91 @@ class Detector():
             # Image splice the detected region over the source image
             gan_img_path = self.out2_path + img_name[:-4] + '.png' # will be forced to png in tgan
             gan_image = skimage.io.imread(gan_img_path)
+            # Ensure image shapes match the gan output
+            if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]:
+                gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
             fin_img = self.splice(image, new_masks, gan_image)
 
             try:
                 # Save output, now force save as png
                 file_name = self.fin_path + img_name[:-4] + '.png'
                 skimage.io.imsave(file_name, fin_img)
-                print("Splice complete. Cleaning work directories...")
-                self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
             except Exception as e:
                 print("ERROR in TGAN: Image write. Skipping. image_path=", img_path, e)
+        else:
+            # Video capture
+            try:
+                video_path = img_path
+                vcapture = VideoCapture(video_path)
+                width = int(vcapture.get(CAP_PROP_FRAME_WIDTH))
+                height = int(vcapture.get(CAP_PROP_FRAME_HEIGHT))
+                fps = vcapture.get(CAP_PROP_FPS)
+        
+                # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
+                file_name = img_name + "_decensored.avi"
+                vwriter = VideoWriter(file_name,
+                                        VideoWriter_fourcc(*'MJPG'),
+                                        fps, (width, height))
+            except Exception as e:
+                print("ERROR in TGAN: video read and init.", e)
+                return
+            count = 0
+            success = True
+            print("Video read complete, starting video detection:")
+            while success:
+                print("frame: ", count)
+                # Read next image
+                success, image = vcapture.read()
+                if success:
+                    # OpenCV returns images as BGR, convert to RGB
+                    image = image[..., ::-1]
+                    
+                    # Detect objects
+                    r = self.model.detect([image], verbose=0)[0]
 
+                    # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
+                    remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
+                    new_masks = np.delete(r['masks'], remove_indices, axis=2)
+
+                    # initial resize frame
+                    mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
+                    file_name = self.temp_path + img_name[:-4] + '.png' # need to save a sequence of pngs for TGAN operation
+                    skimage.io.imsave(file_name, mini_img)
+
+                    # run TecoGAN algorithms
+                    TecoGAN.main.TGAN_inference(self.flags) 
+                    # blur the middle image using code from MY screentone remover
+                    gan1_out = skimage.io.imread(self.out_path + img_name[:-4] + '.png')
+                    # gan_blurred = GaussianBlur(gan1_out, (3,3), 0) 
+
+                    bi_blur = bilateralFilter(gan1_out, 3, 70, 70) # apply bilateral filter to rid small noises
+
+                    skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', bi_blur) #save to temp2 path
+                    TecoGAN.main.TGAN_inference(self.flags, second=True)
+
+                    # Image splice the detected region over the source image
+                    gan_img_path = self.out2_path + img_name[:-4] + '.png' # will be forced to png in tgan
+                    gan_image = skimage.io.imread(gan_img_path)
+                    # Check and fix image if gan output size mismatches
+                    if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]:
+                        gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
+                    fin_img = self.splice(image, new_masks, gan_image)
+                    fin_img = fin_img[..., ::-1] # reverse RGB to BGR for video writing
+                    
+                    # print('saving covered frame as ', file_name)
+                    # file_name = self.fin_path + img_name[:-4] + str(count).zfill(6) + '.png'
+                    # skimage.io.imsave(file_name, fin_img)
+
+                    # skimage.io.imsave(file_name, cov)
+
+                    # Add image to video writer
+                    vwriter.write(fin_img)
+                    count += 1
+
+            vwriter.release()
+            print('Video complete!')
+        print("Video process complete. Cleaning work directories...")
+        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
     # TGAN folder running function
     def run_TGAN(self, in_path = None, is_video = False, force_jpg = False):
