@@ -298,7 +298,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 NudeNet_regions = zip(output1x, output1y)
 
                 #Save file
-                f=f.replace(rootdir, outdir_bars, 1)
+                f=f.replace(rootdir, outdir_mosaics, 1)
                 os.makedirs(os.path.dirname(f), exist_ok=True)
                 cv2.imwrite('temp_out.png', image)     #still a hack for non-unicode names
                 os.replace('temp_out.png', f)
@@ -383,7 +383,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                     NudeNet_regions = zip(output1x, output1y)
 
                 #Save file
-                f=f.replace(outdir_bars, outdir_mosaics, 1)
+                f=f.replace(outdir_mosaics, outdir_bars, 1)
                 os.makedirs(os.path.dirname(f), exist_ok=True)
                 cv2.imwrite('temp_out.png', img_rgb)     #still a hack for non-unicode names
                 os.replace('temp_out.png', f)
