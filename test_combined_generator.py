@@ -304,7 +304,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 os.replace('temp_out.png', f)
 
                 for idx,_ in enumerate(NudeNet_regions):
-                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""bar""}"'])     #CSV
+                    csv_output.writerow([os.path.basename(f), os.path.getsize(f), '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""bar""}"'])     #CSV
                 points = []
                 comp_array = []
                 for region in all_regions:
@@ -390,7 +390,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
                 os.replace('temp_out.png', f)
 
                 for idx,_ in enumerate(NudeNet_regions):
-                    csv_output.writerow([os.path.basename(f), os.stat(f).st_size, '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""mosaic""}"'])     #CSV
+                    csv_output.writerow([os.path.basename(f), os.path.getsize(f), '"{}"', len(output1x), idx, '"{""name"":""polygon""','""all_points_x"":' + str(output1x[idx]), '""all_points_y"":' + str(output1y[idx]) + '}"', '"{""censor"":""mosaic""}"'])     #CSV
                 break
 
         except Exception as Exception:
