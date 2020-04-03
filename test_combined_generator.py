@@ -384,6 +384,7 @@ with open('example.csv', 'w', newline='', encoding='utf-8') as f_output:     #CS
 
                 #Save file
                 f=f.replace(outdir_mosaics, outdir_bars, 1)
+                f=f.replace(os.path.splitext(f)[0], os.path.splitext(f)[0]+'_bar', 1)
                 os.makedirs(os.path.dirname(f), exist_ok=True)
                 cv2.imwrite('temp_out.png', img_rgb)     #still a hack for non-unicode names
                 os.replace('temp_out.png', f)
