@@ -19,14 +19,13 @@ ROOT_DIR = os.path.abspath("../../")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
-sys.path.append(os.path.join(os.path.abspath('.'), 'TecoGAN/'))
+sys.path.append(os.path.join(os.path.abspath('.'), 'ColabESRGAN/'))
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 # sys.path.insert(1, 'samples/hentai/')
 # from hentai import HentaiConfig
 from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
-# from TecoGAN import *
-import TecoGAN.main
+import ColabESRGAN.test
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
@@ -54,6 +53,7 @@ class HentaiConfig(Config):
     # Skip detections with < 75% confidence NOTE: lowered this because its better for false positives
     DETECTION_MIN_CONFIDENCE = 0.75
 
+# Detector class. Handles detection and potentially esr decensoring. For now, will house an ESR instance at startup
 class Detector():
     # at startup, dont create model yet
     def __init__(self, weights_path):
@@ -68,18 +68,20 @@ class Detector():
         # counts how many non-png images, if >1 then warn user
         self.dcp_compat = 0
         try:
-            self.out_path = os.path.join(os.path.abspath('.'), "TG_temp/TG_out/")
-            self.out2_path = os.path.join(os.path.abspath('.'), "TG_temp/TG_out2/")
-            self.temp_path = os.path.join(os.path.abspath('.'), "TG_temp/temp/")
-            self.temp_path2 = os.path.join(os.path.abspath('.'), "TG_temp/temp2/")
-            self.fin_path = os.path.join(os.path.abspath('.'), "TG_output/")
+            self.out_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out/")
+            self.out2_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out2/")
+            self.temp_path = os.path.join(os.path.abspath('.'), "ESR_temp/temp/")
+            self.temp_path2 = os.path.join(os.path.abspath('.'), "ESR_temp/temp2/")
+            self.fin_path = os.path.join(os.path.abspath('.'), "ESR_output/")
         except:
-            print("ERROR in Detector init: Cannot find TG_out or some dir within.")
+            print("ERROR in Detector init: Cannot find ESR_out or some dir within.")
             return
-        self.flags = TecoGAN.main.setFLAGS(output_dir=self.out_path, input_dir_LR=self.temp_path, output_dir2=self.out2_path, input_dir_LR2=self.temp_path2) #NOTE: Change this as needed
+        # Create esrgan instance for detector instance
+        esr_model_path = os.path.join(os.path.abspath('.'), "ColabESRGAN/models/4x_FatalPixels_340000_G.pth")
+        self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=esr_model_path, hw='cpu')
         # keep model loading to be done later, not now
 
-    # Clean out temp working images from all directories in TG_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
+    # Clean out temp working images from all directories in ESR_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
     def clean_work_dirs(self):
         folders = [self.out_path, self.out2_path, self.temp_path, self.temp_path2]
         for folder in folders:
@@ -138,10 +140,8 @@ class Detector():
     def get_non_png(self):
         return self.dcp_compat        
 
-    # Runs hent-AI detection, and TGAN on image.
-    def TGAN(self, img_path, img_name, is_video=False):
-        
-        # First, run detection on image
+    # Runs hent-AI detection, and ESRGAN on image. Mosaic only.
+    def ESRGAN(self, img_path, img_name, is_video=False):
         # Image read
         if is_video == False:
             try:
@@ -151,52 +151,43 @@ class Detector():
                 if image.shape[-1] == 4:
                     image = image[..., :3] # strip alpha channel
             except Exception as e:
-                print("ERROR in TGAN: Image read. Skipping. image_path=", img_path)
+                print("ERROR in detector.ESRGAN: Image read. Skipping. image_path=", img_path)
                 print(e)
                 return
-            r = self.model.detect([image], verbose=0)[0] 
-            remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 2
+            # Next, run the detection
+            r = self.model.detect([image], verbose=0)[0]  
+             # Remove bars from detection; class 2
+            remove_indices = np.where(r['class_ids'] != 2)
             new_masks = np.delete(r['masks'], remove_indices, axis=2)
 
-            # Now we have the mask from detection, begin TGAN by first resizing img into temp folder. 
+            # Now we have the mask from detection, begin ESRGAN by first resizing img into temp folder. 
             try:
                 mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
-                # sharp_low = -.75
-                # sharp_point = 4 # default sharpening values from my screentone remover
-                # s_kernel = np.array([[0, sharp_low, 0], [sharp_low, sharp_point, sharp_low], [0, sharp_low, 0]]) # filter convolution applies sharpening
-                # sharpened = filter2D(mini_blur, -1, s_kernel)
-                # bil2 = bilateralFilter(sharpened, 3, 70, 70) 
-                file_name = self.temp_path + img_name[:-4] + '.png' # need to save a sequence of pngs for TGAN operation
-                skimage.io.imsave(file_name, mini_img)
+                # After resize, run bilateral filter to keep colors coherent
+                bil2 = bilateralFilter(mini_img, 3, 70, 70) 
+                file_name = self.temp_path + img_name[:-4] + '.png' 
+                skimage.io.imsave(file_name, bil2)
             except Exception as e:
-                print("ERROR in TGAN: resize. Skipping. image_path=",img_path, e)
+                print("ERROR in detector.ESRGAN: resize. Skipping. image_path=",img_path, e)
                 return
-            # Each tecoGAN runs to super resolute by 4x
-            TecoGAN.main.TGAN_inference(self.flags) 
-            # blur the middle image using code from MY screentone remover
-            gan1_out = skimage.io.imread(self.out_path + img_name[:-4] + '.png')
-            # gan_blurred = GaussianBlur(gan1_out, (3,3), 0) 
-
-            bi_blur = bilateralFilter(gan1_out, 7, 70, 70) # apply bilateral filter to rid small noises
-
-            skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', bi_blur) #save to temp2 path
-            TecoGAN.main.TGAN_inference(self.flags, second=True)
-
-            # Image splice the detected region over the source image
-            gan_img_path = self.out2_path + img_name[:-4] + '.png' # will be forced to png in tgan
+            # Now run ESRGAN inference
+            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=self.out_path + img_name[:-4] + '.png')
+            # load output from esrgan, will still be 1/4 size of original image
+            gan_img_path = self.out_path + img_name[:-4] + '.png'
             gan_image = skimage.io.imread(gan_img_path)
-            # Ensure image shapes match the gan output
-            if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]:
+            if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
                 gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
+            # Splice newly enhanced mosaic area over original image
             fin_img = self.splice(image, new_masks, gan_image)
-
+            # bilateral filter to soften output image (NOTE: make this optional?)
+            fin_img = bilateralFilter(fin_img, 9, 70, 70) 
             try:
                 # Save output, now force save as png
                 file_name = self.fin_path + img_name[:-4] + '.png'
                 skimage.io.imsave(file_name, fin_img)
             except Exception as e:
-                print("ERROR in TGAN: Image write. Skipping. image_path=", img_path, e)
-        else:
+                print("ERROR in ESRGAN: Image write. Skipping. image_path=", img_path, e)
+        '''else:
             # Video capture
             try:
                 video_path = img_path
@@ -221,23 +212,25 @@ class Detector():
                 # Read next image
                 success, image = vcapture.read()
                 if success:
+                    print('------    begin', end=' ')
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
                     
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
-
+                    print('detection complete',end=' ')
                     # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
                     remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
                     new_masks = np.delete(r['masks'], remove_indices, axis=2)
-
+                    print('detection scrape complete')
                     # initial resize frame
                     mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
                     file_name = self.temp_path + img_name[:-4] + '.png' # need to save a sequence of pngs for TGAN operation
                     skimage.io.imsave(file_name, mini_img)
-
+                    print('------    first resize and save done', end=' ')
                     # run TecoGAN algorithms
                     TecoGAN.main.TGAN_inference(self.flags) 
+                    print('first tecoGAN done', end=' ')
                     # blur the middle image using code from MY screentone remover
                     gan1_out = skimage.io.imread(self.out_path + img_name[:-4] + '.png')
                     # gan_blurred = GaussianBlur(gan1_out, (3,3), 0) 
@@ -245,14 +238,17 @@ class Detector():
                     bi_blur = bilateralFilter(gan1_out, 3, 70, 70) # apply bilateral filter to rid small noises
 
                     skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', bi_blur) #save to temp2 path
+                    print('read, bilateral filter, save done')
                     TecoGAN.main.TGAN_inference(self.flags, second=True)
-
+                    print('------   second tgan done',end=' ')
                     # Image splice the detected region over the source image
                     gan_img_path = self.out2_path + img_name[:-4] + '.png' # will be forced to png in tgan
                     gan_image = skimage.io.imread(gan_img_path)
+                    
                     # Check and fix image if gan output size mismatches
                     if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]:
                         gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
+                    print('second read and resize(unless) done',end=' ')
                     fin_img = self.splice(image, new_masks, gan_image)
                     fin_img = fin_img[..., ::-1] # reverse RGB to BGR for video writing
                     
@@ -264,16 +260,18 @@ class Detector():
 
                     # Add image to video writer
                     vwriter.write(fin_img)
+                    print('splice and vwrite complete')
                     count += 1
 
             vwriter.release()
-            print('Video complete!')
-        print("Video process complete. Cleaning work directories...")
-        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+            print('Video complete!')'''
+        print("Process complete. Cleaning work directories...")
+        # self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
-    # TGAN folder running function
-    def run_TGAN(self, in_path = None, is_video = False, force_jpg = False):
+    # ESRGAN folder running function
+    def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = False):
         assert in_path
+        # ColabESRGAN.test.esrgan_warmup(model_path = os.path.join(os.path.abspath('.'), "ColabESRGAN/models/4x_FatalPixels_340000_G.pth"))
 
         # similar to run_on_folder
         img_list = []
@@ -283,12 +281,12 @@ class Detector():
                 if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".mp4"):
                     img_list.append((in_path + '/' + file, file))
             except Exception as e:
-                print("ERROR in run_TGAN: File parsing. file=", file, e)
-        # begin TGAN on every image
+                print("ERROR in run_ESRGAN: File parsing. file=", file, e)
+        # begin ESRGAN on every image
         file_counter=0
         for img_path, img_name in img_list:
-            self.TGAN(img_path=img_path, img_name=img_name, is_video=is_video)
-            print('TGAN on image', file_counter, 'is complete')
+            self.ESRGAN(img_path=img_path, img_name=img_name, is_video=is_video)
+            print('ESRGAN on image', file_counter, 'is complete')
             file_counter += 1
 
     def video_create(self, image_path=None, dcp_path=''):
@@ -488,7 +486,7 @@ class Detector():
 
 
 # main only used for debugging here. Comment out pls
-if __name__ == '__main__':
+'''if __name__ == '__main__':
     import argparse
     # Parse command line arguments
     parser = argparse.ArgumentParser(
@@ -510,8 +508,8 @@ if __name__ == '__main__':
     detect_instance = Detector(weights_path=args.weights)
     print('loading weights')
     detect_instance.load_weights()
-    print('running TGAN on in and out folder')
+    print('running ESRGAN on in and out folder')
     # detect_instance.run_on_folder(input_folder=images_path, output_folder=output_dir)
     detect_instance.run_TGAN(in_path=images_path)
-    print("Fin")
+    print("Fin")'''
     
