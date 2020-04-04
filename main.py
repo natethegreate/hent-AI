@@ -289,7 +289,7 @@ def video_detect_TGAN():
     o_entry = Entry(mos_win, textvariable=ovar)
     o_entry.grid(row=1, column=1, padx=10)
     out_button = Button(mos_win, text="Browse", command=input_newdir)
-    out_button.grid(row=1, column=2)
+    out_button.grid(row=1, column=2, padx=10)
 
     go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=True))
     go_button.grid(row=2,column=1, pady=10)

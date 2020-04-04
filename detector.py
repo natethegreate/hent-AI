@@ -175,8 +175,8 @@ class Detector():
             # load output from esrgan, will still be 1/4 size of original image
             gan_img_path = self.out_path + img_name[:-4] + '.png'
             gan_image = skimage.io.imread(gan_img_path)
-            if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
-                gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
+            # if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
+            gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
             # Splice newly enhanced mosaic area over original image
             fin_img = self.splice(image, new_masks, gan_image)
             # bilateral filter to soften output image (NOTE: make this optional?)
@@ -187,7 +187,7 @@ class Detector():
                 skimage.io.imsave(file_name, fin_img)
             except Exception as e:
                 print("ERROR in ESRGAN: Image write. Skipping. image_path=", img_path, e)
-        '''else:
+        else:
             # Video capture
             try:
                 video_path = img_path
@@ -212,59 +212,42 @@ class Detector():
                 # Read next image
                 success, image = vcapture.read()
                 if success:
-                    print('------    begin', end=' ')
+                    # print('------    begin', end=' ')
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
                     
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
-                    print('detection complete',end=' ')
+                    # print('detection complete',end=' ')
                     # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
                     remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
                     new_masks = np.delete(r['masks'], remove_indices, axis=2)
-                    print('detection scrape complete')
+                    # print('detection scrape complete')
                     # initial resize frame
                     mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
-                    file_name = self.temp_path + img_name[:-4] + '.png' # need to save a sequence of pngs for TGAN operation
+                    file_name = self.temp_path + img_name[:-4]  + '.png' # need to save a sequence of pngs for TGAN operation
                     skimage.io.imsave(file_name, mini_img)
-                    print('------    first resize and save done', end=' ')
-                    # run TecoGAN algorithms
-                    TecoGAN.main.TGAN_inference(self.flags) 
-                    print('first tecoGAN done', end=' ')
-                    # blur the middle image using code from MY screentone remover
-                    gan1_out = skimage.io.imread(self.out_path + img_name[:-4] + '.png')
-                    # gan_blurred = GaussianBlur(gan1_out, (3,3), 0) 
-
-                    bi_blur = bilateralFilter(gan1_out, 3, 70, 70) # apply bilateral filter to rid small noises
-
-                    skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', bi_blur) #save to temp2 path
-                    print('read, bilateral filter, save done')
-                    TecoGAN.main.TGAN_inference(self.flags, second=True)
-                    print('------   second tgan done',end=' ')
-                    # Image splice the detected region over the source image
-                    gan_img_path = self.out2_path + img_name[:-4] + '.png' # will be forced to png in tgan
+                    # print('------    first resize and save done', end=' ')
+                    # run ESRGAN algorithms
+                    gan_img_path = self.out_path + img_name[:-4]  + '.png'
+                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+                    # print('ESRGAN complete',end=' ')
+                    # load output from esrgan, will still be 1/4 size of original image
                     gan_image = skimage.io.imread(gan_img_path)
-                    
-                    # Check and fix image if gan output size mismatches
-                    if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]:
-                        gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
-                    print('second read and resize(unless) done',end=' ')
+                    # if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
+                    gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
+                    # print('------   second resize done',end=' ')
                     fin_img = self.splice(image, new_masks, gan_image)
+                    fin_img = bilateralFilter(fin_img, 9, 70, 70)  # quick bilateral filter to soften splice
                     fin_img = fin_img[..., ::-1] # reverse RGB to BGR for video writing
-                    
-                    # print('saving covered frame as ', file_name)
-                    # file_name = self.fin_path + img_name[:-4] + str(count).zfill(6) + '.png'
-                    # skimage.io.imsave(file_name, fin_img)
-
-                    # skimage.io.imsave(file_name, cov)
-
                     # Add image to video writer
                     vwriter.write(fin_img)
-                    print('splice and vwrite complete')
+                    fin_img=0 # not sure if this does anything haha
+                    # print('splice and vwrite complete')
                     count += 1
 
             vwriter.release()
-            print('Video complete!')'''
+            print('Video complete!')
         print("Process complete. Cleaning work directories...")
         # self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
@@ -296,12 +279,13 @@ class Detector():
         # Only supports 1 video at a time, but this can still get mp4 only
         
         vid_list = []
-        for file in os.listdir(image_path):
+        for file in os.listdir(str(image_path)):
+            file_s = str(file)
             if len(vid_list) == 1:
                 print("WARNING: More than 1 video in input directory! Assuming you want the first video.")
                 break
-            if file.endswith('mp4') or file.endswith('MP4'):
-                vid_list.append(image_path + '/' + file)
+            if file_s.endswith('mp4') or file_s.endswith('MP4'):
+                vid_list.append(image_path + '/' + file_s)
             
         
         video_path = vid_list[0] # ONLY works with 1 video for now
@@ -327,9 +311,10 @@ class Detector():
         # for file in files:
         for file in os.listdir(input_path):
             # TODO: check what other filetpyes supported
-            if file.endswith('.png') or file.endswith('.PNG'):
-                img_list.append(input_path  + file)
-                # print('adding image ', input_path  + file)
+            file_s = str(file)
+            if file_s.endswith('.png') or file_s.endswith('.PNG'):
+                img_list.append(input_path  + file_s)
+                # print('adding image ', input_path  + file_s)
         for img in img_list:
             print("frame: ", count)
             # Read next image
@@ -449,9 +434,10 @@ class Detector():
         if(is_video == True):
             # support for multiple videos if your computer can even handle that
             vid_list = []
-            for file in os.listdir(input_folder):
-                if file.endswith('mp4') or file.endswith('MP4'):
-                    vid_list.append((input_folder + '/' + file, file))
+            for file in os.listdir(str(input_folder)):
+                file_s = str(file)
+                if file_s.endswith('mp4') or file_s.endswith('MP4'):
+                    vid_list.append((input_folder + '/' + file_s, file_s))
             
             for vid_path, vid_name in vid_list:
                 # video will not support separate mask saves
@@ -461,20 +447,21 @@ class Detector():
         else:
             # obtain inputs from the input folder
             img_list = []
-            for file in os.listdir(input_folder):
+            for file in os.listdir(str(input_folder)):
                 # TODO: check what other filetpyes supported
+                file_s = str(file)
                 try:
                     if force_jpg == False:
-                        if file.endswith('.png') or file.endswith('.PNG'):
-                            img_list.append((input_folder + '/' + file, file))
-                        elif file.endswith(".jpg") or file.endswith(".JPG"):
-                            # img_list.append((input_folder + '/' + file, file)) # Do not add jpgs. Conversion to png must happen first
+                        if file_s.endswith('.png') or file_s.endswith('.PNG'):
+                            img_list.append((input_folder + '/' + file_s, file_s))
+                        elif file_s.endswith(".jpg") or file_s.endswith(".JPG"):
+                            # img_list.append((input_folder + '/' + file_s, file_s)) # Do not add jpgs. Conversion to png must happen first
                             self.dcp_compat += 1
                     else:
-                        if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG"):
-                            img_list.append((input_folder + '/' + file, file))
+                        if file_s.endswith('.png') or file_s.endswith('.PNG') or file_s.endswith(".jpg") or file_s.endswith(".JPG"):
+                            img_list.append((input_folder + '/' + file_s, file_s))
                 except:
-                    print("ERROR in run_on_folder: File parsing. file=", file)
+                    print("ERROR in run_on_folder: File parsing. file=", file_s)
             
 
             # save run detection with outputs to output folder
