@@ -5,13 +5,15 @@ import numpy as np
 import torch
 import architecture
 
-# ESRGAN class allows abstraction of warmup and inference
+# ESRGAN class allows abstraction of warmup and inference.
 class esrgan():
     # hw = cpu, or cuda
     def __init__(self, model_path=None, hw='cpu'):
         assert model_path
-
-        self.device = torch.device(hw)  
+        if hw=='cpu':
+            self.device = torch.device('cpu')  
+        if hw=='cuda':
+            self.device = torch.device('cuda')
         self.model = architecture.RRDB_Net(3, 3, 64, 23, gc=32, upscale=4, norm_type=None, act_type='leakyrelu', \
                                 mode='CNA', res_scale=1, upsample_mode='upconv')
         self.model.load_state_dict(torch.load(model_path), strict=True)
@@ -22,7 +24,7 @@ class esrgan():
         print('Model warmup complete')
 
     # Function to run esrgan on single image, and single output.
-    def run_esrgan(self, test_img_folder=None, out_filename=None, hw='cpu'):
+    def run_esrgan(self, test_img_folder=None, out_filename=None):
         assert out_filename
         assert test_img_folder
 

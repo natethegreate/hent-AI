@@ -84,6 +84,10 @@ def compute_backbone_shapes(config, image_shape):
             int(math.ceil(image_shape[1] / stride))]
             for stride in config.BACKBONE_STRIDES])
 
+# Function written by Nathan Cueto to utilize this import of tf to find cuda compatible gpu if available
+def check_cuda_gpu():
+    return tf.test.is_gpu_available()
+
 
 ############################################################
 #  Resnet Graph

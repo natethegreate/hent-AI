@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.6.2'
+versionNumber = '1.6.3'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -98,11 +98,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(5)
     if in_path==None:
         error(2)
-
-    # print(force_jpg) #debug
-    # return    
-
-    # print('Initializing Detector class')
+          
     if(is_mosaic == True and is_video==False):
         # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
         print('copying inputs into input_original dcp folder')
@@ -349,7 +345,7 @@ def  replace_window(root):
     current_window.wm_protocol("WM_DELETE_WINDOW", root.destroy)
     return current_window
 
-# This main funct to fall back on
+# This main funct to fall back on, if the back button is pressed
 def backMain():
     title_window = new_window()
     title_window.title("hentAI v." + versionNumber)
@@ -361,14 +357,17 @@ def backMain():
     intro_label.pack(pady=10)
     bar_button = Button(title_window, text="Bar", command=bar_detect)
     bar_button.pack(pady=10)
-    mosaic_button = Button(title_window, text="Mosaic", command=mosaic_detect)
+    mosaic_button = Button(title_window, text="Mosaic (DCP)", command=mosaic_detect)
     mosaic_button.pack(pady=10)
-    mosaic_TG_button = Button(title_window, text="Mosaic (TecoGAN)", command=mosaic_detect_TGAN)
+    mosaic_TG_button = Button(title_window, text="Mosaic (ESRGAN)", command=mosaic_detect_TGAN)
     mosaic_TG_button.pack(pady=10)
-    video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
+    video_button = Button(title_window, text='Video (DCP)', command=video_detect)
     video_button.pack(pady=10, padx=10)
-
-    title_window.geometry("300x200")
+    video_TG_button = Button(title_window, text="Video (ESRGAN)", command=video_detect_TGAN) # separate window for future functionality changes
+    video_TG_button.pack(pady=10, padx=10)
+    # detect_instance = Detector(weights_path=weights_path) # Detect instance is the same
+    # detect_instance.load_weights()
+    title_window.geometry("300x300")
     title_window.mainloop()
 
 if __name__ == "__main__":

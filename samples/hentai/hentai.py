@@ -101,12 +101,19 @@ class HentaiDataset(utils.Dataset):
             # load_mask() needs the image size to convert polygons to masks.
             # Unfortunately, VIA doesn't include it in JSON, so we must read
             # the image. This is only managable since the dataset is tiny.
-            image_path = os.path.join(dataset_dir, a['filename'])
-            image = skimage.io.imread(image_path)
-            height, width = image.shape[:2]
-            # print(image_path)
-            class_id = [r['region_attributes']['censor'] for r in a['regions']]
-            # print('debug class_id load_h',class_id)
+            try:
+                image_path = os.path.join(dataset_dir, a['filename'])
+                image = skimage.io.imread(image_path)
+                if len(image.shape) == 0:
+                    print("Shape error in",image_path) # Skip problem images...
+                    continue
+                height, width = image.shape[:2]
+                # print(image_path)
+                class_id = [r['region_attributes']['censor'] for r in a['regions']]
+                # print('debug class_id load_h',class_id)
+            except:
+                print("Error in annotation",a,"Skipping.")
+                continue
             self.add_image(
                 "hentai",
                 image_id=a['filename'],  # use file name as a unique image id

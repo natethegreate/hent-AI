@@ -25,6 +25,8 @@ The model packaged here is model 161. The weights are used to run the detections
 
 --- Tutorial for hentAI executable
 
+** If you have an Nvidia gpu and plan on doing video uncensoring, I reccomend getting the code to work instead**
+
 1. You should use the provided input_images folder to place the images you want to decensor. Remember that you must
    decensor content with bar censors and mosaic censors separately. Images must be in .png format.
    Also, make sure to clear out the input folder between runs so you dont decensor the same things.

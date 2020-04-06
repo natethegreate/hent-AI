@@ -67,6 +67,9 @@ class Detector():
         self.weights_path = weights_path
         # counts how many non-png images, if >1 then warn user
         self.dcp_compat = 0
+        # Create model, but dont load weights yet
+        self.model = modellib.MaskRCNN(mode="inference", config=self.config,
+                                        model_dir=DEFAULT_LOGS_DIR)
         try:
             self.out_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out/")
             self.out2_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out2/")
@@ -78,8 +81,13 @@ class Detector():
             return
         # Create esrgan instance for detector instance
         esr_model_path = os.path.join(os.path.abspath('.'), "ColabESRGAN/models/4x_FatalPixels_340000_G.pth")
-        self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=esr_model_path, hw='cpu')
-        # keep model loading to be done later, not now
+        # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
+        if self.model.check_cuda_gpu()==True:
+            print("CUDA-compatible GPU located")
+            self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=esr_model_path, hw='cuda')
+        else:
+            print("No CUDA-compatible GPU located")
+            self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=esr_model_path, hw='cpu')
 
     # Clean out temp working images from all directories in ESR_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
     def clean_work_dirs(self):
@@ -99,23 +107,19 @@ class Detector():
     def load_weights(self):
         print('Loading weights...', end='  ')
         try:
-            self.model = modellib.MaskRCNN(mode="inference", config=self.config,
-                                        model_dir=DEFAULT_LOGS_DIR)
             self.model.load_weights(self.weights_path, by_name=True)
             print("Weights loaded")
         except Exception as e:
             print("ERROR in load_weights: Model Load. Ensure you have your weights.h5 file!", end=' ')
             print(e)
 
+    """Apply cover over image. Based off of Mask-RCNN Balloon color splash function
+    image: RGB image [height, width, 3]
+    mask: instance segmentation mask [height, width, instance count]
+    Returns result covered image.
+    """
     def apply_cover(self, image, mask):
-        """Apply cover over image. Based off of Mask-RCNN Balloon color splash function
-        image: RGB image [height, width, 3]
-        mask: instance segmentation mask [height, width, instance count]
-        Returns result covered image.
-        """
         # Copy color pixels from the original color image where mask is set
-        # green = np.array([[[0, 255, 0]]], dtype=np.uint8)
-        # print('apply_cover: shape of image is',image.shape)
         green = np.zeros([image.shape[0], image.shape[1], image.shape[2]], dtype=np.uint8)
         green[:,:] = [0, 255, 0]
         if mask.shape[-1] > 0:
@@ -127,6 +131,7 @@ class Detector():
             cover = image
         return cover, mask
 
+    # Similar to above function, except it places the decensored image over the original image.
     def splice(self, image, mask, gan_out):
         if mask.shape[-1] > 0:
             mask = (np.sum(mask, -1, keepdims=True) < 1)
@@ -136,7 +141,7 @@ class Detector():
             cover=image
         return cover
 
-    # return number of jpgs that were not processed
+    # Return number of jpgs that were not processed
     def get_non_png(self):
         return self.dcp_compat        
 
@@ -162,7 +167,7 @@ class Detector():
 
             # Now we have the mask from detection, begin ESRGAN by first resizing img into temp folder. 
             try:
-                mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
+                mini_img = resize(image, (int(image.shape[1]/15), int(image.shape[0]/15)), interpolation=INTER_AREA) # downscale to 1/16
                 # After resize, run bilateral filter to keep colors coherent
                 bil2 = bilateralFilter(mini_img, 3, 70, 70) 
                 file_name = self.temp_path + img_name[:-4] + '.png' 
