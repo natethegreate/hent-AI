@@ -54,7 +54,7 @@ class HentaiConfig(Config):
     NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
 
     # Number of training steps per epoch, equal to dataset train size
-    STEPS_PER_EPOCH = 1490
+    STEPS_PER_EPOCH = 4000
 
     # Skip detections with < 75% confidence TODO: tinker with this value, I would go lower
     DETECTION_MIN_CONFIDENCE = 0.70
@@ -213,7 +213,7 @@ def train(model):
     # Fine tune all layers with lower learning rate
     print("Fine tune all layers in hentai.py")
     model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE / 10,
+                learning_rate=config.LEARNING_RATE,
                 epochs=40,
                 layers='all',
                 augmentation=augmentation)
