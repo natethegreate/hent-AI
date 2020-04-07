@@ -77,7 +77,7 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 
 2. Open anaconda prompt, create virtual environment via
 	
-	conda create --name hentai python=3.5
+	conda create --name hentai python=3.5.2
 
 3. Activate that environment
 
