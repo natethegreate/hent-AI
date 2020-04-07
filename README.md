@@ -61,7 +61,7 @@ Currently, the model needs a bigger database, namely with bar censors. Please co
 
 I experimented with other pre-trained models, but ended transfer learning with the imagenet model. You will want the latest model for better accuracy.
 
-* [Model 161](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
+* Model 161 (deprecated) 
 
 * [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights226.zip?dl=0)
 
