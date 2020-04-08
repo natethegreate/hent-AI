@@ -196,7 +196,7 @@ def train(model):
     print("Training network heads in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=10,
+                epochs=4,
                 layers='heads',
                 augmentation=augmentation)
 
