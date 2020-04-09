@@ -193,12 +193,12 @@ def train(model):
     # augmentation = ia.Fliplr(.5)
 
     # Training - Stage 1 Heads only
-    print("Training network heads in hentai.py")
-    model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE,
-                epochs=4,
-                layers='heads',
-                augmentation=augmentation)
+    # print("Training network heads in hentai.py")
+    # model.train(dataset_train, dataset_val,
+    #             learning_rate=config.LEARNING_RATE,
+    #             epochs=4,
+    #             layers='heads',
+    #             augmentation=augmentation)
 
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up
