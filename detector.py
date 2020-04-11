@@ -236,8 +236,9 @@ class Detector():
                     # print('detection scrape complete')
                     # initial resize frame
                     mini_img = resize(image, (int(image.shape[1]/16), int(image.shape[0]/16)), interpolation=INTER_AREA) # downscale to 1/16
+                    bil2 = bilateralFilter(mini_img, 3, 70, 70) 
                     file_name = self.temp_path + img_name[:-4]  + '.png' # need to save a sequence of pngs for TGAN operation
-                    skimage.io.imsave(file_name, mini_img)
+                    skimage.io.imsave(file_name, bil2)
                     # print('------    first resize and save done', end=' ')
                     # run ESRGAN algorithms
                     gan_img_path = self.out_path + img_name[:-4]  + '.png'
