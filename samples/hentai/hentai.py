@@ -79,8 +79,8 @@ class HentaiDataset(utils.Dataset):
         # self.add_class("hentai", 1, "bar")
         # self.add_class("hentai", 2, "mosaic")
         # NOTE: Enable below for Canny edge detector. If you want to replace original bar and mosaic label entirely, replace 3 and 4 with 1 and 2.
-        self.add_class("hentai", 1, "bar_ced")
-        self.add_class("hentai", 2, "mosaic_ced")
+        self.add_class("hentai", 1, "bar")
+        self.add_class("hentai", 2, "mosaic")
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
@@ -147,9 +147,9 @@ class HentaiDataset(utils.Dataset):
         class_id = []
         # distinguish mask with a 1 or 2, which classes bar and mosaic TODO: Change these if classes change
         for ids in class_ids_st:
-            if(ids == 'bar_ced'):
+            if(ids == 'bar'):
                 class_id.append(1)
-            elif(ids == 'mosaic_ced'):
+            elif(ids == 'mosaic'):
                 class_id.append(2)
         
         np_class_id = np.asarray(class_id) # std lists dont have shape, so convert to np
