@@ -11,6 +11,7 @@ import json
 # import datetime # not really useful so remove soon pls
 import numpy as np
 import skimage.draw
+from skimage.filters import unsharp_mask
 import imgaug # should augment this improt as well haha
 # from PIL import Image
 
@@ -26,6 +27,7 @@ from mrcnn import model as modellib, utils
 # from hentai import HentaiConfig
 from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 import ColabESRGAN.test
+from green_mask_project_mosaic_resolution import get_mosaic_res
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
@@ -165,6 +167,11 @@ class Detector():
                 print("ERROR in detector.ESRGAN: Image read. Skipping. image_path=", img_path)
                 print(e)
                 return
+            # First, calculate mosaic granularity. Then, apply pre-sharpen
+            granularity = get_mosaic_res(img_path)
+            print("gran is ", granularity)
+            s_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            sharpened = filter2D(image, -1, s_kernel)
             # Next, run the detection
             r = self.model.detect([image], verbose=0)[0]  
              # Remove bars from detection; class 1
@@ -173,7 +180,7 @@ class Detector():
 
             # Now we have the mask from detection, begin ESRGAN by first resizing img into temp folder. 
             try:
-                mini_img = resize(image, (int(image.shape[1]/15), int(image.shape[0]/15)), interpolation=INTER_AREA) # downscale to 1/16
+                mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # downscale to 1/16
                 # After resize, run bilateral filter to keep colors coherent
                 bil2 = bilateralFilter(mini_img, 3, 70, 70) 
                 file_name = self.temp_path + img_name[:-4] + '.png' 
@@ -186,6 +193,11 @@ class Detector():
             # load output from esrgan, will still be 1/4 size of original image
             gan_img_path = self.out_path + img_name[:-4] + '.png'
             gan_image = skimage.io.imread(gan_img_path)
+
+            s_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            sharpened = filter2D(gan_image, -1, s_kernel)
+            skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', gan_image)
+            # gan_image = gan_img
             # if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
             gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
             # Splice newly enhanced mosaic area over original image
@@ -208,7 +220,7 @@ class Detector():
                 fps = vcapture.get(CAP_PROP_FPS)
         
                 # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-                file_name = img_name + "_decensored.avi"
+                file_name = img_name[:-4] + "_decensored.avi"
                 vwriter = VideoWriter(file_name,
                                         VideoWriter_fourcc(*'MJPG'),
                                         fps, (width, height))

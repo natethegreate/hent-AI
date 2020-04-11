@@ -5,37 +5,39 @@ import glob
 from scipy.signal import argrelextrema
 from PIL import Image
 
-#You can change those folder paths
-rootdir = "./decensor_input_original"
-os.makedirs(rootdir, exist_ok=True)
+# Conversion from file based script to individual image usage
+def get_mosaic_res(root_img=None):
+    assert root_img
+    #You can change those folder paths
+    # os.makedirs(root_img, exist_ok=True)
 
-files = glob.glob(rootdir + '/**/*.png', recursive=True)
-files_jpg = glob.glob(rootdir + '/**/*.jpg', recursive=True)
-files.extend(files_jpg)
+    # files = glob.glob(rootdir + '/**/*.png', recursive=True)
+    # files_jpg = glob.glob(rootdir + '/**/*.jpg', recursive=True)
+    # files.extend(files_jpg)
+    f = root_img # use input image path
+    #-----------------------Logic-----------------------
+    GBlur = 5
+    CannyTr1 = 20
+    CannyTr2 = 100
+    LowRange = 2
+    HighRange = 20
+    DetectionTr = 0.32
 
-#-----------------------Logic-----------------------
-GBlur = 5
-CannyTr1 = 20
-CannyTr2 = 100
-LowRange = 2
-HighRange = 20
-DetectionTr = 0.32
+    pattern = [None] * (HighRange+2)
+    for masksize in range(HighRange+2, LowRange+1, -1):
+        maskimg = 2+masksize+masksize-1+2
+        screen = (maskimg, maskimg)
+        img = Image.new('RGB', screen, (255,255,255))
+        pix = img.load()
+        for i in range(2,maskimg,masksize-1):
+            for j in range(2,maskimg,masksize-1):
+                for k in range(0,maskimg):
+                    pix[i, k] = (0,0,0)
+                    pix[k, j] = (0,0,0)
+        pattern[masksize-2] = img
 
-pattern = [None] * (HighRange+2)
-for masksize in range(HighRange+2, LowRange+1, -1):
-    maskimg = 2+masksize+masksize-1+2
-    screen = (maskimg, maskimg)
-    img = Image.new('RGB', screen, (255,255,255))
-    pix = img.load()
-    for i in range(2,maskimg,masksize-1):
-        for j in range(2,maskimg,masksize-1):
-            for k in range(0,maskimg):
-                pix[i, k] = (0,0,0)
-                pix[k, j] = (0,0,0)
-    pattern[masksize-2] = img
-
-#Working with files
-for f in files:
+    #Working with files
+    # for f in files:
     #-----------------------Files-----------------------
     img_C = Image.open(f).convert("RGBA")
     x, y = img_C.size
@@ -82,7 +84,8 @@ for f in files:
     MosaicResolutionOfImage = BigExtrema[1]+BigExtrema[2].index(max(BigExtrema[2]))    #Output
     if MosaicResolutionOfImage == 0:    #If nothing found - set resolution as smallest
         MosaicResolutionOfImage = HighRange+1
-    print('Mosaic Resolution of "' + os.path.basename(f) + '" is: ' + str(MosaicResolutionOfImage))    #The Resolution of Mosaiced Image
+    # print('Mosaic Resolution of "' + os.path.basename(f) + '" is: ' + str(MosaicResolutionOfImage))    #The Resolution of Mosaiced Image
+    return MosaicResolutionOfImage
     
     #DEBUG Show image
 #    cv2.imshow('image',img_rgb)
