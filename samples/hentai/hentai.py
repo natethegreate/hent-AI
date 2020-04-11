@@ -29,6 +29,7 @@ ROOT_DIR = os.path.abspath("../../")
 sys.path.append(ROOT_DIR)  # To find local version of the library
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
+# from detector import Detector
 
 # Directory to save logs and model checkpoints, if not provided
 # through the command line argument --logs
@@ -51,8 +52,8 @@ class HentaiConfig(Config):
     IMAGES_PER_GPU = 1
 
     # Number of classes (including background)
-    NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
-
+    # NUM_CLASSES = 1 + 1 + 1 + 1 + 1# Background + censor bar + mosaic + bar_canny_edge_detector + mosaic_canny_edge_detector 
+    NUM_CLASSES = 1 + 1 + 1
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 4002
 
@@ -73,8 +74,11 @@ class HentaiDataset(utils.Dataset):
         NOTE: modified to support multiple classes, specifically class bar and mosaic
         """
         # Add classes. We have only one class to add.
-        self.add_class("hentai", 1, "bar")
-        self.add_class("hentai", 2, "mosaic")
+        # self.add_class("hentai", 1, "bar")
+        # self.add_class("hentai", 2, "mosaic")
+        # NOTE: Enable below for Canny edge detector. If you want to replace original bar and mosaic label entirely, replace 3 and 4 with 1 and 2.
+        self.add_class("hentai", 1, "bar_ced")
+        self.add_class("hentai", 2, "mosaic_ced")
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
@@ -141,9 +145,9 @@ class HentaiDataset(utils.Dataset):
         class_id = []
         # distinguish mask with a 1 or 2, which classes bar and mosaic
         for ids in class_ids_st:
-            if(ids == 'bar'):
+            if(ids == 'bar_ced'):
                 class_id.append(1)
-            elif(ids == 'mosaic'):
+            elif(ids == 'mosaic_ced'):
                 class_id.append(2)
         
         np_class_id = np.asarray(class_id) # std lists dont have shape, so convert to np
@@ -193,37 +197,37 @@ def train(model):
     # augmentation = ia.Fliplr(.5)
 
     # Training - Stage 1 Heads only
-    # print("Training network heads in hentai.py")
-    # model.train(dataset_train, dataset_val,
-    #             learning_rate=config.LEARNING_RATE,
-    #             epochs=4,
-    #             layers='heads',
-    #             augmentation=augmentation)
+    print("Training network heads in hentai.py")
+    model.train(dataset_train, dataset_val,
+                learning_rate=config.LEARNING_RATE,
+                epochs=20,
+                layers='heads',
+                augmentation=augmentation)
 
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up
-    # print("Fine tune Resnet stage 4 and up in hentai.py")
-    # model.train(dataset_train, dataset_val,
-    #             learning_rate=config.LEARNING_RATE,
-    #             epochs=40,
-    #             layers='4+',
-    #             augmentation=augmentation)
+    print("Fine tune Resnet stage 4 and up in hentai.py")
+    model.train(dataset_train, dataset_val,
+                learning_rate=config.LEARNING_RATE,
+                epochs=35,
+                layers='4+',
+                augmentation=augmentation)
 
     # Training - Stage 3
     # Fine tune all layers with lower learning rate
     print("Fine tune all layers in hentai.py")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=20,
+                epochs=50,
                 layers='all',
                 augmentation=augmentation)
 
     # Super fine tune
-    model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE,
-                epochs=40,
-                layers='all',
-                augmentation=augmentation)
+    # model.train(dataset_train, dataset_val,
+    #             learning_rate=config.LEARNING_RATE,
+    #             epochs=40,
+    #             layers='all',
+    #             augmentation=augmentation)
 
 ############################################################
 #  Training
@@ -237,7 +241,7 @@ if __name__ == '__main__':
         description='Train Mask R-CNN to detect censor bars.')
     parser.add_argument("command",
                         metavar="<command>",
-                        help="only 'train' supported")
+                        help="'train' or 'inference' supported")
     parser.add_argument('--dataset', required=False,
                         metavar="/path/to/hentai/dataset/",
                         help='Directory of the hentai dataset')
@@ -248,11 +252,16 @@ if __name__ == '__main__':
                         default=DEFAULT_LOGS_DIR,
                         metavar="/path/to/logs/",
                         help='Logs and checkpoints directory (default=logs/)')
+    parser.add_argument('--sources', required=False,
+                        metavar="path to images folder or video folder",
+                        help='Source folder to run on')
     args = parser.parse_args()
 
     # Validate arguments
     if args.command == "train":
         assert args.dataset, "Argument --dataset is required for training"
+    elif args.command == "inference":
+        assert args.sources, "Argument --sources required for inference"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
