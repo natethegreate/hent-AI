@@ -24,12 +24,14 @@ from imgaug import augmenters as ia, ALL
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-
+S_DIR = os.path.abspath(".")
+# print(S_DIR, ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
+sys.path.append(S_DIR)  # To find local version of the library
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
-# from detector import Detector
+from detector import Detector
 
 # Directory to save logs and model checkpoints, if not provided
 # through the command line argument --logs
@@ -143,7 +145,7 @@ class HentaiDataset(utils.Dataset):
         info = self.image_info[image_id]
         class_ids_st = info['class_ids']
         class_id = []
-        # distinguish mask with a 1 or 2, which classes bar and mosaic
+        # distinguish mask with a 1 or 2, which classes bar and mosaic TODO: Change these if classes change
         for ids in class_ids_st:
             if(ids == 'bar_ced'):
                 class_id.append(1)
@@ -255,6 +257,9 @@ if __name__ == '__main__':
     parser.add_argument('--sources', required=False,
                         metavar="path to images folder or video folder",
                         help='Source folder to run on')
+    parser.add_argument('--dtype', required=False,
+                        metavar="esrgan",
+                        help='Type of detection: Only esrgan supported now')
     args = parser.parse_args()
 
     # Validate arguments
@@ -262,6 +267,7 @@ if __name__ == '__main__':
         assert args.dataset, "Argument --dataset is required for training"
     elif args.command == "inference":
         assert args.sources, "Argument --sources required for inference"
+        assert args.dtype, "Argument --dtype required for type of inference. Use -h for help"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
@@ -278,7 +284,7 @@ if __name__ == '__main__':
             GPU_COUNT = 1
             IMAGES_PER_GPU = 1
         config = InferenceConfig()
-    config.display()
+    # config.display()
 
     # Create model
     if args.command == "train":
@@ -292,13 +298,18 @@ if __name__ == '__main__':
     else:
         weights_path = args.weights
 
-    # Load weights
-    print("Loading weights ", weights_path)
-    model.load_weights(weights_path, by_name=True)
+    src_path = args.sources
 
     # Train or evaluate
     if args.command == "train":
+        model.load_weights(weights_path, by_name=True)
         train(model)
+    elif args.command == "inference":
+        print("Starting inference")
+        detect_instance = Detector(weights_path=weights_path) # declare instance and load weights
+        detect_instance.load_weights()
+        if args.dtype == "esrgan":
+            detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
     else:
         print("'{}' is not recognized. "
               "Use 'train'".format(args.command))

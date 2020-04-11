@@ -44,13 +44,15 @@ class HentaiConfig(Config):
     # Adjust down if you use a smaller GPU.
     IMAGES_PER_GPU = 1
 
-    # Number of classes (including background)
-    NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
+    # Number of classes (including background) 
+    NUM_CLASSES = 1 + 1 + 1 
+    # NOTE: Enable the following and disable above if on Canny edge detector model
+    # NUM_CLASSES = 1 + 1 + 1 + 1 + 1# Background + censor bar + mosaic + bar_canny_edge_detector + mosaic_canny_edge_detector 
 
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 1490
 
-    # Skip detections with < 75% confidence NOTE: lowered this because its better for false positives
+    # Skip detections with < 75% confidence
     DETECTION_MIN_CONFIDENCE = 0.75
 
 # Detector class. Handles detection and potentially esr decensoring. For now, will house an ESR instance at startup
@@ -80,7 +82,11 @@ class Detector():
             print("ERROR in Detector init: Cannot find ESR_out or some dir within.")
             return
         # Create esrgan instance for detector instance
-        esr_model_path = os.path.join(os.path.abspath('.'), "ColabESRGAN/models/4x_FatalPixels_340000_G.pth")
+        try:
+            esr_model_path = os.path.join(os.path.abspath('.'), "4x_FatalPixels_340000_G.pth")
+        except:
+            print("ERROR in Detector init: ESRGAN model not found, make sure you have 4x_FatalPixels_340000_G.pth in this directory")
+            return
         # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
         if self.model.check_cuda_gpu()==True:
             print("CUDA-compatible GPU located")
@@ -161,7 +167,7 @@ class Detector():
                 return
             # Next, run the detection
             r = self.model.detect([image], verbose=0)[0]  
-             # Remove bars from detection; class 2
+             # Remove bars from detection; class 1
             remove_indices = np.where(r['class_ids'] != 2)
             new_masks = np.delete(r['masks'], remove_indices, axis=2)
 
@@ -211,7 +217,7 @@ class Detector():
                 return
             count = 0
             success = True
-            print("Video read complete, starting video detection:")
+            print("Video read complete, starting video detection. NOTE: frame 0 may take up to 1 minute")
             while success:
                 print("frame: ", count)
                 # Read next image
