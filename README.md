@@ -69,7 +69,7 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
-ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0.
+ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo.
 
 ## Requirements
 
@@ -89,7 +89,7 @@ Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common pa
 Here is an example of a screentoned image, and what it looks like when removed by my Screentone Remover app:
 ![Screentone removal example](assets/screentoneexsfw.jpg)
 
-* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL/download?path=%2F&files=4x_FatalPixels_340000_G.pth&downloadStartSecret=r4q3aw60ijm) and place it inside the ColabESRGAN/models folder.
+* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder.
 
 
 ## Important Notes (READ BEFORE USING)
