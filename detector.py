@@ -169,14 +169,17 @@ class Detector():
                 return
             # First, calculate mosaic granularity. Then, apply pre-sharpen
             granularity = get_mosaic_res(img_path)
+            if granularity < 12: #TODO: implement adaptive granularity by weighted changes
+                granularity = 12
             print("gran is ", granularity)
-            s_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            sharpened = filter2D(image, -1, s_kernel)
+            # s_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+            # sharpened = filter2D(image, -1, s_kernel)
             # Next, run the detection
             r = self.model.detect([image], verbose=0)[0]  
-             # Remove bars from detection; class 1
+             # Remove bars from detection; class 1 
             remove_indices = np.where(r['class_ids'] != 2)
             new_masks = np.delete(r['masks'], remove_indices, axis=2)
+            # find way to skip frames with no detection
 
             # Now we have the mask from detection, begin ESRGAN by first resizing img into temp folder. 
             try:
@@ -194,9 +197,7 @@ class Detector():
             gan_img_path = self.out_path + img_name[:-4] + '.png'
             gan_image = skimage.io.imread(gan_img_path)
 
-            s_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            sharpened = filter2D(gan_image, -1, s_kernel)
-            skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', gan_image)
+            # skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', sharpened)
             # gan_image = gan_img
             # if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
             gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
@@ -238,7 +239,13 @@ class Detector():
                     # print('------    begin', end=' ')
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
-                    
+                    # temp save image for GMP usage
+                    file_name = self.temp_path2 + img_name[:-4]  + '.png'
+                    skimage.io.imsave(file_name, image)
+                    granularity = get_mosaic_res(file_name)
+                    if granularity < 12: #TODO: implement adaptive granularity by weighted changes
+                        granularity = 12
+                    print('granularity is',granularity)
                     # Detect objects
                     r = self.model.detect([image], verbose=0)[0]
                     # print('detection complete',end=' ')
@@ -247,7 +254,7 @@ class Detector():
                     new_masks = np.delete(r['masks'], remove_indices, axis=2)
                     # print('detection scrape complete')
                     # initial resize frame
-                    mini_img = resize(image, (int(image.shape[1]/14), int(image.shape[0]/14)), interpolation=INTER_AREA) # downscale to 1/16
+                    mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # downscale to 1/16
                     bil2 = bilateralFilter(mini_img, 3, 70, 70) 
                     file_name = self.temp_path + img_name[:-4]  + '.png' # need to save a sequence of pngs for TGAN operation
                     skimage.io.imsave(file_name, bil2)
@@ -258,11 +265,11 @@ class Detector():
                     # print('ESRGAN complete',end=' ')
                     # load output from esrgan, will still be 1/4 size of original image
                     gan_image = skimage.io.imread(gan_img_path)
-                    # if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
+
                     gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
-                    # print('------   second resize done',end=' ')
+
                     fin_img = self.splice(image, new_masks, gan_image)
-                    fin_img = bilateralFilter(fin_img, 9, 70, 70)  # quick bilateral filter to soften splice
+                    fin_img = bilateralFilter(fin_img, 7, 70, 70)  # quick bilateral filter to soften splice
                     fin_img = fin_img[..., ::-1] # reverse RGB to BGR for video writing
                     # Add image to video writer
                     vwriter.write(fin_img)
@@ -273,7 +280,7 @@ class Detector():
             vwriter.release()
             print('Video complete!')
         print("Process complete. Cleaning work directories...")
-        # self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
     # ESRGAN folder running function
     def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = False):
