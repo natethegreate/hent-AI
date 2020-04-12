@@ -65,11 +65,13 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 * [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights226.zip?dl=0)
 
-* (Latest) [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
+* [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
+
+* (Latest) [Model 268](https://www.dropbox.com/s/zvf6vbx3hnm9r31/weights268.zip?dl=0)
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
-ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0.
+ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo.
 
 ## Requirements
 
@@ -89,7 +91,7 @@ Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common pa
 Here is an example of a screentoned image, and what it looks like when removed by my Screentone Remover app:
 ![Screentone removal example](assets/screentoneexsfw.jpg)
 
-* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL/download?path=%2F&files=4x_FatalPixels_340000_G.pth&downloadStartSecret=r4q3aw60ijm) and place it inside the ColabESRGAN/models folder.
+* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder.
 
 
 ## Important Notes (READ BEFORE USING)
@@ -126,6 +128,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 * [v1.5.2](): Upgraded tensorflow to 1.8 in preparation for future video detection features. Image errors no longer stop program and get skipped. Terminal printing is more informative. UI Tweaks.
 
 * [1.6.3](): Added ESRGAN for video decensoring, DCP not required for this. Further support for non-unicode filenames.
+
+* [1.6.5](): Added presharpening for ESRGAN. Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
 
 
 ## Installation directions
