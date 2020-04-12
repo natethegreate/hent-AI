@@ -2,7 +2,7 @@
 
 Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
 
-This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870).
+This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), and video decensoring uses [ESRGAN](https://arxiv.org/abs/1809.00219).
 
 Here is a [NSFW Video](https://www.pornhub.com/view_video.php?viewkey=ph5e5bdbbcbce66) that shows better what this project does, on old model 161. 
 
@@ -23,7 +23,7 @@ Examples of mosaic detection on model 236:
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
 # Getting Started
-You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.5.0, tensorflow-gpu 1.9.0, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line. 
+You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.8.0, tensorflow-gpu 1.9.0, torch 0.4.1, and keras 2.2.0. I have not been able to get newer combinations stable. I use Anaconda3 for my command line. 
 
 Only windows is supported for the executable. You can pull this code for linux.
 
@@ -31,11 +31,11 @@ Only windows is supported for the executable. You can pull this code for linux.
 
 * [main.py](main.py) Contains GUI and all I/O handling and file parsing, along with basic error detection. Instantiates detector class.
 
-* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP. No longer needs hentai.py, and can run detections on its own.
+* [detector.py](detector.py) Contains my detector class, which is responsible for neural network bringup, starting inference detection, and creating overlay from mask for DCP. No longer needs hentai.py, and can run detections on its own. Also handles ESRGAN functionality.
 
 * [hentai.py](samples/hentai/hentai.py) Interfaces between my detector and the model. Based off of the Balloon.py of the Mask RCNN implementation. Only needed for training.
 
-* [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is based off the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
+* [inspect_h_model.ipynb](samples/hentai/inspect_h_model.ipynb) This notebook is identical to the balloon notebook. I modified it to work with this project instead, and it is best used to inspect a model. For detailed logging, use Tensorboard (which should be installed if you have tensorflow)
 
 * [inspect_h_data.ipynb](samples/hentai/inspect_h_data.ipynb)
 Same thing as above, except this notebook is used to validate the dataset. Also has cool information showing some of the quirks and features of MaskRcnn
@@ -61,13 +61,15 @@ Currently, the model needs a bigger database, namely with bar censors. Please co
 
 I experimented with other pre-trained models, but ended transfer learning with the imagenet model. You will want the latest model for better accuracy.
 
-* [Model 161](https://drive.google.com/open?id=1gyP9nIRsJ3pcfjcVLZya1aDVe971wCX4)
+* Model 161 (deprecated) 
 
 * [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights226.zip?dl=0)
 
 * (Latest) [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
+
+ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo.
 
 ## Requirements
 
@@ -87,6 +89,8 @@ Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common pa
 Here is an example of a screentoned image, and what it looks like when removed by my Screentone Remover app:
 ![Screentone removal example](assets/screentoneexsfw.jpg)
 
+* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder.
+
 
 ## Important Notes (READ BEFORE USING)
 
@@ -102,7 +106,7 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * The Video Maker button creates a video from the output of DCP in decensored_output. Run this after DCP completes. Note you still need to select the directories for the source video, and the DCP install directory.
 
-* Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
+* Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the short clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
 
 ## Versions and Downloads
@@ -119,7 +123,11 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [v1.5.0](https://github.com/natethegreate/hentAI/releases/tag/v1.5): Fixed greyscale shape error. Fixed bug where video was copied to DCP folder. Added support for jpg, as an option for jpg to png conversion. Added better exception catching. Updated weights to model 236. 
 
-* [v1.5.2](https://github.com/natethegreate/hentAI/releases/tag/v1.5.2): Upgraded tensorflow to 1.8 in preparation for future video detection features. Image errors no longer stop program and get skipped. Terminal printing is more informative. UI Tweaks.
+* [v1.5.2](): Upgraded tensorflow to 1.8 in preparation for future video detection features. Image errors no longer stop program and get skipped. Terminal printing is more informative. UI Tweaks.
+
+* [1.6.3](): Added ESRGAN for video decensoring, DCP not required for this. Further support for non-unicode filenames.
+
+* [1.6.5](): Added presharpening for ESRGAN. Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
 
 
 ## Installation directions
@@ -128,11 +136,11 @@ For detailed instructions, follow Install_and_Tutorial.txt
 
 Executable:
 
-* Install from the links directly above
+* Install from the links above
 
-* Extract the downloaded file to some folder
+* Extract to some folder
 
-* Follow Install_and _tutorial for more 
+* Follow Install_and _tutorial for more
 
 Code:
 
@@ -148,7 +156,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-* To run hent-AI, run
+* To run hentAI, run
 
 ```
 python main.py
@@ -174,6 +182,10 @@ Inspiration from [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy)
 Mask Rcnn implementation from [Matterport](https://github.com/matterport/Mask_RCNN)
 
 Obtained weights from mattya's [chainer-DCGAN]( https://github.com/mattya/chainer-DCGAN)
+
+ESRGAN implementation from [this paper](https://arxiv.org/abs/1809.00219), using their old architecture provided by [styler00dollar](https://github.com/styler00dollar/Colab-ESRGAN)
+
+Using [Twittman's](https://github.com/alsa64/AI-wiki/wiki/Model-Database) trained model fatal pixels. 
 
 Dataset annotated with [VGG annotator](http://www.robots.ox.ac.uk/~vgg/software/via/via.html)
 
