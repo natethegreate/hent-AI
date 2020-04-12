@@ -7,7 +7,7 @@ from PIL import Image
 
 # Conversion from file based script to individual image usage
 def get_mosaic_res(root_img=None):
-    assert root_img
+    # assert root_img
     #You can change those folder paths
     # os.makedirs(root_img, exist_ok=True)
 
@@ -39,7 +39,7 @@ def get_mosaic_res(root_img=None):
     #Working with files
     # for f in files:
     #-----------------------Files-----------------------
-    img_C = Image.open(f).convert("RGBA")
+    img_C = Image.fromarray(f).convert("RGBA")
     x, y = img_C.size
     card = Image.new("RGBA", (x, y), (255, 255, 255, 0))
     cvI = Image.alpha_composite(card, img_C)

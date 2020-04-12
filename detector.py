@@ -167,25 +167,30 @@ class Detector():
                 print("ERROR in detector.ESRGAN: Image read. Skipping. image_path=", img_path)
                 print(e)
                 return
-            # First, calculate mosaic granularity. Then, apply pre-sharpen
-            granularity = get_mosaic_res(np.array(image))
-            if granularity < 12: #TODO: implement adaptive granularity by weighted changes
-                granularity = 12
-            print("gran is ", granularity)
-            # s_kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-            # sharpened = filter2D(image, -1, s_kernel)
-            # Next, run the detection
+            # Run detection first
             r = self.model.detect([image], verbose=0)[0]  
              # Remove bars from detection; class 1 
+            
+            if len(r["scores"]) == 0:
+                print("Skipping frame with no detection")
+                return
             remove_indices = np.where(r['class_ids'] != 2)
             new_masks = np.delete(r['masks'], remove_indices, axis=2)
+
+            # Calculate mosaic granularity. Then, apply pre-sharpen
+            granularity = get_mosaic_res(np.array(image))
+            if granularity < 12: #TODO: implement adaptive granularity by weighted changes
+                print("gran was ", granularity)
+                granularity = 12
+        
+            
             # find way to skip frames with no detection
 
             # Now we have the mask from detection, begin ESRGAN by first resizing img into temp folder. 
             try:
                 mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # downscale to 1/16
                 # After resize, run bilateral filter to keep colors coherent
-                bil2 = bilateralFilter(mini_img, 3, 70, 70) 
+                bil2 = bilateralFilter(mini_img, 3, 60, 60) 
                 file_name = self.temp_path + img_name[:-4] + '.png' 
                 skimage.io.imsave(file_name, bil2)
             except Exception as e:
@@ -236,32 +241,37 @@ class Detector():
                 # Read next image
                 success, image = vcapture.read()
                 if success:
-                    # print('------    begin', end=' ')
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
-                    # temp save image for GMP usage
+
+                    # Detect objects
+                    r = self.model.detect([image], verbose=0)[0]
+                    if len(r["scores"]) == 0:
+                        print("Skipping frame with no detection")
+                        # Still need to write image to vwriter
+                        image = image[..., ::-1] 
+                        vwriter.write(image)
+                        continue
 
                     granularity = get_mosaic_res(np.array(image)) # pass np array of image as ref to gmp function
                     if granularity < 12: #TODO: implement adaptive granularity by weighted changes
+                        print('granularity was',granularity)
                         granularity = 12
-                    print('granularity is',granularity)
-                    # Detect objects
-                    r = self.model.detect([image], verbose=0)[0]
-                    # print('detection complete',end=' ')
+                    
                     # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
                     remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
                     new_masks = np.delete(r['masks'], remove_indices, axis=2)
-                    # print('detection scrape complete')
+                    
                     # initial resize frame
                     mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # downscale to 1/16
                     bil2 = bilateralFilter(mini_img, 3, 70, 70) 
                     file_name = self.temp_path + img_name[:-4]  + '.png' # need to save a sequence of pngs for TGAN operation
                     skimage.io.imsave(file_name, bil2)
-                    # print('------    first resize and save done', end=' ')
+                    
                     # run ESRGAN algorithms
                     gan_img_path = self.out_path + img_name[:-4]  + '.png'
                     self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
-                    # print('ESRGAN complete',end=' ')
+                    
                     # load output from esrgan, will still be 1/4 size of original image
                     gan_image = skimage.io.imread(gan_img_path)
 
@@ -273,7 +283,7 @@ class Detector():
                     # Add image to video writer
                     vwriter.write(fin_img)
                     fin_img=0 # not sure if this does anything haha
-                    # print('splice and vwrite complete')
+                    
                     count += 1
 
             vwriter.release()
