@@ -251,6 +251,7 @@ class Detector():
                         # Still need to write image to vwriter
                         image = image[..., ::-1] 
                         vwriter.write(image)
+                        count += 1
                         continue
 
                     granularity = get_mosaic_res(np.array(image)) # pass np array of image as ref to gmp function
