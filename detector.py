@@ -155,7 +155,7 @@ class Detector():
 
     # Runs hent-AI detection, and ESRGAN on image. Mosaic only.
     def ESRGAN(self, img_path, img_name, is_video=False):
-        # Image read
+        # Image reads
         if is_video == False:
             try:
                 image = skimage.io.imread(img_path) # problems with strange shapes
@@ -168,7 +168,7 @@ class Detector():
                 print(e)
                 return
             # First, calculate mosaic granularity. Then, apply pre-sharpen
-            granularity = get_mosaic_res(img_path)
+            granularity = get_mosaic_res(np.array(image))
             if granularity < 12: #TODO: implement adaptive granularity by weighted changes
                 granularity = 12
             print("gran is ", granularity)
@@ -240,9 +240,8 @@ class Detector():
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
                     # temp save image for GMP usage
-                    file_name = self.temp_path2 + img_name[:-4]  + '.png'
-                    skimage.io.imsave(file_name, image)
-                    granularity = get_mosaic_res(file_name)
+
+                    granularity = get_mosaic_res(np.array(image)) # pass np array of image as ref to gmp function
                     if granularity < 12: #TODO: implement adaptive granularity by weighted changes
                         granularity = 12
                     print('granularity is',granularity)
