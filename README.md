@@ -65,7 +65,9 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 * [Model 226](https://www.dropbox.com/s/08r26ho7yxx1fx8/weights226.zip?dl=0)
 
-* (Latest) [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
+* [Model 236](https://www.dropbox.com/s/6liwqgop4kazot2/weights236.zip?dl=0) *Packaged with v1.5
+
+* (Latest) [Model 268](https://www.dropbox.com/s/zvf6vbx3hnm9r31/weights268.zip?dl=0)
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
