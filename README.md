@@ -127,6 +127,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [1.6.3](): Added ESRGAN for video decensoring, DCP not required for this. Further support for non-unicode filenames.
 
+* [1.6.5](): Added presharpening for ESRGAN. Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
+
 
 ## Installation directions
 
