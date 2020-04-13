@@ -280,6 +280,13 @@ class Detector():
                     # load output from esrgan, will still be 1/4 size of original image
                     gan_image = skimage.io.imread(gan_img_path)
 
+                    gan_image = resize(gan_image, (int(gan_image.shape[1]/2), int(gan_image.shape[0]/2))) 
+                    file_name = self.temp_path2 + img_name[:-4] + '.png'
+                    skimage.io.imsave(file_name, gan_image)
+                    gan_img_path = self.out_path2 + img_name[:-4] + '.png'
+                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+
+                    gan_image = skimage.io.imread(gan_img_path)
                     gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
 
                     fin_img = self.splice(image, new_masks, gan_image)
