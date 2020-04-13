@@ -76,7 +76,7 @@ class Detector():
                                         model_dir=DEFAULT_LOGS_DIR)
         try:
             self.out_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out/")
-            self.out2_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out2/")
+            self.out_path2 = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out2/")
             self.temp_path = os.path.join(os.path.abspath('.'), "ESR_temp/temp/")
             self.temp_path2 = os.path.join(os.path.abspath('.'), "ESR_temp/temp2/")
             self.fin_path = os.path.join(os.path.abspath('.'), "ESR_output/")
@@ -99,7 +99,7 @@ class Detector():
 
     # Clean out temp working images from all directories in ESR_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
     def clean_work_dirs(self):
-        folders = [self.out_path, self.out2_path, self.temp_path, self.temp_path2]
+        folders = [self.out_path, self.out_path2, self.temp_path, self.temp_path2]
         for folder in folders:
             for filename in os.listdir(folder):
                 file_path = os.path.join(folder, filename)
@@ -197,14 +197,18 @@ class Detector():
                 print("ERROR in detector.ESRGAN: resize. Skipping. image_path=",img_path, e)
                 return
             # Now run ESRGAN inference
-            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=self.out_path + img_name[:-4] + '.png')
-            # load output from esrgan, will still be 1/4 size of original image
             gan_img_path = self.out_path + img_name[:-4] + '.png'
+            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+            # load output from esrgan, will still be 1/4 size of original image
             gan_image = skimage.io.imread(gan_img_path)
+            # Resize to 1/3. Run ESRGAN again.
+            gan_image = resize(gan_image, (int(gan_image.shape[1]/2), int(gan_image.shape[0]/2))) 
+            file_name = self.temp_path2 + img_name[:-4] + '.png'
+            skimage.io.imsave(file_name, gan_image)
+            gan_img_path = self.out_path2 + img_name[:-4] + '.png'
+            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
 
-            # skimage.io.imsave(self.temp_path2 + img_name[:-4] + '.png', sharpened)
-            # gan_image = gan_img
-            # if gan_image.shape[0] != image.shape[0] or gan_image.shape[1] != image.shape[1]: #resize to original image size
+            gan_image = skimage.io.imread(gan_img_path)
             gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
             # Splice newly enhanced mosaic area over original image
             fin_img = self.splice(image, new_masks, gan_image)
@@ -290,7 +294,7 @@ class Detector():
             vwriter.release()
             print('Video complete!')
         print("Process complete. Cleaning work directories...")
-        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+        # self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
     # ESRGAN folder running function
     def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = False):
