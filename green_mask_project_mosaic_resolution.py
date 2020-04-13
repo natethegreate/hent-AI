@@ -20,7 +20,7 @@ def get_mosaic_res(root_img=None):
     CannyTr1 = 20
     CannyTr2 = 100
     LowRange = 2
-    HighRange = 20
+    HighRange = 24
     DetectionTr = 0.32
 
     pattern = [None] * (HighRange+2)
