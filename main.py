@@ -170,12 +170,7 @@ def hentAI_TGAN(in_path=None, is_video=False, force_jpg=False):
     label = Label(popup, text='Process executed successfully!')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
     num_jpgs = detect_instance.get_non_png()
-    # Popup for unprocessed jpgs
-    # if(num_jpgs > 0 and force_jpg==False):
-    #     label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
-    #     label2.pack(side=TOP, fill=X, pady=10, padx=5)
-    # dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
-    # dcprun.pack(pady=10)
+
     okbutton = Button(popup, text='Ok', command=popup.destroy)
     okbutton.pack()
     popup.mainloop()
@@ -257,7 +252,7 @@ def mosaic_detect():
 
 def mosaic_detect_TGAN():
     mos_win = new_window()
-    mos_win.title('ESRGAN Mosaic Full decensor')
+    mos_win.title('ESRGAN Mosaic Full decensoring')
 
     # input image directory label, entry, and button
     o_label = Label(mos_win, text = 'Your own input image folder: ')
@@ -266,18 +261,20 @@ def mosaic_detect_TGAN():
     o_entry.grid(row=1, column=1)
     out_button = Button(mos_win, text="Browse", command=input_newdir)
     out_button.grid(row=1, column=2, padx=10)
+    help_label = Label(mos_win, text = 'Output can be found in ESR_output/ folder')
+    help_label.grid(row=2, column=1, padx=10)
 
     go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=False))
-    go_button.grid(row=2,column=1, pady=10)
+    go_button.grid(row=3,column=1, pady=10)
     back_button = Button(mos_win, text="Back", command = backMain)
-    back_button.grid(row=2,column=0, padx=10)
+    back_button.grid(row=3,column=0, padx=10)
 
 
     mos_win.mainloop()
 
 def video_detect_TGAN():
     mos_win = new_window()
-    mos_win.title('ESRGAN Video Full decensor')
+    mos_win.title('ESRGAN Video Full decensor (Nvidia GPU Highly reccommended)')
 
     # input image directory label, entry, and button
     o_label = Label(mos_win, text = 'Your own input video (.mp4) folder: ')

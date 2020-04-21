@@ -49,7 +49,6 @@ class HentaiConfig(Config):
     # Number of classes (including background) 
     NUM_CLASSES = 1 + 1 + 1 
     # NOTE: Enable the following and disable above if on Canny edge detector model
-    # NUM_CLASSES = 1 + 1 + 1 + 1 + 1# Background + censor bar + mosaic + bar_canny_edge_detector + mosaic_canny_edge_detector 
 
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 1490
@@ -91,10 +90,10 @@ class Detector():
             return
         # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
         if self.model.check_cuda_gpu()==True:
-            print("CUDA-compatible GPU located")
+            print("CUDA-compatible GPU located!")
             self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=esr_model_path, hw='cuda')
         else:
-            print("No CUDA-compatible GPU located")
+            print("No CUDA-compatible GPU located. Using CPU")
             self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=esr_model_path, hw='cpu')
 
     # Clean out temp working images from all directories in ESR_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
@@ -109,7 +108,7 @@ class Detector():
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                 except Exception as e:
-                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+                    print('ERROR in clean_work_dirs: Failed to delete %s. Reason: %s' % (file_path, e))
 
     # Make sure this is called before using model weights
     def load_weights(self):
@@ -180,7 +179,7 @@ class Detector():
             # Calculate mosaic granularity. Then, apply pre-sharpen
             granularity = get_mosaic_res(np.array(image))
             if granularity < 12: #TODO: implement adaptive granularity by weighted changes
-                print("gran was ", granularity)
+                print("Granularity of image was ", granularity)
                 granularity = 12
         
             
@@ -190,9 +189,9 @@ class Detector():
             try:
                 mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # downscale to 1/16
                 # After resize, run bilateral filter to keep colors coherent
-                bil2 = bilateralFilter(mini_img, 3, 60, 60) 
+                # bil2 = bilateralFilter(mini_img, 3, 60, 60) 
                 file_name = self.temp_path + img_name[:-4] + '.png' 
-                skimage.io.imsave(file_name, bil2)
+                skimage.io.imsave(file_name, mini_img)
             except Exception as e:
                 print("ERROR in detector.ESRGAN: resize. Skipping. image_path=",img_path, e)
                 return
@@ -228,6 +227,7 @@ class Detector():
                 width = int(vcapture.get(CAP_PROP_FRAME_WIDTH))
                 height = int(vcapture.get(CAP_PROP_FRAME_HEIGHT))
                 fps = vcapture.get(CAP_PROP_FPS)
+                print("Detected fps:", fps)
         
                 # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
                 file_name = img_name[:-4] + "_decensored.avi"
@@ -259,9 +259,9 @@ class Detector():
                         continue
 
                     granularity = get_mosaic_res(np.array(image)) # pass np array of image as ref to gmp function
-                    if granularity < 12: #TODO: implement adaptive granularity by weighted changes
-                        print('granularity was',granularity)
-                        granularity = 12
+                    if granularity < 10: #TODO: implement adaptive granularity by weighted changes
+                        print('Granularity was',granularity)
+                        granularity = 10
                     
                     # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
                     remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
@@ -276,15 +276,6 @@ class Detector():
                     # run ESRGAN algorithms
                     gan_img_path = self.out_path + img_name[:-4]  + '.png'
                     self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
-                    
-                    # load output from esrgan, will still be 1/4 size of original image
-                    # gan_image = skimage.io.imread(gan_img_path)
-
-                    # gan_image = resize(gan_image, (int(gan_image.shape[1]/2), int(gan_image.shape[0]/2))) 
-                    # file_name = self.temp_path2 + img_name[:-4] + '.png'
-                    # skimage.io.imsave(file_name, gan_image)
-                    # gan_img_path = self.out_path2 + img_name[:-4] + '.png'
-                    # self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
 
                     gan_image = skimage.io.imread(gan_img_path)
                     gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
@@ -326,10 +317,7 @@ class Detector():
 
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
-        
         # Video capture to get shapes and stats
-        # Only supports 1 video at a time, but this can still get mp4 only
-        
         vid_list = []
         for file in os.listdir(str(image_path)):
             file_s = str(file)
@@ -355,12 +343,7 @@ class Detector():
         print("Beginning build. Do ensure only relevant images are in source directory")
         input_path = dcp_path + '/decensor_output/'
         img_list = []
-        # output of the video detection should be in order anyway
-        # os.chdir(input_path)
-        # files = filter(os.path.isfile, os.listdir(input_path))
-        # files = [os.path.join( f) for f in files]    
-        # files.sort(key=lambda x: os.path.getmtime(x))
-        # for file in files:
+
         for file in os.listdir(input_path):
             # TODO: check what other filetpyes supported
             file_s = str(file)
@@ -386,9 +369,7 @@ class Detector():
         assert image_path
         assert fname # replace these with something better?
         
-        if is_video: # TODO: video capabilities will finalize later
-            # from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc
-            
+        if is_video: # TODO: video capabilities will finalize later            
             # Video capture
             video_path = image_path
             vcapture = VideoCapture(video_path)

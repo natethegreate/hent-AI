@@ -49,6 +49,9 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
    corresponding folders in your DeepCreamPy directory.
 
 8. Now you should run DeepCreamPy, and you can close hentAI. Be sure to select the appropriate censor type in DCP.
+
+9. If you choose the ESRGAN options, detection and decensoring will be done together so DeepCreamPy won't be needed.
+   The output of this will be in the ESR_output folder.
 	
 --- hentAI video detecting (Experimental, mosaic only)
 1. Place the input .mp4 into its own folder. 
