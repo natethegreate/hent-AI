@@ -1,6 +1,6 @@
 # Detecting censors with deep learning and computer vision
 
-Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. 
+Illustrated adult content created in Japan is required to be censored by law. Two common types of censoring involves censor bars and mosaic blurs. For us degenerates living outside of Japan, this means we are also subject to the bars and mosaics. There is a solution, [DeepCreamPy](https://github.com/deeppomf/DeepCreamPy) by deeppomf that can draw over the censors, given that you tell it where the censors are. That is a long and painstaking process, so I hope to automate that process with this project. This project will utilize deep learning and image segmentation, techniques typically used in autonomous vehicles and computer vision tasks. New for 1.6.3, we added ESRGAN as an alternative to DeepCreamPy, which will also decensor a mosaic image/video after the detection.
 
 This is built atop Matterport's [Mask R-CNN](https://arxiv.org/abs/1703.06870), and video decensoring uses [ESRGAN](https://arxiv.org/abs/1809.00219).
 
@@ -42,7 +42,9 @@ Same thing as above, except this notebook is used to validate the dataset. Also 
 
 * [test_data_generator.py](test_data_generator.py) Script that automates bar censoring and annotation, more explained below. This is meant to be placed in a separate folder, and expects uncensored images in a folder called "decensored_input" and outputs the barred image into "decensored_input_original", and populates a csv with the annotations. You do not need to use this script, unless you want to help in expanding the dataset. In which case, join the discord and contact me.
 
-I have only worked on Windows platforms, and had not been able to train or work on other instances like Google colab and Google Cloud.
+* [hent_AI_COLAB_1.ipynb](hent_AI_COLAB_1.ipynb) Google Colab notebook with instructions for ESRGAN video decensoring. This will use Google's GPUs on the cloud for free, and should be faster than most, if not all consumer GPUs. But, sessions will get deleted after 30 minutes of idle or 12 hours. I reccommend this option for any sort of video decensoring, it is visually good enough and really fast.
+
+* [green_mask_project_mosaic_resolution.py](green_mask_project_mosaic_resolution.py) Script from GMP that estimates a mosaic's granularity (size of the mosaic boxes) for use in ESRGAN decensoring.
 
 # The Dataset
 
@@ -71,7 +73,7 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
-ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo.
+ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo. Place this model in the main directory. 
 
 ## Requirements
 
@@ -80,31 +82,30 @@ You will need to download and install DeepCreamPy, which is linked in the intro.
 The executable itself should not have any requirements on Windows. For linux, clone the repo and follow the provided instructions for getting its requirements.
 
 (Source code on Windows) I would reccomend running these on a virtual environment, with Anaconda3.
-Python 3.5, TensorFlow 1.5, Keras 2.2, tensorflow-gpu 1.9.0, and other common packages listed in `requirements.txt`.
+Python 3.5.2, TensorFlow 1.8, Keras 2.2, tensorflow-gpu 1.9.0, torch 0.4.1 and other common packages listed in `requirements.txt`.
 
 * For now, DCP is required until I can create my own alternative. This project expects to use the DCP directory. You can install the executable or the source code, either should work.
 
-* DCP is ONLY compatible with .png images, and not jpg. That should be the first thing you do - convert whatever content you want to decensor to png format. You can use online tools like jpg2png. Again, this should be done before anything else.
+* DCP is ONLY compatible with .png images, and not jpg. Either you use png only or try the provided jpg converter (Force jpg button). You can use online tools like jpg2png. Again, this should be done before anything else.
 
 * DCP is NOT compatible with screentones, or that dotted effect that is characteristic of printed works (see below). Simply refer to my other project, [Screentone Remover](https://github.com/natethegreate/Screentone-Remover), which will batch remove screentones using Digital Signal Processing techniques. This is the only way for printed non-colored images to be decensored.
 
 Here is an example of a screentoned image, and what it looks like when removed by my Screentone Remover app:
 ![Screentone removal example](assets/screentoneexsfw.jpg)
 
-* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder.
-
+* For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder. 
 
 ## Important Notes (READ BEFORE USING)
 
-* I highly reccommend running hent-AI on batches, for example one doujin or a few doujins at once. The slowest part of hent-AI is the initialization, so the first inference takes time but the rest will be quick. 
+* I highly reccommend running hent-AI on batches, for example one doujin or a few doujins at once. The slowest part of hent-AI is the initialization, so the first inference takes time but the rest will be quicker. 
 
 * The current model is not perfect. Yet. Expect some trouble with white censor bars, small censor bars, partially-transparent censor bars, and censor bars that are fused together as one large censor. Any absurd amount of censoring may cause issues for hent-AI.
 
 * This model is not trained in recognizing full censorship, where genetalia is not drawn at all. Non-standard censoring is also not supported. 
 
-* The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works. If you must decensor images with both, I would suggest decensoring the bars on one run, then the mosaics on a seconds run.
+* The model supports mosaics and bars, but it really struggles when both are used on the same spot. Also, DCP can only generate for bars or mosaics, so you will need to keep mosaic censoring works separate from bar censored works. If you must decensor images with both, I  suggest decensoring the bars on one run, then the mosaics on a seconds run.
 
-* If you choose to try the video detection, PLEASE only do one SHORT clip at a time. More testing is needed with video detection.
+* CUDA compatible Nvidia GPUs are reccommended for large amounts of images, or videos. If you don't have one, refer to the [colab notebook](hent_AI_COLAB_1.ipynb).
 
 * The Video Maker button creates a video from the output of DCP in decensored_output. Run this after DCP completes. Note you still need to select the directories for the source video, and the DCP install directory.
 
@@ -129,7 +130,7 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [1.6.3](): Added ESRGAN for video decensoring, DCP not required for this. Further support for non-unicode filenames.
 
-* [1.6.5](): Added presharpening for ESRGAN. Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
+* [1.6.5](): Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
 
 
 ## Installation directions
@@ -174,7 +175,7 @@ Alternatively, you can resume training using --weights=last
 
 
 ## Contributing
-I am very new to convolutional nueral networks and deep learning as a whole. Contributions and improvements to this repo are welcome, so I would encourage joining the Discord.
+Contributions and improvements to this repo are welcome, so I would encourage joining the Discord.
 
 
 # Acknowledgements
