@@ -17,8 +17,11 @@ The model packaged here is model 161. The weights are used to run the detections
 
 1. Unzip the downloaded folder, run main.exe
 
-2. You should see a black terminal show up. This means the libraries are being loaded. Wait until you see some 
-   unimportant text show up, then the main GUI will soon appear. Should not take more than 1 minute.
+2. Make sure you downloaded the 4x_FatalPixels_340000_G.pth model and place it beside the main.exe.
+	Link here: https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL
+
+3. You should see a black terminal show up. This means the libraries are being loaded. Wait until you see some 
+   status text show up, then the main GUI will soon appear. Should not take more than 1 minute.
 
 
 
@@ -51,7 +54,7 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 8. Now you should run DeepCreamPy, and you can close hentAI. Be sure to select the appropriate censor type in DCP.
 
 9. If you choose the ESRGAN options, detection and decensoring will be done together so DeepCreamPy won't be needed.
-   The output of this will be in the ESR_output folder.
+   The output of this will be in the ESR_output folder, but videos will be written to the main directory
 	
 --- hentAI video detecting (Experimental, mosaic only)
 1. Place the input .mp4 into its own folder. 
@@ -93,6 +96,12 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 5. Install requirements
 
 	pip install -r requirements.txt
+
+5.5. NOTE: You might not be able to install torch 0.4.1 from pip, like on Windows. 
+In that case, run the following for CPU
+	conda install pytorch=0.4.1 -c pytorch
+or if you have a Cuda compatible card:
+	conda install pytorch=0.4.1 cuda90 -c pytorch
 
 6. Install Mask Rcnn
 
@@ -163,6 +172,6 @@ Get the right one for your computer
 
 	pip install tensorflow-gpu==1.9.0
 	
-4. (Training only) For training, you need cudnn 7.0 runtime. You need an Nvidia account to access the download, but it that is free.
+4. (Training only) For training, you may need cudnn 7.0 runtime. You need an Nvidia account to access the download, but it that is free.
 I dont have the exact link, but you can Google search or look for it here: https://developer.nvidia.com/ 
 	
