@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.5.2'
+versionNumber = '1.6.3'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -98,14 +98,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(5)
     if in_path==None:
         error(2)
-
-    # print(force_jpg) #debug
-    # return    
-
-    # print('Initializing Detector class')
-    detect_instance = Detector(weights_path=weights_path)
-    # print('loading weights')
-    detect_instance.load_weights()
+          
     if(is_mosaic == True and is_video==False):
         # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
         print('copying inputs into input_original dcp folder')
@@ -115,9 +108,9 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
             # kinda dumb but check if same file
             if force_jpg==True:
                 try:
-                    shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/' + file[:-4] + '.png')
+                    shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/' + file) # DCP is compatible with original jpg input.
                 except:
-                    print("ERROR in hentAI_detection: Mosaic copy + png conversion to decensor_input_original failed!")
+                    print("ERROR in hentAI_detection: Mosaic copy + png conversion to decensor_input_original failed!", file)
                     return
             else:
                 shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/')
@@ -139,7 +132,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
         load_label.pack(side=TOP, fill=X, pady=10, padx=20)
         loader.update()
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, force_jpg=force_jpg)
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, force_jpg=force_jpg, is_mosaic=is_mosaic)
         loader.destroy()
 
 
@@ -160,14 +153,27 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     okbutton.pack()
     popup.mainloop()
 
-# subprocess to automatically run DCP. However, DCP does not do anything when called from here so not adding this yet
-def run_dcp(dcp_dir=None):
-    subprocess.call(dcp_dir + '/main.exe')
+# helper function to call TGAN folder function. 
+def hentAI_TGAN(in_path=None, is_video=False, force_jpg=False):
+    print("Starting ESRGAN detection and decensor")
+    loader = Tk()
+    loader.title('Running TecoGAN')
+    load_label = Label(loader, text='Now running decensor. This can take a while. Please wait')
+    load_label.pack(side=TOP, fill=X, pady=10, padx=20)
+    loader.update()
+    detect_instance.run_ESRGAN(in_path = in_path, is_video = is_video, force_jpg = force_jpg)
+    loader.destroy()
 
+    print('Process complete!')
+    popup = Tk()
+    popup.title('Success!')
+    label = Label(popup, text='Process executed successfully!')
+    label.pack(side=TOP, fill=X, pady=20, padx=10)
+    num_jpgs = detect_instance.get_non_png()
 
-# function scans directory and returns generator
-def getfileList(dir):
-    return (i for i in listdir(dir) if i.endswith('.png'))
+    okbutton = Button(popup, text='Ok', command=popup.destroy)
+    okbutton.pack()
+    popup.mainloop()
 
 # globals that hold directory strings
 dtext = ""
@@ -244,6 +250,45 @@ def mosaic_detect():
 
     mos_win.mainloop()
 
+def mosaic_detect_TGAN():
+    mos_win = new_window()
+    mos_win.title('ESRGAN Mosaic Full decensoring')
+
+    # input image directory label, entry, and button
+    o_label = Label(mos_win, text = 'Your own input image folder: ')
+    o_label.grid(row=1, padx=20 ,pady=10)
+    o_entry = Entry(mos_win, textvariable=ovar)
+    o_entry.grid(row=1, column=1)
+    out_button = Button(mos_win, text="Browse", command=input_newdir)
+    out_button.grid(row=1, column=2, padx=10)
+    help_label = Label(mos_win, text = 'Output can be found in ESR_output/ folder')
+    help_label.grid(row=2, column=1, padx=10)
+
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=False))
+    go_button.grid(row=3,column=1, pady=10)
+    back_button = Button(mos_win, text="Back", command = backMain)
+    back_button.grid(row=3,column=0, padx=10)
+
+
+    mos_win.mainloop()
+
+def video_detect_TGAN():
+    mos_win = new_window()
+    mos_win.title('ESRGAN Video Full decensor (Nvidia GPU Highly reccommended)')
+
+    # input image directory label, entry, and button
+    o_label = Label(mos_win, text = 'Your own input video (.mp4) folder: ')
+    o_label.grid(row=1, padx=20 ,pady=10)
+    o_entry = Entry(mos_win, textvariable=ovar)
+    o_entry.grid(row=1, column=1, padx=10)
+    out_button = Button(mos_win, text="Browse", command=input_newdir)
+    out_button.grid(row=1, column=2, padx=10)
+
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_TGAN(in_path=o_entry.get(), is_video=True))
+    go_button.grid(row=2,column=1, pady=10)
+    back_button = Button(mos_win, text="Back", command = backMain)
+    back_button.grid(row=2,column=0, padx=10)
+
 def video_detect():
     vid_win = new_window()
     vid_win.title('Video Detection (Experimental)')
@@ -297,7 +342,7 @@ def  replace_window(root):
     current_window.wm_protocol("WM_DELETE_WINDOW", root.destroy)
     return current_window
 
-# This main funct to fall back on
+# This main funct to fall back on, if the back button is pressed
 def backMain():
     title_window = new_window()
     title_window.title("hentAI v." + versionNumber)
@@ -309,12 +354,17 @@ def backMain():
     intro_label.pack(pady=10)
     bar_button = Button(title_window, text="Bar", command=bar_detect)
     bar_button.pack(pady=10)
-    mosaic_button = Button(title_window, text="Mosaic", command=mosaic_detect)
+    mosaic_button = Button(title_window, text="Mosaic (DCP)", command=mosaic_detect)
     mosaic_button.pack(pady=10)
-    video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
+    mosaic_TG_button = Button(title_window, text="Mosaic (ESRGAN)", command=mosaic_detect_TGAN)
+    mosaic_TG_button.pack(pady=10)
+    video_button = Button(title_window, text='Video (DCP)', command=video_detect)
     video_button.pack(pady=10, padx=10)
-
-    title_window.geometry("300x200")
+    video_TG_button = Button(title_window, text="Video (ESRGAN)", command=video_detect_TGAN) # separate window for future functionality changes
+    video_TG_button.pack(pady=10, padx=10)
+    # detect_instance = Detector(weights_path=weights_path) # Detect instance is the same
+    # detect_instance.load_weights()
+    title_window.geometry("300x300")
     title_window.mainloop()
 
 if __name__ == "__main__":
@@ -328,12 +378,17 @@ if __name__ == "__main__":
     intro_label.pack(pady=10)
     bar_button = Button(title_window, text="Bar", command=bar_detect)
     bar_button.pack(pady=10)
-    mosaic_button = Button(title_window, text="Mosaic", command=mosaic_detect)
+    mosaic_button = Button(title_window, text="Mosaic (DCP)", command=mosaic_detect)
     mosaic_button.pack(pady=10)
-    video_button = Button(title_window, text='Video (Experimental)', command=video_detect)
+    mosaic_TG_button = Button(title_window, text="Mosaic (ESRGAN)", command=mosaic_detect_TGAN)
+    mosaic_TG_button.pack(pady=10)
+    video_button = Button(title_window, text='Video (DCP)', command=video_detect)
     video_button.pack(pady=10, padx=10)
-
-    title_window.geometry("300x200")
+    video_TG_button = Button(title_window, text="Video (ESRGAN)", command=video_detect_TGAN) # separate window for future functionality changes
+    video_TG_button.pack(pady=10, padx=10)
+    detect_instance = Detector(weights_path=weights_path)
+    detect_instance.load_weights()
+    title_window.geometry("300x300")
     title_window.mainloop()
 
     pass

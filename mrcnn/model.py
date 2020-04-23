@@ -2717,6 +2717,9 @@ class MaskRCNN():
             log(k, v)
         return outputs_np
 
+    # Function written by Nathan Cueto to utilize this import of tf to find cuda compatible gpu if available
+    def check_cuda_gpu(self):
+        return tf.test.is_gpu_available()
 
 ############################################################
 #  Data Formatting

@@ -24,11 +24,14 @@ from imgaug import augmenters as ia, ALL
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-
+S_DIR = os.path.abspath(".")
+# print(S_DIR, ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
+sys.path.append(S_DIR)  # To find local version of the library
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
+from detector import Detector
 
 # Directory to save logs and model checkpoints, if not provided
 # through the command line argument --logs
@@ -51,10 +54,10 @@ class HentaiConfig(Config):
     IMAGES_PER_GPU = 1
 
     # Number of classes (including background)
-    NUM_CLASSES = 1 + 1 + 1 # Background + censor bar + mosaic
-
+    # NUM_CLASSES = 1 + 1 + 1 + 1 + 1# Background + censor bar + mosaic + bar_canny_edge_detector + mosaic_canny_edge_detector 
+    NUM_CLASSES = 1 + 1 + 1
     # Number of training steps per epoch, equal to dataset train size
-    STEPS_PER_EPOCH = 1490
+    STEPS_PER_EPOCH = 4002
 
     # Skip detections with < 75% confidence TODO: tinker with this value, I would go lower
     DETECTION_MIN_CONFIDENCE = 0.70
@@ -73,6 +76,9 @@ class HentaiDataset(utils.Dataset):
         NOTE: modified to support multiple classes, specifically class bar and mosaic
         """
         # Add classes. We have only one class to add.
+        # self.add_class("hentai", 1, "bar")
+        # self.add_class("hentai", 2, "mosaic")
+        # NOTE: Enable below for Canny edge detector. If you want to replace original bar and mosaic label entirely, replace 3 and 4 with 1 and 2.
         self.add_class("hentai", 1, "bar")
         self.add_class("hentai", 2, "mosaic")
 
@@ -101,12 +107,19 @@ class HentaiDataset(utils.Dataset):
             # load_mask() needs the image size to convert polygons to masks.
             # Unfortunately, VIA doesn't include it in JSON, so we must read
             # the image. This is only managable since the dataset is tiny.
-            image_path = os.path.join(dataset_dir, a['filename'])
-            image = skimage.io.imread(image_path)
-            height, width = image.shape[:2]
-            # print(image_path)
-            class_id = [r['region_attributes']['censor'] for r in a['regions']]
-            # print('debug class_id load_h',class_id)
+            try:
+                image_path = os.path.join(dataset_dir, a['filename'])
+                image = skimage.io.imread(image_path)
+                if len(image.shape) == 0:
+                    print("Shape error in",image_path) # Skip problem images...
+                    continue
+                height, width = image.shape[:2]
+                # print(image_path)
+                class_id = [r['region_attributes']['censor'] for r in a['regions']]
+                # print('debug class_id load_h',class_id)
+            except:
+                print("Error in annotation",a,"Skipping.")
+                continue
             self.add_image(
                 "hentai",
                 image_id=a['filename'],  # use file name as a unique image id
@@ -132,7 +145,7 @@ class HentaiDataset(utils.Dataset):
         info = self.image_info[image_id]
         class_ids_st = info['class_ids']
         class_id = []
-        # distinguish mask with a 1 or 2, which classes bar and mosaic
+        # distinguish mask with a 1 or 2, which classes bar and mosaic TODO: Change these if classes change
         for ids in class_ids_st:
             if(ids == 'bar'):
                 class_id.append(1)
@@ -176,15 +189,14 @@ def train(model):
 
     # Advanced augmentation from https://github.com/matterport/Mask_RCNN/issues/1924#issuecomment-568200836
     # Not all augments supported. Check model.py for supported safe augments
-    aug_max = 3 # apply 0 to max augmentations at once
-    # augmentation = ia.SomeOf((0, aug_max), [
-        # ia.Fliplr(.5),
-        # ia.Flipud(.5),
-        # ia.OneOf([ia.Affine(rotate = 30 * i) for i in range(0, 12)]),
-        # ia.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
-        # ia.CropAndPad(px=((0, 30), (0, 10), (0, 30), (0, 10)),pad_mode=ALL,pad_cval=(0, 128))
-        # ])
-    augmentation = ia.Fliplr(.5)
+    aug_max = 2 # apply 0 to max augmentations at once
+    augmentation = ia.SomeOf((0, aug_max), [
+        ia.Fliplr(.5),
+        ia.Flipud(.5),
+        ia.OneOf([ia.Affine(rotate = 30 * i) for i in range(0, 12)]),
+        ia.Affine(scale={"x": (0.8, 1.2), "y": (0.8, 1.2)}),
+        ])
+    # augmentation = ia.Fliplr(.5)
 
     # Training - Stage 1 Heads only
     print("Training network heads in hentai.py")
@@ -196,28 +208,28 @@ def train(model):
 
     # Training - Stage 2
     # Finetune layers from ResNet stage 4 and up
-    # print("Fine tune Resnet stage 4 and up in hentai.py")
-    # model.train(dataset_train, dataset_val,
-    #             learning_rate=config.LEARNING_RATE,
-    #             epochs=40,
-    #             layers='4+',
-    #             augmentation=augmentation)
+    print("Fine tune Resnet stage 4 and up in hentai.py")
+    model.train(dataset_train, dataset_val,
+                learning_rate=config.LEARNING_RATE,
+                epochs=35,
+                layers='4+',
+                augmentation=augmentation)
 
     # Training - Stage 3
     # Fine tune all layers with lower learning rate
     print("Fine tune all layers in hentai.py")
     model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE / 10,
-                epochs=40,
+                learning_rate=config.LEARNING_RATE,
+                epochs=50,
                 layers='all',
                 augmentation=augmentation)
 
     # Super fine tune
-    model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE,
-                epochs=75,
-                layers='all',
-                augmentation=augmentation)
+    # model.train(dataset_train, dataset_val,
+    #             learning_rate=config.LEARNING_RATE,
+    #             epochs=40,
+    #             layers='all',
+    #             augmentation=augmentation)
 
 ############################################################
 #  Training
@@ -231,7 +243,7 @@ if __name__ == '__main__':
         description='Train Mask R-CNN to detect censor bars.')
     parser.add_argument("command",
                         metavar="<command>",
-                        help="only 'train' supported")
+                        help="'train' or 'inference' supported")
     parser.add_argument('--dataset', required=False,
                         metavar="/path/to/hentai/dataset/",
                         help='Directory of the hentai dataset')
@@ -242,11 +254,20 @@ if __name__ == '__main__':
                         default=DEFAULT_LOGS_DIR,
                         metavar="/path/to/logs/",
                         help='Logs and checkpoints directory (default=logs/)')
+    parser.add_argument('--sources', required=False,
+                        metavar="path to images folder or video folder",
+                        help='Source folder to run on')
+    parser.add_argument('--dtype', required=False,
+                        metavar="esrgan",
+                        help='Type of detection: Only esrgan supported now')
     args = parser.parse_args()
 
     # Validate arguments
     if args.command == "train":
         assert args.dataset, "Argument --dataset is required for training"
+    elif args.command == "inference":
+        assert args.sources, "Argument --sources required for inference"
+        assert args.dtype, "Argument --dtype required for type of inference. Use -h for help"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
@@ -263,7 +284,7 @@ if __name__ == '__main__':
             GPU_COUNT = 1
             IMAGES_PER_GPU = 1
         config = InferenceConfig()
-    config.display()
+    # config.display()
 
     # Create model
     if args.command == "train":
@@ -277,13 +298,18 @@ if __name__ == '__main__':
     else:
         weights_path = args.weights
 
-    # Load weights
-    print("Loading weights ", weights_path)
-    model.load_weights(weights_path, by_name=True)
+    src_path = args.sources
 
     # Train or evaluate
     if args.command == "train":
+        model.load_weights(weights_path, by_name=True)
         train(model)
+    elif args.command == "inference":
+        print("Starting inference")
+        detect_instance = Detector(weights_path=weights_path) # declare instance and load weights
+        detect_instance.load_weights()
+        if args.dtype == "esrgan":
+            detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
     else:
         print("'{}' is not recognized. "
               "Use 'train'".format(args.command))
