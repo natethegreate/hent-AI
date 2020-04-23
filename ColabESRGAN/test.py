@@ -38,7 +38,8 @@ class esrgan():
         # print(idx, base)
         # read image
         # print("Running ESRGAN on ", test_img_folder)
-        img = cv2.imread(test_img_folder, cv2.IMREAD_COLOR)
+        # print(test_img_folder)
+        img = cv2.imdecode(np.fromfile(test_img_folder, np.uint8), cv2.IMREAD_UNCHANGED)
         img = img * 1.0 / 255
         img = torch.from_numpy(np.transpose(img[:, :, [2, 1, 0]], (2, 0, 1))).float()
         img_LR = img.unsqueeze(0)
@@ -47,4 +48,6 @@ class esrgan():
         output = self.model(img_LR).data.squeeze().float().cpu().clamp_(0, 1).numpy()
         output = np.transpose(output[[2, 1, 0], :, :], (1, 2, 0))
         output = (output * 255.0).round()
-        cv2.imwrite(out_filename, output)
+        # cv2.imwrite(out_filename, output)
+        is_success, im_buf_arr = cv2.imencode(".png", output)
+        im_buf_arr.tofile(out_filename)

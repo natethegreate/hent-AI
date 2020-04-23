@@ -25,7 +25,7 @@ from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 # sys.path.insert(1, 'samples/hentai/')
 # from hentai import HentaiConfig
-from cv2 import VideoCapture, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
+from cv2 import VideoCapture, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 import ColabESRGAN.test
 from green_mask_project_mosaic_resolution import get_mosaic_res
 
@@ -292,7 +292,7 @@ class Detector():
             vwriter.release()
             print('Video complete!')
         print("Process complete. Cleaning work directories...")
-        # self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
     # ESRGAN folder running function
     def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = False):
@@ -304,7 +304,7 @@ class Detector():
         for file in os.listdir(in_path):
             # TODO: check what other filetpyes supported
             try:
-                if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".mp4"):
+                if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".mp4") or file.endswith(".avi"):
                     img_list.append((in_path + '/' + file, file))
             except Exception as e:
                 print("ERROR in run_ESRGAN: File parsing. file=", file, e)
@@ -469,7 +469,7 @@ class Detector():
             vid_list = []
             for file in os.listdir(str(input_folder)):
                 file_s = str(file)
-                if file_s.endswith('mp4') or file_s.endswith('MP4'):
+                if file_s.endswith('mp4') or file_s.endswith('MP4') or file_s.endswith('avi'):
                     vid_list.append((input_folder + '/' + file_s, file_s))
             
             for vid_path, vid_name in vid_list:
