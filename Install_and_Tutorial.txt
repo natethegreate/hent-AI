@@ -28,8 +28,6 @@ The model packaged here is model 161. The weights are used to run the detections
 
 --- Tutorial for hentAI executable
 
-** If you have an Nvidia gpu and plan on doing video uncensoring, I reccomend getting the code to work instead**
-
 1. You should use the provided input_images folder to place the images you want to decensor. Remember that you must
    decensor content with bar censors and mosaic censors separately. Images must be in .png format.
    Also, make sure to clear out the input folder between runs so you dont decensor the same things.
@@ -95,7 +93,9 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 
 5. Install requirements
 
-	pip install -r requirements.txt
+	pip install -r requirements-cpu.txt
+	OR if you have a CUDA compatible gpu with CUDA 9.0:
+	pip install -r requirements-gpu.txt
 
 5.5. NOTE: You might not be able to install torch 0.4.1 from pip, like on Windows. 
 In that case, run the following for CPU
@@ -154,23 +154,16 @@ you improve on the latest detections. An NVIDIA CUDA compatible card is required
     send it to me!
 
 --------NVIDIA users-----------
+
 You may encounter an error like this: ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory
 This means your gpu is being detected, and tensorflow wants to use it. This means you could get 6-30x better performance.
 
 1. Install CUDA 9.0 here: https://developer.nvidia.com/cuda-90-download-archive?target_os=Windows&target_arch=x86_64
 Get the right one for your computer
 
-2. Uninstall normal tensorflow, then uninstall protobuf
+2. Make sure to install gpu requiremtnes
 	
-	pip uninstall tensorflow
-
-	pip uninstall protobuf
-
-3. Reinstall tensorflow-gpu
-
-	pip uninstall tensorflow-gpu
-
-	pip install tensorflow-gpu==1.9.0
+	pip install -r requirements-gpu.txt
 	
 4. (Training only) For training, you may need cudnn 7.0 runtime. You need an Nvidia account to access the download, but it that is free.
 I dont have the exact link, but you can Google search or look for it here: https://developer.nvidia.com/ 

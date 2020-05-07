@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.6.3'
+versionNumber = '1.6.6'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
@@ -104,16 +104,13 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         print('copying inputs into input_original dcp folder')
         # print(in_path)
         # print(listdir(in_path))
-        for file in listdir(in_path):
-            # kinda dumb but check if same file
-            if force_jpg==True:
+        for fil in listdir(in_path):
+            if fil.endswith('jpg') or fil.endswith('png') or fil.endswith('jpeg') or fil.endswith('JPG') or fil.endswith('PNG') or fil.endswith('JPEG'):
                 try:
-                    shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/' + file) # DCP is compatible with original jpg input.
+                    shutil.copy(in_path + '/' + fil, dcp_dir + '/decensor_input_original/' + fil) # DCP is compatible with original jpg input.
                 except:
-                    print("ERROR in hentAI_detection: Mosaic copy + png conversion to decensor_input_original failed!", file)
+                    print("ERROR in hentAI_detection: Mosaic copy to decensor_input_original failed!", fil)
                     return
-            else:
-                shutil.copy(in_path + '/' + file, dcp_dir + '/decensor_input_original/')
 
     # Run detection
     if(is_video==True):

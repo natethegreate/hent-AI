@@ -25,7 +25,7 @@ from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 # sys.path.insert(1, 'samples/hentai/')
 # from hentai import HentaiConfig
-from cv2 import VideoCapture, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
+from cv2 import VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 import ColabESRGAN.test
 from green_mask_project_mosaic_resolution import get_mosaic_res
 
@@ -48,7 +48,6 @@ class HentaiConfig(Config):
 
     # Number of classes (including background) 
     NUM_CLASSES = 1 + 1 + 1 
-    # NOTE: Enable the following and disable above if on Canny edge detector model
 
     # Number of training steps per epoch, equal to dataset train size
     STEPS_PER_EPOCH = 1490
@@ -422,9 +421,7 @@ class Detector():
             vwriter.release()
             print('video complete')
         else:
-            # print("Running on ", end='')
-            # print(image_path)
-            # Read image
+            # Run on Image
             try:
                 image = skimage.io.imread(image_path) # problems with strange shapes
                 if image.ndim != 3: 
@@ -435,8 +432,16 @@ class Detector():
                 print("ERROR in detect_and_cover: Image read. Skipping. image_path=", image_path)
                 return
             # Detect objects
-            # try:
-            r = self.model.detect([image], verbose=0)[0]
+            # image_ced =Canny(image=image, threshold1=10, threshold2=42)
+            # image_ced = 255 - image_ced
+            # image_ced = cvtColor(image_ced,COLOR_GRAY2RGB)
+            # skimage.io.imsave(save_path + fname[:-4] + '_ced' + '.png', image_ced)
+            try:
+                # r = self.model.detect([image_ced], verbose=0)[0]
+                r = self.model.detect([image], verbose=0)[0]
+            except Exception as e:
+                print("ERROR in detect_and_cover: Model detection.",e)
+                return
             # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
             if is_mosaic==True or is_video==True:
                 remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 2
@@ -460,8 +465,8 @@ class Detector():
         assert input_folder
         assert output_folder # replace with catches and popups
 
-        if force_jpg==True:
-            print("WARNING: force_jpg=True. jpg support is not guaranteed, beware.")
+        # if force_jpg==True:
+        #     print("WARNING: force_jpg=True. jpg support is not guaranteed, beware.")
 
         file_counter = 0
         if(is_video == True):

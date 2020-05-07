@@ -12,8 +12,10 @@ Usage: Please check Install and Tutorial text file
 """
 
 import os
+from os import listdir, system
 import sys
 import json
+import shutil
 import datetime
 import numpy as np
 import skimage.draw
@@ -258,8 +260,11 @@ if __name__ == '__main__':
                         metavar="path to images folder or video folder",
                         help='Source folder to run on')
     parser.add_argument('--dtype', required=False,
-                        metavar="esrgan",
-                        help='Type of detection: Only esrgan supported now')
+                        metavar="esrgan, bar, mosaic",
+                        help='Type of detection. esrgan for video, bar or mosaic for images')
+    parser.add_argument('--dcpdir', required=False,
+                        metavar="/path/to/DeepCreamPy installation",
+                        help='Enter path to your DeepCreamPy folder')                        
     args = parser.parse_args()
 
     # Validate arguments
@@ -299,6 +304,7 @@ if __name__ == '__main__':
         weights_path = args.weights
 
     src_path = args.sources
+    out_path = args.dcpdir
 
     # Train or evaluate
     if args.command == "train":
@@ -308,8 +314,20 @@ if __name__ == '__main__':
         print("Starting inference")
         detect_instance = Detector(weights_path=weights_path) # declare instance and load weights
         detect_instance.load_weights()
+        # def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, force_jpg=False, is_mosaic=False):
         if args.dtype == "esrgan":
             detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
+        elif args.dtype == "bar":
+            detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, force_jpg=True, is_mosaic=False)
+        elif args.dtype == "mosaic":
+            # First copy over all original files into input_original folder
+            for fil in listdir(src_path):
+                if fil.endswith('jpg') or fil.endswith('png') or fil.endswith('jpeg') or fil.endswith('JPG') or fil.endswith('PNG') or fil.endswith('JPEG'):
+                    try:
+                        shutil.copy(src_path + '/' + fil, out_path + '/decensor_input_original/' + fil) # DCP is compatible with original jpg input.
+                    except Exception as e:
+                        print("ERROR in hentAI_detection: Mosaic copy to decensor_input_original failed!", fil, e)
+            detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, force_jpg=True, is_mosaic=True)
     else:
         print("'{}' is not recognized. "
               "Use 'train'".format(args.command))
