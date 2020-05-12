@@ -108,8 +108,8 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
             if fil.endswith('jpg') or fil.endswith('png') or fil.endswith('jpeg') or fil.endswith('JPG') or fil.endswith('PNG') or fil.endswith('JPEG'):
                 try:
                     shutil.copy(in_path + '/' + fil, dcp_dir + '/decensor_input_original/' + fil) # DCP is compatible with original jpg input.
-                except:
-                    print("ERROR in hentAI_detection: Mosaic copy to decensor_input_original failed!", fil)
+                except Exception as e:
+                    print("ERROR in hentAI_detection: Mosaic copy to decensor_input_original failed!", fil, e)
                     return
 
     # Run detection

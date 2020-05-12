@@ -25,7 +25,7 @@ from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 # sys.path.insert(1, 'samples/hentai/')
 # from hentai import HentaiConfig
-from cv2 import VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
+from cv2 import dilate, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 import ColabESRGAN.test
 from green_mask_project_mosaic_resolution import get_mosaic_res
 
@@ -128,19 +128,32 @@ class Detector():
         # Copy color pixels from the original color image where mask is set
         green = np.zeros([image.shape[0], image.shape[1], image.shape[2]], dtype=np.uint8)
         green[:,:] = [0, 255, 0]
+        dilation = 11 #NOTE: Change this to modify dilation amount. Can also change iterations below
         if mask.shape[-1] > 0:
             # We're treating all instances as one, so collapse the mask into one layer
             mask = (np.sum(mask, -1, keepdims=True) < 1)
-            cover = np.where(mask, image, green).astype(np.uint8)
+            # dilate mask to ensure proper coverage
+            mimg = mask.astype('uint8')*255
+            kernel = np.ones((dilation,dilation), np.uint8) # custom sized kernel.
+            mimg = dilate(src=mask.astype('uint8'), kernel=kernel, iterations=1)
+            # dilation returns image with channels stripped (?!?). Reconstruct image channels (probably only need 1 channel)
+            mask_img = np.zeros([mask.shape[0], mask.shape[1],3]).astype('bool')
+            mask_img[:,:,0] = mimg.astype('bool')
+            mask_img[:,:,1] = mimg.astype('bool')
+            mask_img[:,:,2] = mimg.astype('bool')
+            
+            cover = np.where(mask_img.astype('bool'), image, green).astype(np.uint8)
         else:
             # error case, return image
             cover = image
-        return cover, mask
+        return cover, mask 
 
     # Similar to above function, except it places the decensored image over the original image.
     def splice(self, image, mask, gan_out):
         if mask.shape[-1] > 0:
             mask = (np.sum(mask, -1, keepdims=True) < 1)
+            # Blur mask to lessen the seam
+            mask = GaussianBlur(mask, (7,7), 0)
             cover = np.where(mask, image, gan_out).astype(np.uint8)
         else:
             #error case, return image
@@ -229,9 +242,9 @@ class Detector():
                 print("Detected fps:", fps)
         
                 # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-                file_name = img_name[:-4] + "_decensored.avi"
+                file_name = img_name[:-4] + "_decensored.mp4"
                 vwriter = VideoWriter(file_name,
-                                        VideoWriter_fourcc(*'MJPG'),
+                                        VideoWriter_fourcc(*'mp4v'),
                                         fps, (width, height))
             except Exception as e:
                 print("ERROR in TGAN: video read and init.", e)
@@ -280,7 +293,7 @@ class Detector():
                     gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
 
                     fin_img = self.splice(image, new_masks, gan_image)
-                    fin_img = bilateralFilter(fin_img, 7, 70, 70)  # quick bilateral filter to soften splice
+                    # fin_img = bilateralFilter(fin_img, 7, 70, 70)  # quick bilateral filter to soften splice
                     fin_img = fin_img[..., ::-1] # reverse RGB to BGR for video writing
                     # Add image to video writer
                     vwriter.write(fin_img)
@@ -334,9 +347,9 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = str(file) + '_uncensored.avi'
+        file_name = str(file) + '_uncensored.mp4'
         vwriter = VideoWriter(file_name,
-                                    VideoWriter_fourcc(*'MJPG'),
+                                    VideoWriter_fourcc(*'mp4v'),
                                     fps, (width, height))
         count = 0
         print("Beginning build. Do ensure only relevant images are in source directory")
@@ -377,9 +390,9 @@ class Detector():
             fps = vcapture.get(CAP_PROP_FPS)
     
             # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-            file_name = fname + "_with_censor_masks.avi"
+            file_name = fname + "_with_censor_masks.mp4"
             vwriter = VideoWriter(file_name,
-                                      VideoWriter_fourcc(*'MJPG'),
+                                      VideoWriter_fourcc(*'mp4v'),
                                       fps, (width, height))
             count = 0
             success = True
