@@ -314,7 +314,6 @@ class Detector():
         # similar to run_on_folder
         img_list = []
         for file in os.listdir(in_path):
-            # TODO: check what other filetpyes supported
             try:
                 if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".mp4") or file.endswith(".avi"):
                     img_list.append((in_path + '/' + file, file))
@@ -357,7 +356,6 @@ class Detector():
         img_list = []
 
         for file in os.listdir(input_path):
-            # TODO: check what other filetpyes supported
             file_s = str(file)
             if file_s.endswith('.png') or file_s.endswith('.PNG'):
                 img_list.append(input_path  + file_s)
@@ -381,7 +379,7 @@ class Detector():
         assert image_path
         assert fname # replace these with something better?
         
-        if is_video: # TODO: video capabilities will finalize later            
+        if is_video: 
             # Video capture
             video_path = image_path
             vcapture = VideoCapture(video_path)
@@ -499,7 +497,6 @@ class Detector():
             # obtain inputs from the input folder
             img_list = []
             for file in os.listdir(str(input_folder)):
-                # TODO: check what other filetpyes supported
                 file_s = str(file)
                 try:
                     if force_jpg == False:
