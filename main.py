@@ -384,7 +384,7 @@ if __name__ == "__main__":
     video_TG_button = Button(title_window, text="Video (ESRGAN)", command=video_detect_TGAN) # separate window for future functionality changes
     video_TG_button.pack(pady=10, padx=10)
     detect_instance = Detector(weights_path=weights_path)
-    detect_instance.load_weights()
+    # detect_instance.load_weights() # instance will load weights on its own
     title_window.geometry("300x300")
     title_window.mainloop()
 
