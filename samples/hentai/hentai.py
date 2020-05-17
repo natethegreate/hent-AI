@@ -314,7 +314,6 @@ if __name__ == '__main__':
         print("Starting inference")
         detect_instance = Detector(weights_path=weights_path) # declare instance and load weights
         # detect_instance.load_weights()
-        # def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, force_jpg=False, is_mosaic=False):
         if args.dtype == "esrgan":
             detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
         elif args.dtype == "bar":

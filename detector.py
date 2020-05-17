@@ -371,13 +371,15 @@ class Detector():
         for img_path, img_name in img_list:
             self.resize_GAN(img_path=img_path, img_name=img_name, is_video=is_video)
         # destroy esrgan model. Create hent-AI model.
-        self.esrgan_instance = []
+        # self.esrgan_instance = []
+        del self.esrgan_instance
         self.load_weights()
         for img_path, img_name in img_list:
             self.ESRGAN(img_path=img_path, img_name=img_name, is_video=is_video)
         fin = time.perf_counter()
         total_time = fin-star
         print("Completed ESRGAN detection and decensor in {:.4f} seconds".format(fin, star))
+        #TODO: maybe unload hent-AI tf model here
 
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
