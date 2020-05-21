@@ -87,7 +87,7 @@ def hentAI_video_create(video_path=None, dcp_dir=None):
     okbutton.pack()
     popup.mainloop()
 
-def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False, force_jpg=False):
+def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False, force_jpg=False, dilation=0):
     # TODO: Create new window? Can show loading bar
     # hent_win = new_window()
     # info_label = Label(hent_win, text="Beginning detection")
@@ -98,6 +98,8 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(5)
     if in_path==None:
         error(2)
+    
+    dilation = (dilation) * 2 # Dilation performed via kernel, so dimension is doubled
           
     if(is_mosaic == True and is_video==False):
         # Copy input folder to decensor_input_original. NAMES MUST MATCH for DCP
@@ -120,7 +122,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
         load_label.pack(side=TOP, fill=X, pady=10, padx=20)
         loader.update()
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/') #no jpg for video detect
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=True, orig_video_folder=dcp_dir + '/decensor_input_original/', dilation=dilation) #no jpg for video detect
         loader.destroy()
     else:
         print('Running detection, outputting to dcp input')
@@ -129,7 +131,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         load_label = Label(loader, text='Now running detections. This can take around a minute or so per image. Please wait')
         load_label.pack(side=TOP, fill=X, pady=10, padx=20)
         loader.update()
-        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, force_jpg=force_jpg, is_mosaic=is_mosaic)
+        detect_instance.run_on_folder(input_folder=in_path, output_folder=dcp_dir+'/decensor_input/', is_video=False, is_mosaic=is_mosaic, dilation=dilation)
         loader.destroy()
 
 
@@ -140,10 +142,6 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     label = Label(popup, text='Process executed successfully! Now you can run DeepCreamPy.')
     label.pack(side=TOP, fill=X, pady=20, padx=10)
     num_jpgs = detect_instance.get_non_png()
-    # Popup for unprocessed jpgs
-    if(num_jpgs > 0 and force_jpg==False):
-        label2 = Label(popup, text= str(num_jpgs) + " files are NOT in .png format, and were not processed.\nPlease convert jpgs to pngs.")
-        label2.pack(side=TOP, fill=X, pady=10, padx=5)
     # dcprun = Button(popup, text='Run DCP (Only if you have the .exe)', command= lambda: run_dcp(dcp_dir))
     # dcprun.pack(pady=10)
     okbutton = Button(popup, text='Ok', command=popup.destroy)
@@ -151,7 +149,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
     popup.mainloop()
 
 # helper function to call TGAN folder function. 
-def hentAI_TGAN(in_path=None, is_video=False, force_jpg=False):
+def hentAI_TGAN(in_path=None, is_video=False, force_jpg=True):
     print("Starting ESRGAN detection and decensor")
     loader = Tk()
     loader.title('Running TecoGAN')
@@ -199,20 +197,23 @@ def bar_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(bar_win, text = 'DeepCreamPy install folder (usually called dist1): ')
+    d_label = Label(bar_win, text = 'DeepCreamPy install folder: ')
     d_label.grid(row=2, padx=20, pady=10)
     d_entry = Entry(bar_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
     dir_button = Button(bar_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    boolv = BooleanVar()
-    cb = Checkbutton(bar_win, text='Force use jpg (will save as png)?', variable = boolv)
-    cb.grid(row=3,column=2, padx=5)
-    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, force_jpg=boolv.get()))
-    go_button.grid(row=3, column=1, pady=10)
+    dil_label = Label(bar_win, text='Grow detected mask amount (0 to 10)')
+    dil_label.grid(row=3, padx=10, pady=10)
+    dil_entry = Entry(bar_win)
+    dil_entry.grid(row=3, column=1, padx=20)
+    dil_entry.insert(0, '4')
+
+    go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, force_jpg=True, dilation=int(dil_entry.get()) ))
+    go_button.grid(row=4, column=1, pady=10)
     back_button = Button(bar_win, text="Back", command = backMain)
-    back_button.grid(row=3,column=0, padx=10)
+    back_button.grid(row=4,column=0, padx=10)
 
     bar_win.mainloop()
 
@@ -229,20 +230,26 @@ def mosaic_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(mos_win, text = 'DeepCreamPy install folder (usually called dist1): ')
+    d_label = Label(mos_win, text = 'DeepCreamPy install folder: ')
     d_label.grid(row=2, padx=20, pady=20)
     d_entry = Entry(mos_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
     dir_button = Button(mos_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    boolv = BooleanVar()
-    cb = Checkbutton(mos_win, text='Force use jpg (will save as png)?', variable = boolv)
-    cb.grid(row=3,column=2, padx=5)
-    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False, force_jpg=boolv.get()))
-    go_button.grid(row=3,column=1, pady=10)
+    dil_label = Label(mos_win, text='Grow detected mask amount (0 to 10)')
+    dil_label.grid(row=3, padx=10, pady=10)
+    dil_entry = Entry(mos_win)
+    dil_entry.grid(row=3, column=1, padx=20)
+    dil_entry.insert(0, '4')
+
+    # boolv = BooleanVar()
+    # cb = Checkbutton(mos_win, text='Force use jpg (will save as png)?', variable = boolv)
+    # cb.grid(row=3,column=2, padx=5) # Removing Force jpg option because jpg always works
+    go_button = Button(mos_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=False,dilation=int(dil_entry.get()), force_jpg=True))
+    go_button.grid(row=4,column=1, pady=10)
     back_button = Button(mos_win, text="Back", command = backMain)
-    back_button.grid(row=3,column=0, padx=10)
+    back_button.grid(row=4,column=0, padx=10)
 
 
     mos_win.mainloop()
@@ -299,22 +306,28 @@ def video_detect():
     out_button.grid(row=1, column=2)
 
     # Entry for DCP installation
-    d_label = Label(vid_win, text = 'DeepCreamPy install folder (usually called dist1): ')
+    d_label = Label(vid_win, text = 'DeepCreamPy install folder: ')
     d_label.grid(row=2, padx=20, pady=20)
     d_entry = Entry(vid_win, textvariable = dvar)
     d_entry.grid(row=2, column=1, padx=20)
     dir_button = Button(vid_win, text="Browse", command=dcp_newdir)
     dir_button.grid(row=2, column=2, padx=20)
 
-    go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True, is_video=True))
-    go_button.grid(row=3, columnspan=2, pady=5)
+    dil_label = Label(vid_win, text='Grow detected mask amount (0 to 10)')
+    dil_label.grid(row=3, padx=10, pady=10)
+    dil_entry = Entry(vid_win)
+    dil_entry.grid(row=3, column=1, padx=20)
+    dil_entry.insert(0, '4')
+
+    go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True,dilation=int(dil_entry.get()), is_video=True))
+    go_button.grid(row=4, columnspan=2, pady=5)
 
     vid_label = Label(vid_win, text= 'If you finished the video uncensoring, make images from DCP output back into video format. Check README for usage.')
-    vid_label.grid(row=4, pady=5, padx=4)
+    vid_label.grid(row=5, pady=5, padx=4)
     vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
-    vid_button.grid(row=5, pady=5, padx=10, column=1)
+    vid_button.grid(row=6, pady=5, padx=10, column=1)
     back_button = Button(vid_win, text="Back", command = backMain)
-    back_button.grid(row=5, padx=10, column=0)
+    back_button.grid(row=6, padx=10, column=0)
 
     vid_win.mainloop()
 
@@ -359,8 +372,6 @@ def backMain():
     video_button.pack(pady=10, padx=10)
     video_TG_button = Button(title_window, text="Video (ESRGAN)", command=video_detect_TGAN) # separate window for future functionality changes
     video_TG_button.pack(pady=10, padx=10)
-    # detect_instance = Detector(weights_path=weights_path) # Detect instance is the same
-    # detect_instance.load_weights()
     title_window.geometry("300x300")
     title_window.mainloop()
 
