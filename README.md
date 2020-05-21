@@ -95,6 +95,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * For full video decensoring via ESRGAN, you will need to download Twittman's model [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) and place it inside the ColabESRGAN/models folder. 
 
+* Nvidia GPU owners should install CUDA 9.0, and cuDNN 7.6.4. Note that there are issues with RTX cards and ESRGAN, so if you want to use that I again reccomend the colab notebook instead. 
+
 ## Important Notes (READ BEFORE USING)
 
 * I highly reccommend running hent-AI on batches, for example one doujin or a few doujins at once. The slowest part of hent-AI is the initialization, so the first inference takes time but the rest will be quicker. 
@@ -111,6 +113,7 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * Do not put entire clips through the video detection, it is a very slow task. If you can, edit in only the short clips with visible mosaics, get the decensored output, then edit them in the rest of the video.
 
+* The compiled exe release does not support ESRGAN. If you want to use this, refer to the colab notebook.
 
 ## Versions and Downloads
 
@@ -131,6 +134,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 * [1.6.3](): Added ESRGAN for video decensoring, DCP not required for this. Further support for non-unicode filenames.
 
 * [1.6.5](): Added adaptive mosaic granularity checking via GMP by rekaXua. Added colab file for free cloud-based ESRGAN video decensoring.
+
+* [1.6.7](): Changed ESRGAN processs to run in 2 phases: ESRGAN resize, then mask detection. Slower but more memory forgiving. Added mask blurring for less seams on ESRGAN. For non-ESRGAN, added custom dilation to expand masks. Removed option for jpg, it will be used automatically. Improved file cleaning. 
 
 
 ## Installation directions
