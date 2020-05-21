@@ -350,8 +350,8 @@ class Detector():
 
             vwriter.release()
             print('Video: Phase 2 complete!')
-        # print("Process complete. Cleaning work directories...")
-        # self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+        print("Process complete. Cleaning work directories...")
+        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
 
     # ESRGAN folder running function
     def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = False):

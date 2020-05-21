@@ -13,7 +13,7 @@ from tkinter import filedialog
 import shutil
 from detector import Detector
 
-versionNumber = '1.6.6'
+versionNumber = '1.6.7'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
