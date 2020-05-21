@@ -216,7 +216,7 @@ class Detector():
                 return
             # Now run ESRGAN inference
             gan_img_path = self.out_path + img_name[:-4] + '.png'
-            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path, mosaic_res=granularity)
         else:
             try:
                 video_path = img_path
@@ -252,7 +252,7 @@ class Detector():
                     
                     # run ESRGAN algorithms
                     gan_img_path = self.out_path + img_name[:-4]  + str(count).zfill(6) + '.png'
-                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path, mosaic_res=granularity)
 
                     gan_image = skimage.io.imread(gan_img_path)
                     gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
