@@ -21,14 +21,14 @@ ROOT_DIR = os.path.abspath("../../")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
-sys.path.append(os.path.join(os.path.abspath('.'), 'ColabESRGAN/'))
+# sys.path.append(os.path.join(os.path.abspath('.'), 'ColabESRGAN/'))
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 # sys.path.insert(1, 'samples/hentai/')
 # from hentai import HentaiConfig
-from cv2 import imshow, waitKey, multiply, add, dilate, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
-import ColabESRGAN.test
-from green_mask_project_mosaic_resolution import get_mosaic_res
+from cv2 import imshow, waitKey, multiply, add, erode, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
+# import ColabESRGAN.test
+# from green_mask_project_mosaic_resolution import get_mosaic_res
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
@@ -71,8 +71,10 @@ class Detector():
         # counts how many non-png images, if >1 then warn user
         self.dcp_compat = 0
         # Create model, but dont load weights yet
+        
         self.model = modellib.MaskRCNN(mode="inference", config=self.config,
                                         model_dir=DEFAULT_LOGS_DIR)
+        '''                                    
         try:
             self.out_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out/")
             self.out_path2 = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out2/")
@@ -89,15 +91,18 @@ class Detector():
             print("ERROR in Detector init: ESRGAN model not found, make sure you have 4x_FatalPixels_340000_G.pth in this directory")
             return
         # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
-        self.hardware = 'cpu'
+        '''
+        # self.hardware = 'cpu'
         if self.model.check_cuda_gpu()==True:
             print("CUDA-compatible GPU located!")
-            self.hardware = 'cuda'
-        # destroy model. Will re load it during weight load.
-        self.model = []
+            # self.hardware = 'cuda'
+        else:
+            print("No CUDA-compatible GPU found.")
+        
 
     # Clean out temp working images from all directories in ESR_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
     def clean_work_dirs(self):
+        print("Cleaning work dirs...")
         folders = [self.out_path, self.out_path2, self.temp_path, self.temp_path2]
         for folder in folders:
             for filename in os.listdir(folder):
@@ -127,19 +132,19 @@ class Detector():
     mask: instance segmentation mask [height, width, instance count]
     Returns result covered image.
     """
-    def apply_cover(self, image, mask):
+    def apply_cover(self, image, mask, dilation):
         # Copy color pixels from the original color image where mask is set
         green = np.zeros([image.shape[0], image.shape[1], image.shape[2]], dtype=np.uint8)
         green[:,:] = [0, 255, 0]
-        dilation = 11 #NOTE: Change this to modify dilation amount. Can also change iterations below
+
         if mask.shape[-1] > 0:
             # We're treating all instances as one, so collapse the mask into one layer
             mask = (np.sum(mask, -1, keepdims=True) < 1)
             # dilate mask to ensure proper coverage
             mimg = mask.astype('uint8')*255
-            kernel = np.ones((dilation,dilation), np.uint8) # custom sized kernel.
-            mimg = dilate(src=mask.astype('uint8'), kernel=kernel, iterations=1)
-            # dilation returns image with channels stripped (?!?). Reconstruct image channels (probably only need 1 channel)
+            kernel = np.ones((dilation,dilation), np.uint8)
+            mimg = erode(src=mask.astype('uint8'), kernel=kernel, iterations=1) #
+            # dilation returns image with channels stripped (?!?). Reconstruct image channels
             mask_img = np.zeros([mask.shape[0], mask.shape[1],3]).astype('bool')
             mask_img[:,:,0] = mimg.astype('bool')
             mask_img[:,:,1] = mimg.astype('bool')
@@ -183,7 +188,7 @@ class Detector():
     # Return number of jpgs that were not processed
     def get_non_png(self):
         return self.dcp_compat        
-
+    '''
     # function to handle all of the esrgan stuff
     def resize_GAN(self, img_path, img_name, is_video=False):
         # non-video, standard image
@@ -215,7 +220,7 @@ class Detector():
                 return
             # Now run ESRGAN inference
             gan_img_path = self.out_path + img_name[:-4] + '.png'
-            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path, mosaic_res=granularity)
         else:
             try:
                 video_path = img_path
@@ -251,7 +256,7 @@ class Detector():
                     
                     # run ESRGAN algorithms
                     gan_img_path = self.out_path + img_name[:-4]  + str(count).zfill(6) + '.png'
-                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path)
+                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path, mosaic_res=granularity)
 
                     gan_image = skimage.io.imread(gan_img_path)
                     gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
@@ -350,11 +355,10 @@ class Detector():
 
             vwriter.release()
             print('Video: Phase 2 complete!')
-        print("Process complete. Cleaning work directories...")
-        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
+        
 
     # ESRGAN folder running function
-    def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = False):
+    def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = True):
         assert in_path
 
         # Parse directory for files.
@@ -378,9 +382,10 @@ class Detector():
             self.ESRGAN(img_path=img_path, img_name=img_name, is_video=is_video)
         fin = time.perf_counter()
         total_time = fin-star
-        print("Completed ESRGAN detection and decensor in {:.4f} seconds".format(fin, star))
+        print("Completed ESRGAN detection and decensor in {:.4f} seconds".format(total_time))
+        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
         #TODO: maybe unload hent-AI tf model here
-
+'''
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
         # Video capture to get shapes and stats
@@ -430,7 +435,7 @@ class Detector():
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
     # image_path = path of input file, image or video
-    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None, force_jpg=False, is_mosaic=False):
+    def detect_and_cover(self, image_path=None, fname=None, save_path='', is_video=False, orig_video_folder=None, force_jpg=False, is_mosaic=False, dilation=0):
         assert image_path
         assert fname # replace these with something better?
         
@@ -471,7 +476,7 @@ class Detector():
                     new_masks = np.delete(r['masks'], remove_indices, axis=2)
 
                     # Apply cover
-                    cov, mask = self.apply_cover(image, new_masks)
+                    cov, mask = self.apply_cover(image, new_masks, dilation)
                     
                     # save covered frame into input for decensoring path
                     file_name = save_path + im_name + str(count).zfill(6) + '.png'
@@ -517,7 +522,7 @@ class Detector():
             # except:
             #     print("ERROR in detect_and_cover: Model detect")
             
-            cov, mask = self.apply_cover(image, new_masks)
+            cov, mask = self.apply_cover(image, new_masks, dilation)
             try:
                 # Save output, now force save as png
                 file_name = save_path + fname[:-4] + '.png'
@@ -527,14 +532,16 @@ class Detector():
             # print("Saved to ", file_name)
 
     # Function for file parsing, calls the aboven detect_and_cover
-    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, force_jpg=False, is_mosaic=False):
+    def run_on_folder(self, input_folder, output_folder, is_video=False, orig_video_folder=None, is_mosaic=False, dilation=0):
         assert input_folder
         assert output_folder # replace with catches and popups
 
-        # if force_jpg==True:
-        #     print("WARNING: force_jpg=True. jpg support is not guaranteed, beware.")
-        self.esrgan_instance = [] # rare case where esrgan instance not destroyed but new action started, catch it here
+        # self.esrgan_instance = [] # rare case where esrgan instance not destroyed but new action started, catch it here
         self.load_weights()
+        if dilation < 0:
+            print("ERROR: dilation value < 0")
+            return
+        print("Will expand each mask by {} pixels".format(dilation/2))
 
         file_counter = 0
         if(is_video == True):
@@ -547,8 +554,11 @@ class Detector():
             
             for vid_path, vid_name in vid_list:
                 # video will not support separate mask saves
-                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder)
-                print('detection on video', file_counter, 'is complete')
+                star = time.perf_counter()
+                self.detect_and_cover(vid_path, vid_name, output_folder, is_video=True, orig_video_folder=orig_video_folder, dilation=dilation)
+                fin = time.perf_counter()
+                total_time = fin-star
+                print('Detection on video', file_counter, 'finished in {:.4f} seconds'.format(total_time))
                 file_counter += 1
         else:
             # obtain inputs from the input folder
@@ -556,23 +566,19 @@ class Detector():
             for file in os.listdir(str(input_folder)):
                 file_s = str(file)
                 try:
-                    if force_jpg == False:
-                        if file_s.endswith('.png') or file_s.endswith('.PNG'):
-                            img_list.append((input_folder + '/' + file_s, file_s))
-                        elif file_s.endswith(".jpg") or file_s.endswith(".JPG"):
-                            # img_list.append((input_folder + '/' + file_s, file_s)) # Do not add jpgs. Conversion to png must happen first
-                            self.dcp_compat += 1
-                    else:
-                        if file_s.endswith('.png') or file_s.endswith('.PNG') or file_s.endswith(".jpg") or file_s.endswith(".JPG"):
-                            img_list.append((input_folder + '/' + file_s, file_s))
+                    if file_s.endswith('.png') or file_s.endswith('.PNG') or file_s.endswith(".jpg") or file_s.endswith(".JPG"):
+                        img_list.append((input_folder + '/' + file_s, file_s))
                 except:
                     print("ERROR in run_on_folder: File parsing. file=", file_s)
             
 
             # save run detection with outputs to output folder
             for img_path, img_name in img_list:
-                self.detect_and_cover(img_path, img_name, output_folder, force_jpg=force_jpg, is_mosaic=is_mosaic)  #sending force_jpg for debugging
-                print('Detection on image', file_counter, 'is complete')
+                star = time.perf_counter()
+                self.detect_and_cover(img_path, img_name, output_folder, is_mosaic=is_mosaic, dilation=dilation)  #sending force_jpg for debugging
+                fin = time.perf_counter()
+                total_time = fin-star
+                print('Detection on image', file_counter, 'finished in {:.4f} seconds'.format(total_time))
                 file_counter += 1
 
 
@@ -604,4 +610,3 @@ class Detector():
     # detect_instance.run_on_folder(input_folder=images_path, output_folder=output_dir)
     detect_instance.run_TGAN(in_path=images_path)
     print("Fin")'''
-    

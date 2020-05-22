@@ -314,9 +314,9 @@ if __name__ == '__main__':
         print("Starting inference")
         detect_instance = Detector(weights_path=weights_path) # declare instance and load weights
         # detect_instance.load_weights()
-        if args.dtype == "esrgan":
-            detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
-        elif args.dtype == "bar":
+        # if args.dtype == "esrgan":
+        #     detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
+        if args.dtype == "bar":
             detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, force_jpg=True, is_mosaic=False)
         elif args.dtype == "mosaic":
             # First copy over all original files into input_original folder
