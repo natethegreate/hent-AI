@@ -10,8 +10,6 @@ import sys
 import json
 # import datetime # not really useful so remove soon pls
 import numpy as np
-import skimage.draw
-from skimage.filters import unsharp_mask
 import imgaug # should augment this improt as well haha
 import time
 # from PIL import Image
