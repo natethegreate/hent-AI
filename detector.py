@@ -9,6 +9,7 @@ import os
 import sys
 import json
 # import datetime # not really useful so remove soon pls
+import skimage
 import numpy as np
 import time
 # from PIL import Image
@@ -496,8 +497,9 @@ class Detector():
                     image = skimage.color.gray2rgb(image) # convert to rgb if greyscale
                 if image.shape[-1] == 4:
                     image = image[..., :3] # strip alpha channel
-            except:
+            except Exception as e:
                 print("ERROR in detect_and_cover: Image read. Skipping. image_path=", image_path)
+                print(e)
                 return
             # Detect objects
             # image_ced =Canny(image=image, threshold1=10, threshold2=42)
