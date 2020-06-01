@@ -136,6 +136,7 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
 
 
     # Announce completion, TODO: offer to run DCP from DCP directory
+    detect_instance.unload_model()
     print('Process complete!')
     popup = Tk()
     popup.title('Success!')
@@ -322,7 +323,7 @@ def video_detect():
     go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True,dilation=int(dil_entry.get()), is_video=True))
     go_button.grid(row=4, columnspan=2, pady=5)
 
-    vid_label = Label(vid_win, text= 'If you finished the video uncensoring, make images from DCP output back into video format. Check README for usage.')
+    vid_label = Label(vid_win, text= 'When you finish the DCP uncensoring, Video Maker packs images from DCP output back into video format. Check the tutorial for more, output in main directory.')
     vid_label.grid(row=5, pady=5, padx=4)
     vid_button = Button(vid_win, text='Begin Video Maker!', command = lambda: hentAI_video_create(dcp_dir=d_entry.get(), video_path=o_entry.get()))
     vid_button.grid(row=6, pady=5, padx=10, column=1)

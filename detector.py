@@ -14,20 +14,19 @@ import skimage.draw
 from skimage.filters import unsharp_mask
 import imgaug # should augment this improt as well haha
 import time
-# from PIL import Image
-
+import ffmpeg
 # Root directory of project
 ROOT_DIR = os.path.abspath("../../")
 
-# Import Mask RCNN
+# Import Mask RCNN and ESRGAN
 sys.path.append(ROOT_DIR)  # To find local version of the library
 sys.path.append(os.path.join(os.path.abspath('.'), 'ColabESRGAN/'))
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
-# sys.path.insert(1, 'samples/hentai/')
-# from hentai import HentaiConfig
+# It's too late to undo this now
 from cv2 import imshow, waitKey, multiply, add, erode, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 import ColabESRGAN.test
+# Adatptive mosaic granularity 
 from green_mask_project_mosaic_resolution import get_mosaic_res
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
@@ -91,8 +90,9 @@ class Detector():
         # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
         self.hardware = 'cpu'
         if self.model.check_cuda_gpu()==True:
-            print("CUDA-compatible GPU located!")
-            self.hardware = 'cuda'
+            #NOTE: Edit this because I am having cuda errors :(
+            print("CUDA-compatible GPU located! ****DEBUG CPU MODE****")
+            self.hardware = 'cpu'
         # destroy model. Will re init during weight load.
         self.model = []
 
@@ -304,8 +304,8 @@ class Detector():
                 fps = vcapture.get(CAP_PROP_FPS)
                 print("Detected fps:", fps)
         
-                # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-                file_name = img_name[:-4] + "_decensored.mp4"
+                # Create video in source directory with different name
+                file_name = img_path[:-4] + "_decensored.mp4"
                 vwriter = VideoWriter(file_name,
                                         VideoWriter_fourcc(*'mp4v'),
                                         fps, (width, height))
@@ -350,8 +350,14 @@ class Detector():
                     count += 1
 
             vwriter.release()
-            print('Video: Phase 2 complete!')
-        
+            print('Video: Phase 2 complete! Attempting to create a copy with audio included...')
+            try:
+                in_video = ffmpeg.input(img_path[:-4] + "_decensored.mp4")
+                in_audio = ffmpeg.input(img_path)
+                ffmpeg.concat(in_video, in_audio, v=1, a=1).output(img_path[:-4] + "_decen_audio.mp4").run()
+            except Exception as e:
+                print("ERROR in ESRGAN: audio rip. Ensure ffmpeg.exe is in the main directory.")
+                print(e)
 
     # ESRGAN folder running function
     def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = True):
@@ -402,7 +408,7 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = str(file) + '_uncensored.mp4'
+        file_name = str(file) + '_decensored.mp4'
         vwriter = VideoWriter(file_name,
                                     VideoWriter_fourcc(*'mp4v'),
                                     fps, (width, height))
@@ -426,7 +432,14 @@ class Detector():
             count += 1
 
         vwriter.release()
-        print('video complete')
+        print('Video complete! Attempting to create a copy with audio included...')
+        try:
+            in_video = ffmpeg.input(file_name)
+            in_audio = ffmpeg.input(video_path)
+            ffmpeg.concat(in_video, in_audio, v=1, a=1).output(file_name[:-4] + "_audio.mp4").run()
+        except Exception as e:
+            print("ERROR in ESRGAN: audio rip. Ensure ffmpeg.exe is in the main directory.")
+            print(e)
 
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
@@ -495,13 +508,17 @@ class Detector():
                     image = skimage.color.gray2rgb(image) # convert to rgb if greyscale
                 if image.shape[-1] == 4:
                     image = image[..., :3] # strip alpha channel
-            except:
+            except Exception as e:
                 print("ERROR in detect_and_cover: Image read. Skipping. image_path=", image_path)
+                print(e)
                 return
             # Detect objects
-            # image_ced =Canny(image=image, threshold1=10, threshold2=42)
-            # image_ced = 255 - image_ced
-            # image_ced = cvtColor(image_ced,COLOR_GRAY2RGB)
+            '''
+            image_ced = bilateralFilter(image, 3, 70, 70) 
+            image_ced =Canny(image=image_ced, threshold1=10, threshold2=42)
+            image_ced = 255 - image_ced
+            image_ced = cvtColor(image_ced,COLOR_GRAY2RGB)
+            '''
             # skimage.io.imsave(save_path + fname[:-4] + '_ced' + '.png', image_ced)
             try:
                 # r = self.model.detect([image_ced], verbose=0)[0]
@@ -577,7 +594,11 @@ class Detector():
                 print('Detection on image', file_counter, 'finished in {:.4f} seconds'.format(total_time))
                 file_counter += 1
 
-
+    # Unloads both models if possible, to allow hent-AI to remain open while DCP runs.
+    def unload_model(self):
+        del self.esrgan_instance
+        self.model.unload_model()
+        print('Model unload successful!')
 
 # main only used for debugging here. Comment out pls
 '''if __name__ == '__main__':

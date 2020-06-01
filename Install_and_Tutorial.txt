@@ -51,7 +51,7 @@ The model packaged here is model 161. The weights are used to run the detections
 
 8. Now you should run DeepCreamPy, and you can close hentAI. Be sure to select the appropriate censor type in DCP.
 	
---- hentAI video detecting (Experimental, mosaic only)
+--- hentAI video detecting (Mosaic only)
 1. Place the input .mp4 into its own folder. 
    Keep the video as SHORT as possible. You will need to do some video editing.
 
@@ -67,7 +67,8 @@ The model packaged here is model 161. The weights are used to run the detections
 5. After DCP finishes, go back to hentAI and run the Video Maker.
 
 6. This will take the output of DCP and peice it together as a video.
-   As of now, sound will be lost. But you can simply just get the sound from the source video.
+   You will need ffmpeg to properly add sound back in. On windows, place the ffmpeg.exe into the main directory, 
+   or have its path defined as a system variable. 
 
 
 
@@ -113,6 +114,7 @@ or if you have a Cuda compatible card:
 	non-colored images with the printed effect. 
 	NOTE: If the doujin was tagged as [Digital] and does not have the screentone effect, you
 	probably do not need to use Screentone Remover.
+	You will also need the ffmpeg compiled binary in the same directory, or its path properly added as an environment variable.
 	
 1. First, have an input folder ready with whatever images you want to decensor.
    Do not have bar censors and mosaic censors in the same folder.

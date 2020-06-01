@@ -13,3 +13,4 @@ IPython[all]
 pandas>=0.23.1
 torch==0.4.1
 torchvision>=0.2.1
+ffmpeg-python
