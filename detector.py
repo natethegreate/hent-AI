@@ -355,7 +355,7 @@ class Detector():
             try:
                 in_video = ffmpeg.input(img_path[:-4] + "_decensored.mp4")
                 in_audio = ffmpeg.input(img_path)
-                ffmpeg.concat(in_video, in_audio, v=1, a=1).output(img_path[:-4] + "_decen_audio.mp4", video_bitrate=1000).run()
+                ffmpeg.concat(in_video, in_audio, v=1, a=1).output(img_path[:-4] + "_decen_audio.mp4", video_bitrate='11M').run()
             except Exception as e:
                 print("ERROR in ESRGAN: audio rip. Ensure ffmpeg.exe is in the main directory.")
                 print(e)
