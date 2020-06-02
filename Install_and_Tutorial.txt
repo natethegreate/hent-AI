@@ -95,7 +95,11 @@ The model packaged here is model 161. The weights are used to run the detections
 	OR if you have a CUDA compatible gpu with CUDA 9.0:
 	pip install -r requirements-gpu.txt
 
-5.2. The standard ffmpeg-python might not work on non windows systems. So on linux and colab, run pip install ffmpeg.
+5.2. To get ffmpeg working, after installing the requirements, run these:
+
+	!add-apt-repository ppa:jon-severinsson/ffmpeg
+	!apt-get update
+	!apt-get install ffmpeg
 
 5.5. NOTE: You might not be able to install torch 0.4.1 from pip, like on Windows. 
 In that case, run the following for CPU
