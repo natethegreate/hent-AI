@@ -143,6 +143,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [1.6.7](https://github.com/natethegreate/hent-AI/releases/tag/v1.6.7): Changed ESRGAN processs to run in 2 phases: ESRGAN resize, then mask detection. Slower but more memory forgiving. Added mask blurring for less seams on ESRGAN. For non-ESRGAN, added custom dilation to expand masks. Removed option for jpg, it will be used automatically. Improved file cleaning. 
 
+* [1.6.8](): Videos will now take audio from the source video, using ffmpeg. Variable video bitrate is not yet available, so filesizes may not match the source. ESRGAN will now save videos to the same directory as the source video, mostly to help with the Colab.
+
 
 ## Installation directions
 
