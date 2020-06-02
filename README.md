@@ -79,7 +79,7 @@ ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on 
 
 You will need to download and install DeepCreamPy, which is linked in the intro.
 
-The executable itself should not have any requirements on Windows. For linux, clone the repo and follow the provided instructions for getting its requirements.
+The executable will need [ffmpeg](https://ffmpeg.org/) if you want sound to carry over on videos. Place ffmpeg.exe in the main directory, or somewhere defined in your PATH or in an environment variable. For linux, clone the repo and follow the provided instructions for getting its requirements. 
 
 (Source code on Windows) I would reccomend running these on a virtual environment, with Anaconda3.
 Python 3.5.2, TensorFlow 1.8, Keras 2.2, tensorflow-gpu 1.9.0, torch 0.4.1 and other common packages listed in `requirements.txt`.
