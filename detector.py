@@ -91,8 +91,9 @@ class Detector():
         self.hardware = 'cpu'
         if self.model.check_cuda_gpu()==True:
             #NOTE: Edit this because I am having cuda errors :(
-            print("CUDA-compatible GPU located! ****DEBUG CPU MODE****")
-            self.hardware = 'cpu'
+            # print("CUDA-compatible GPU located! ****DEBUG CPU MODE****")
+            print("CUDA-compatible GPU located!")
+            self.hardware = 'cuda'
         # destroy model. Will re init during weight load.
         self.model = []
 
