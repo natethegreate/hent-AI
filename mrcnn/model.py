@@ -2721,6 +2721,10 @@ class MaskRCNN():
     def check_cuda_gpu(self):
         return tf.test.is_gpu_available()
 
+        # Another function written by Nathan to unload the model
+    def unload_model(self):
+        K.clear_session()
+
 ############################################################
 #  Data Formatting
 ############################################################

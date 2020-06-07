@@ -40,8 +40,8 @@ The model packaged here is model 161. The weights are used to run the detections
 
 5. For "Your own input image folder", select the folder with your images in it.
    For "DCP install directory", selec the parent directory of DeepCreamPy (usually called dist 1)
+   New for 1.6.7, dilation amount will expand the mask by any positive number of pixels (I reccommend lower integers).
 
-NOTE Jpg images can now be processed, but they will be soft-converted to .png for compatibility with DCP.
 
 6. Now you can hit the Go button. Loading the nueral network will take some time. 
    The image detections will also take some time, up to a minute per image once it gets rolling depending on your computer.
@@ -50,11 +50,8 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
    corresponding folders in your DeepCreamPy directory.
 
 8. Now you should run DeepCreamPy, and you can close hentAI. Be sure to select the appropriate censor type in DCP.
-
-9. If you choose the ESRGAN options, detection and decensoring will be done together so DeepCreamPy won't be needed.
-   The output of this will be in the ESR_output folder, but videos will be written to the main directory
 	
---- hentAI video detecting (Experimental, mosaic only)
+--- hentAI video detecting (Mosaic only)
 1. Place the input .mp4 into its own folder. 
    Keep the video as SHORT as possible. You will need to do some video editing.
 
@@ -70,7 +67,8 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 5. After DCP finishes, go back to hentAI and run the Video Maker.
 
 6. This will take the output of DCP and peice it together as a video.
-   As of now, sound will be lost. But you can simply just get the sound from the source video.
+   You will need ffmpeg to properly add sound back in. On windows, place the ffmpeg.exe into the main directory, 
+   or have its path defined as a system variable. 
 
 
 
@@ -97,6 +95,12 @@ NOTE Jpg images can now be processed, but they will be soft-converted to .png fo
 	OR if you have a CUDA compatible gpu with CUDA 9.0:
 	pip install -r requirements-gpu.txt
 
+5.2. To get ffmpeg working, after installing the requirements, run these:
+
+	!add-apt-repository ppa:jon-severinsson/ffmpeg
+	!apt-get update
+	!apt-get install ffmpeg
+
 5.5. NOTE: You might not be able to install torch 0.4.1 from pip, like on Windows. 
 In that case, run the following for CPU
 	conda install pytorch=0.4.1 -c pytorch
@@ -115,14 +119,18 @@ or if you have a Cuda compatible card:
 	For Screentone Remover, instructions are in its own file. Use this if you are using 
 	non-colored images with the printed effect. 
 	NOTE: If the doujin was tagged as [Digital] and does not have the screentone effect, you
-	do not need to use Screentone Remover.
+	probably do not need to use Screentone Remover.
+	You will also need the ffmpeg compiled binary in the same directory, or its path properly added as an environment variable.
 	
 1. First, have an input folder ready with whatever images you want to decensor.
    Do not have bar censors and mosaic censors in the same folder.
 
-2. To detect, simply run the main script
+2. To detect, simply run the main script and follow tutorial for the exe above.
 
 	python main.py
+
+2a. NOTE: Code and Colab versions will have ESRGAN as well. Detection and decensoring will be done together so DeepCreamPy won't be needed.
+   The output of this will be in the ESR_output folder, but videos will be written to the main directory
 
 3. Training:
 **If you are interested in training, please contact me and I may provide you with
@@ -161,10 +169,16 @@ This means your gpu is being detected, and tensorflow wants to use it. This mean
 1. Install CUDA 9.0 here: https://developer.nvidia.com/cuda-90-download-archive?target_os=Windows&target_arch=x86_64
 Get the right one for your computer
 
-2. Make sure to install gpu requiremtnes
+4. You also need cuDNN v7.6.4 runtime for CUDA 9.0. You need an Nvidia account to access the download, but it that is free.
+Get it from here: https://developer.nvidia.com/cudnn
+
+3. Make sure to install gpu requirements, not the cpu.
 	
 	pip install -r requirements-gpu.txt
-	
-4. (Training only) For training, you may need cudnn 7.0 runtime. You need an Nvidia account to access the download, but it that is free.
-I dont have the exact link, but you can Google search or look for it here: https://developer.nvidia.com/ 
+
+4. NOTE: It should be possible to have CUDA 9.0 and CUDA 10 coexist.
+
+5. NOTE FOR RTX owners: There may exist some issue with RTX cards and the torch model in ESRGAN. I don't think it has been resolved yet, 
+so for now if you encounter errors such as CUDNN_STATUS_SUCCESS or CUDDNN_STATUS_ALLOC_FAILED, then change line 95 in detector.py
+to say 'cpu' instead of 'cuda'. This will force only ESRGAN to use CPU. This will be slow, so at this point i'd reccommend using colab instead.
 	

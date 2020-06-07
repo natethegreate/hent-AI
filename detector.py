@@ -9,23 +9,24 @@ import os
 import sys
 import json
 # import datetime # not really useful so remove soon pls
-import skimage
 import numpy as np
+import skimage.draw
+from skimage.filters import unsharp_mask
+# import imgaug # should augment this improt as well haha
 import time
-# from PIL import Image
-
+import ffmpeg
 # Root directory of project
 ROOT_DIR = os.path.abspath("../../")
 
-# Import Mask RCNN
+# Import Mask RCNN and ESRGAN
 sys.path.append(ROOT_DIR)  # To find local version of the library
 # sys.path.append(os.path.join(os.path.abspath('.'), 'ColabESRGAN/'))
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
-# sys.path.insert(1, 'samples/hentai/')
-# from hentai import HentaiConfig
+# It's too late to undo this now
 from cv2 import imshow, waitKey, multiply, add, erode, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 # import ColabESRGAN.test
+# Adatptive mosaic granularity 
 # from green_mask_project_mosaic_resolution import get_mosaic_res
 
 DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
@@ -69,10 +70,9 @@ class Detector():
         # counts how many non-png images, if >1 then warn user
         self.dcp_compat = 0
         # Create model, but dont load weights yet
-        
         self.model = modellib.MaskRCNN(mode="inference", config=self.config,
                                         model_dir=DEFAULT_LOGS_DIR)
-        '''                                    
+        '''
         try:
             self.out_path = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out/")
             self.out_path2 = os.path.join(os.path.abspath('.'), "ESR_temp/ESR_out2/")
@@ -88,15 +88,18 @@ class Detector():
         except:
             print("ERROR in Detector init: ESRGAN model not found, make sure you have 4x_FatalPixels_340000_G.pth in this directory")
             return
-        # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
         '''
+        # Scan for cuda compatible GPU for ESRGAN. Mask-RCNN *should* automatically use a GPU if available.
         # self.hardware = 'cpu'
         if self.model.check_cuda_gpu()==True:
+            #NOTE: Edit this because I am having cuda errors :(
+            # print("CUDA-compatible GPU located! ****DEBUG CPU MODE****")
             print("CUDA-compatible GPU located!")
             # self.hardware = 'cuda'
         else:
-            print("No CUDA-compatible GPU found.")
-        
+            print("No CUDA-compatible GPU located")
+        # destroy model. Will re init during weight load.
+        self.model = []
 
     # Clean out temp working images from all directories in ESR_temp. Code from https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
     def clean_work_dirs(self):
@@ -186,204 +189,7 @@ class Detector():
     # Return number of jpgs that were not processed
     def get_non_png(self):
         return self.dcp_compat        
-    '''
-    # function to handle all of the esrgan stuff
-    def resize_GAN(self, img_path, img_name, is_video=False):
-        # non-video, standard image
-        if is_video is False:
-            # Attempt to obtain image
-            try:
-                image = skimage.io.imread(img_path) # problems with strange shapes
-                if image.ndim != 3: 
-                    image = skimage.color.gray2rgb(image) # convert to rgb if greyscale
-                if image.shape[-1] == 4:
-                    image = image[..., :3] # strip alpha channel
-            except Exception as e:
-                print("ERROR in resize_GAN: Image read. Skipping. image_path=", img_path)
-                print(e)
-                return
-            # Calculate mosaic granularity.
-            granularity = get_mosaic_res(np.array(image))
-            if granularity < 10: #TODO: implement adaptive granularity by weighted changes
-                print("Granularity of image was less than threshold at ", granularity)
-                granularity = 10
-            # Resize image down
-            try:
-                mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # TODO: experiment with interpolations
-                # After resize, run bilateral filter to keep colors coherent
-                file_name = self.temp_path + img_name[:-4] + '.png' 
-                skimage.io.imsave(file_name, mini_img)
-            except Exception as e:
-                print("ERROR in resize_GAN: resize. Skipping. image_path=",img_path, e)
-                return
-            # Now run ESRGAN inference
-            gan_img_path = self.out_path + img_name[:-4] + '.png'
-            self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path, mosaic_res=granularity)
-        else:
-            try:
-                video_path = img_path
-                vcapture = VideoCapture(video_path)
-                width = int(vcapture.get(CAP_PROP_FRAME_WIDTH))
-                height = int(vcapture.get(CAP_PROP_FRAME_HEIGHT))
-                fps = vcapture.get(CAP_PROP_FPS)
-                print("Detected fps:", fps)
-            except Exception as e:
-                print("ERROR in resize_GAN: video read and init.", e)
-                return
-            count = 0
-            success = True
-            print("Video read complete. Starting video phase 1 : resize + GAN")
-            while success:
-                print("frame: ", count)
-                # Read next image
-                success, image = vcapture.read()
-                if success:
-                    # OpenCV returns images as BGR, convert to RGB
-                    image = image[..., ::-1]
 
-                    granularity = get_mosaic_res(np.array(image)) # pass np array of image as ref to gmp function
-                    if granularity < 10: #TODO: implement adaptive granularity by weighted changes
-                        print('Granularity was less than threshold at ',granularity)
-                        granularity = 10
-                    
-                    # initial resize frame
-                    mini_img = resize(image, (int(image.shape[1]/granularity), int(image.shape[0]/granularity)), interpolation=INTER_AREA) # downscale to 1/16
-                    # bil2 = bilateralFilter(mini_img, 3, 70, 70) 
-                    file_name = self.temp_path + img_name[:-4]  + '.png' # need to save a sequence of pngs for TGAN operation
-                    skimage.io.imsave(file_name, mini_img) # save resized images to temp path. Not used in main ESRGAN function below.
-                    
-                    # run ESRGAN algorithms
-                    gan_img_path = self.out_path + img_name[:-4]  + str(count).zfill(6) + '.png'
-                    self.esrgan_instance.run_esrgan(test_img_folder=file_name, out_filename=gan_img_path, mosaic_res=granularity)
-
-                    gan_image = skimage.io.imread(gan_img_path)
-                    gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
-                    count += 1
-            print('Video: Phase 1 complete!')
-    # Runs hent-AI detection and splice. Mosaic only.
-    def ESRGAN(self, img_path, img_name, is_video=False):
-        # Image reads
-        if is_video == False:
-            try:
-                image = skimage.io.imread(img_path) # problems with strange shapes
-                if image.ndim != 3: 
-                    image = skimage.color.gray2rgb(image) # convert to rgb if greyscale
-                if image.shape[-1] == 4:
-                    image = image[..., :3] # strip alpha channel
-            except Exception as e:
-                print("ERROR in detector.ESRGAN: Image read. Skipping. image_path=", img_path)
-                print(e)
-                return
-            # Run detection first
-            r = self.model.detect([image], verbose=0)[0]  
-             # Remove bars from detection; class 1 
-            
-            if len(r["scores"]) == 0:
-                print("Skipping image with no detection")
-                return
-            remove_indices = np.where(r['class_ids'] != 2)
-            new_masks = np.delete(r['masks'], remove_indices, axis=2)
-
-            # load image from esrgan
-            gan_img_path = self.out_path + img_name[:-4] + '.png'
-            gan_image = skimage.io.imread(gan_img_path)
-            gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
-            # Splice newly enhanced mosaic area over original image
-            fin_img = self.splice(image, new_masks, gan_image)
-            try:
-                # Save output, now force save as png
-                file_name = self.fin_path + img_name[:-4] + '.png'
-                skimage.io.imsave(file_name, fin_img)
-            except Exception as e:
-                print("ERROR in ESRGAN: Image write. Skipping. image_path=", img_path, e)
-        else:
-            # Video capture
-            try:
-                video_path = img_path
-                vcapture = VideoCapture(video_path)
-                width = int(vcapture.get(CAP_PROP_FRAME_WIDTH))
-                height = int(vcapture.get(CAP_PROP_FRAME_HEIGHT))
-                fps = vcapture.get(CAP_PROP_FPS)
-                print("Detected fps:", fps)
-        
-                # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-                file_name = img_name[:-4] + "_decensored.mp4"
-                vwriter = VideoWriter(file_name,
-                                        VideoWriter_fourcc(*'mp4v'),
-                                        fps, (width, height))
-            except Exception as e:
-                print("ERROR in ESRGAN: video read and init.", e)
-                return
-            count = 0
-            success = True
-            print("Video read complete. Starting video phase 2: detection + splice")
-            while success:
-                print("frame: ", count)
-                # Read next image
-                success, image = vcapture.read()
-                if success:
-                    # OpenCV returns images as BGR, convert to RGB
-                    image = image[..., ::-1]
-
-                    # Detect objects
-                    r = self.model.detect([image], verbose=0)[0]
-                    if len(r["scores"]) == 0:
-                        print("Skipping frame with no detection")
-                        # Still need to write image to vwriter
-                        image = image[..., ::-1] 
-                        vwriter.write(image)
-                        count += 1
-                        continue
-                    
-                    # Remove unwanted class, code from https://github.com/matterport/Mask_RCNN/issues/1666
-                    remove_indices = np.where(r['class_ids'] != 2) # remove bars: class 1
-                    new_masks = np.delete(r['masks'], remove_indices, axis=2)
-                    
-                    gan_img_path = self.out_path + img_name[:-4]  + str(count).zfill(6) + '.png'
-                    gan_image = skimage.io.imread(gan_img_path)
-                    gan_image = resize(gan_image, (image.shape[1], image.shape[0]))
-
-                    fin_img = self.splice(image, new_masks, gan_image)
-                    fin_img = fin_img[..., ::-1] # reverse RGB to BGR for video writing
-                    # Add image to video writer
-                    vwriter.write(fin_img)
-                    fin_img=0 # not sure if this does anything haha
-                    
-                    count += 1
-
-            vwriter.release()
-            print('Video: Phase 2 complete!')
-        
-
-    # ESRGAN folder running function
-    def run_ESRGAN(self, in_path = None, is_video = False, force_jpg = True):
-        assert in_path
-
-        # Parse directory for files.
-        img_list = []
-        for file in os.listdir(in_path):
-            try:
-                if file.endswith('.png') or file.endswith('.PNG') or file.endswith(".jpg") or file.endswith(".JPG") or file.endswith(".mp4") or file.endswith(".avi"):
-                    img_list.append((in_path + '/' + file, file))
-            except Exception as e:
-                print("ERROR in run_ESRGAN: File parsing. file=", file, e)
-        # begin ESRGAN on every image. Create esrgan instance too.
-        star = time.perf_counter()
-        self.esrgan_instance = ColabESRGAN.test.esrgan(model_path=self.esr_model_path, hw=self.hardware)
-        for img_path, img_name in img_list:
-            self.resize_GAN(img_path=img_path, img_name=img_name, is_video=is_video)
-        # destroy esrgan model. Create hent-AI model.
-        # self.esrgan_instance = []
-        del self.esrgan_instance
-        self.load_weights()
-        for img_path, img_name in img_list:
-            self.ESRGAN(img_path=img_path, img_name=img_name, is_video=is_video)
-        fin = time.perf_counter()
-        total_time = fin-star
-        print("Completed ESRGAN detection and decensor in {:.4f} seconds".format(total_time))
-        self.clean_work_dirs() #NOTE: DISABLE ME if you want to keep the images in the working dirs
-        #TODO: maybe unload hent-AI tf model here
-'''
     def video_create(self, image_path=None, dcp_path=''):
         assert image_path
         # Video capture to get shapes and stats
@@ -404,7 +210,7 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = str(file) + '_uncensored.mp4'
+        file_name = str(file)[:-4] + '_decensored.mp4'
         vwriter = VideoWriter(file_name,
                                     VideoWriter_fourcc(*'mp4v'),
                                     fps, (width, height))
@@ -428,7 +234,14 @@ class Detector():
             count += 1
 
         vwriter.release()
-        print('video complete')
+        print('Video complete! Attempting to create a copy with audio included...')
+        try:
+            in_video = ffmpeg.input(file_name)
+            in_audio = ffmpeg.input(video_path)
+            ffmpeg.concat(in_video, in_audio, v=1, a=1).output(video_path[:-4] + "_decen_audio.mp4", video_bitrate='11M').run()
+        except Exception as e:
+            print("ERROR in video_create: audio rip. Ensure ffmpeg.exe is in the main directory.")
+            print(e)
 
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
@@ -502,9 +315,12 @@ class Detector():
                 print(e)
                 return
             # Detect objects
-            # image_ced =Canny(image=image, threshold1=10, threshold2=42)
-            # image_ced = 255 - image_ced
-            # image_ced = cvtColor(image_ced,COLOR_GRAY2RGB)
+            '''
+            image_ced = bilateralFilter(image, 3, 70, 70) 
+            image_ced =Canny(image=image_ced, threshold1=10, threshold2=42)
+            image_ced = 255 - image_ced
+            image_ced = cvtColor(image_ced,COLOR_GRAY2RGB)
+            '''
             # skimage.io.imsave(save_path + fname[:-4] + '_ced' + '.png', image_ced)
             try:
                 # r = self.model.detect([image_ced], verbose=0)[0]
@@ -580,7 +396,11 @@ class Detector():
                 print('Detection on image', file_counter, 'finished in {:.4f} seconds'.format(total_time))
                 file_counter += 1
 
-
+    # Unloads both models if possible, to allow hent-AI to remain open while DCP runs.
+    def unload_model(self):
+        # del self.esrgan_instance
+        self.model.unload_model()
+        print('Model unload successful!')
 
 # main only used for debugging here. Comment out pls
 '''if __name__ == '__main__':
