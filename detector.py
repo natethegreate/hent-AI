@@ -409,7 +409,7 @@ class Detector():
         fps = vcapture.get(CAP_PROP_FPS)
 
         # Define codec and create video writer, video output is purely for debugging and educational purpose. Not used in decensoring.
-        file_name = str(file) + '_decensored.mp4'
+        file_name = str(file)[:-4] + '_decensored.mp4'
         vwriter = VideoWriter(file_name,
                                     VideoWriter_fourcc(*'mp4v'),
                                     fps, (width, height))
@@ -437,11 +437,10 @@ class Detector():
         try:
             in_video = ffmpeg.input(file_name)
             in_audio = ffmpeg.input(video_path)
-            ffmpeg.concat(in_video, in_audio, v=1, a=1).output(file_name[:-4] + "_audio.mp4").run()
+            ffmpeg.concat(in_video, in_audio, v=1, a=1).output(video_path[:-4] + "_decen_audio.mp4", video_bitrate='11M').run()
         except Exception as e:
-            print("ERROR in ESRGAN: audio rip. Ensure ffmpeg.exe is in the main directory.")
+            print("ERROR in video_create: audio rip. Ensure ffmpeg.exe is in the main directory.")
             print(e)
-
     # save path and orig video folder are both paths, but orig video folder is for original mosaics to be saved.
     # fname = filename.
     # image_path = path of input file, image or video
