@@ -454,9 +454,9 @@ class Detector():
             success = True
             print("Video read complete, starting video detection:")
             while success:
-                print("frame: ", count)
                 # Read next image
                 success, image = vcapture.read()
+                print("frame: ", count. success)
                 if success:
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
