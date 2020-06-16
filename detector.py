@@ -24,7 +24,7 @@ sys.path.append(os.path.join(os.path.abspath('.'), 'ColabESRGAN/'))
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 # It's too late to undo this now
-from cv2 import imshow, waitKey, multiply, add, erode, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
+from cv2 import imshow, waitKey, multiply, add, erode, VideoCapture, Canny, cvtColor,COLOR_GRAY2RGB, imdecode, CAP_PROP_FRAME_COUNT, CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, CAP_PROP_FPS, VideoWriter, VideoWriter_fourcc, resize, INTER_LANCZOS4, INTER_AREA, GaussianBlur, filter2D, bilateralFilter, blur
 import ColabESRGAN.test
 # Adatptive mosaic granularity 
 from green_mask_project_mosaic_resolution import get_mosaic_res
@@ -233,7 +233,7 @@ class Detector():
             success = True
             print("Video read complete. Starting video phase 1 : resize + GAN")
             while success:
-                print("frame: ", count)
+                print("frame: ", count, "/",vcapture.get(CAP_PROP_FRAME_COUNT))
                 # Read next image
                 success, image = vcapture.read()
                 if success:
@@ -317,7 +317,7 @@ class Detector():
             success = True
             print("Video read complete. Starting video phase 2: detection + splice")
             while success:
-                print("frame: ", count)
+                print("frame: ", count, "/",vcapture.get(CAP_PROP_FRAME_COUNT))
                 # Read next image
                 success, image = vcapture.read()
                 if success:
@@ -466,7 +466,7 @@ class Detector():
             success = True
             print("Video read complete, starting video detection:")
             while success:
-                print("frame: ", count)
+                print("frame: ", count, "/",vcapture.get(CAP_PROP_FRAME_COUNT))
                 # Read next image
                 success, image = vcapture.read()
                 if success:
@@ -592,7 +592,7 @@ class Detector():
                 self.detect_and_cover(img_path, img_name, output_folder, is_mosaic=is_mosaic, dilation=dilation)  #sending force_jpg for debugging
                 fin = time.perf_counter()
                 total_time = fin-star
-                print('Detection on image', file_counter, 'finished in {:.4f} seconds'.format(total_time))
+                print('Detection on image', file_counter,'of', len(img_list),'finished in {:.4f} seconds'.format(total_time))
                 file_counter += 1
 
     # Unloads both models if possible, to allow hent-AI to remain open while DCP runs.
