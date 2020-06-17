@@ -10,11 +10,13 @@ from tkinter import *
 # from matplotlib import pyplot as plt
 import subprocess
 from tkinter import filedialog
+import configparser
 import shutil
 from detector import Detector
 
-versionNumber = '1.6.7'
+versionNumber = '1.6.9'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
+cfg_path = 'hconfig.ini'
 
 # tkinter UI globals for window tracking. Sourced from https://stackoverflow.com/a/35486067
 # root window, hidden. Only 1 active window at a time
@@ -98,6 +100,18 @@ def hentAI_detection(dcp_dir=None, in_path=None, is_mosaic=False, is_video=False
         error(5)
     if in_path==None:
         error(2)
+
+    # Update config with new vars
+    hconfig = configparser.ConfigParser()
+    hconfig.read(cfg_path)
+    if 'USER' in hconfig:
+        hconfig['USER']['dcpdir'] = dcp_dir
+        hconfig['USER']['srcdir'] = in_path
+        hconfig['USER']['gmask'] = str(dilation)
+    else:
+        print("ERROR in hentAI_detection: Unable to read config file")
+    with open(cfg_path, 'w') as cfgfile:
+        hconfig.write(cfgfile)
     
     dilation = (dilation) * 2 # Dilation performed via kernel, so dimension is doubled
           
@@ -174,7 +188,22 @@ def hentAI_TGAN(in_path=None, is_video=False, force_jpg=True):
 # globals that hold directory strings
 dtext = ""
 otext = ""
+mtext = ""
 
+# Use hconfig.ini to populate the directory strings
+def get_cfg():
+    hconfig = configparser.ConfigParser()
+    hconfig.read(cfg_path)
+    if 'USER' in hconfig:
+        dtext = hconfig['USER']['dcpdir']
+        otext = hconfig['USER']['srcdir']
+        mtext = hconfig['USER']['gmask']
+    else:
+        print("ERROR in get_cfg: Unable to read USER section")
+
+    dvar.set(dtext)
+    ovar.set(otext)
+    mvar.set(mtext)
 
 # both functions used to get and set directories
 def dcp_newdir():
@@ -207,7 +236,7 @@ def bar_detect():
 
     dil_label = Label(bar_win, text='Grow detected mask amount (0 to 10)')
     dil_label.grid(row=3, padx=10, pady=10)
-    dil_entry = Entry(bar_win)
+    dil_entry = Entry(bar_win, textvariable = mvar)
     dil_entry.grid(row=3, column=1, padx=20)
     dil_entry.insert(0, '4')
 
@@ -240,7 +269,7 @@ def mosaic_detect():
 
     dil_label = Label(mos_win, text='Grow detected mask amount (0 to 10)')
     dil_label.grid(row=3, padx=10, pady=10)
-    dil_entry = Entry(mos_win)
+    dil_entry = Entry(mos_win, textvariable = mvar)
     dil_entry.grid(row=3, column=1, padx=20)
     dil_entry.insert(0, '4')
 
@@ -316,7 +345,7 @@ def video_detect():
 
     dil_label = Label(vid_win, text='Grow detected mask amount (0 to 10)')
     dil_label.grid(row=3, padx=10, pady=10)
-    dil_entry = Entry(vid_win)
+    dil_entry = Entry(vid_win, textvariable = mvar)
     dil_entry.grid(row=3, column=1, padx=20)
     dil_entry.insert(0, '4')
 
@@ -360,6 +389,11 @@ def backMain():
 
     # dvar = StringVar(root)
     # ovar = StringVar(root)
+    # Clear string entry vars, but repopulate from config
+    dvar.set('')
+    ovar.set('')
+    mvar.set('')
+    get_cfg()
 
     intro_label = Label(title_window, text='Welcome to hentAI! Please select a censor type: ')
     intro_label.pack(pady=10)
@@ -380,8 +414,10 @@ if __name__ == "__main__":
     title_window = new_window()
     title_window.title("hentAI v." + versionNumber)
 
+    # apparently global variables for text entries
     dvar = StringVar(root)
     ovar = StringVar(root)
+    mvar = StringVar(root)
 
     intro_label = Label(title_window, text='Welcome to hentAI! Please select a censor type: ')
     intro_label.pack(pady=10)
@@ -396,6 +432,7 @@ if __name__ == "__main__":
     # video_TG_button = Button(title_window, text="Video (ESRGAN)", command=video_detect_TGAN) # separate window for future functionality changes
     # video_TG_button.pack(pady=10, padx=10)
     detect_instance = Detector(weights_path=weights_path)
+    get_cfg()
     # detect_instance.load_weights() # instance will load weights on its own
     title_window.geometry("300x300")
     title_window.mainloop()
