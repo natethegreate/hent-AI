@@ -238,7 +238,6 @@ def bar_detect():
     dil_label.grid(row=3, padx=10, pady=10)
     dil_entry = Entry(bar_win, textvariable = mvar)
     dil_entry.grid(row=3, column=1, padx=20)
-    dil_entry.insert(0, '4')
 
     go_button = Button(bar_win, text="Go!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=False, is_video=False, force_jpg=True, dilation=int(dil_entry.get()) ))
     go_button.grid(row=4, column=1, pady=10)
@@ -271,7 +270,6 @@ def mosaic_detect():
     dil_label.grid(row=3, padx=10, pady=10)
     dil_entry = Entry(mos_win, textvariable = mvar)
     dil_entry.grid(row=3, column=1, padx=20)
-    dil_entry.insert(0, '4')
 
     # boolv = BooleanVar()
     # cb = Checkbutton(mos_win, text='Force use jpg (will save as png)?', variable = boolv)
@@ -347,7 +345,6 @@ def video_detect():
     dil_label.grid(row=3, padx=10, pady=10)
     dil_entry = Entry(vid_win, textvariable = mvar)
     dil_entry.grid(row=3, column=1, padx=20)
-    dil_entry.insert(0, '4')
 
     go_button = Button(vid_win, text="Begin Detection!", command = lambda: hentAI_detection(dcp_dir=d_entry.get(), in_path=o_entry.get(), is_mosaic=True,dilation=int(dil_entry.get()), is_video=True))
     go_button.grid(row=4, columnspan=2, pady=5)
