@@ -46,9 +46,11 @@ Same thing as above, except this notebook is used to validate the dataset. Also 
 
 * [green_mask_project_mosaic_resolution.py](green_mask_project_mosaic_resolution.py) Script from GMP that estimates a mosaic's granularity (size of the mosaic boxes) for use in ESRGAN decensoring.
 
+* [hconfig.ini](hconfig.ini) Configuration file that holds directory information.
+
 # The Dataset
 
-Extended the existing Balloon class to support 3 classes: BG, bar, and mosaic. I have decided to not provide my dataset. Annotated with VGG annotator in .json format.
+The dataset has a mix of some hand-done annotations, and mostly hand-done annotated images using our test_combined_generator. This script takes uncensored images as input, and can create a clone of the image with a mosaic and random bar censors, using NudeNet. This dataset is not provided here. You can contact me on Discord if you are interested.
 
 Dataset annotations have were made with the polygon shape. Bar and Mosaic region attributes are formated as:
 
@@ -56,12 +58,11 @@ Dataset annotations have were made with the polygon shape. Bar and Mosaic region
 "region_attributes":{"censor":"bar"}} OR "region_attributes":{"censor":"mosaic"}}
 ```
 
-Currently, the model needs a bigger database, namely with bar censors. Please contact me (Discord or Twitter) so I can provide the current dataset if you wish to train on your own. We are currently looking into dataset generation by censoring already uncensored images, as well as further image augmentation.
-[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor. You can start off of this sample and build off of it, and hopefully send your dataset to me so I can append it to the current dataset.
+[Here](https://drive.google.com/open?id=1J0T6sZx8sN0wyo3Ctg88nlFWg414256j) is a (NSFW) sample of my dataset annotations, along with the vgg editor.
 
 # The Model
 
-I experimented with other pre-trained models, but ended transfer learning with the imagenet model. You will want the latest model for better accuracy.
+You will want the latest model for better accuracy.
 
 * Model 161 (deprecated) 
 
@@ -73,7 +74,7 @@ I experimented with other pre-trained models, but ended transfer learning with t
 
 Simply delete your current weights.h5 file, and replace with the new one. Please keep the model named as weights.h5
 
-ESRGAN is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo. Place this model in the main directory. 
+ESRGAN (on the code only) is using Twittman's fatal pixels model for 4x superscaling. It is not on this repo as it is protected by MPL-2.0. Download the model 340000 [here](https://de-next.owncube.com/index.php/s/mDGmi7NgdyyQRXL) from his repo. Place this model in the main directory. 
 
 ## Requirements
 
