@@ -171,15 +171,13 @@ def hentAI_TGAN(in_path=None, is_video=False, force_jpg=True):
     hconfig = configparser.ConfigParser()
     hconfig.read(cfg_path)
     if 'USER' in hconfig:
-        hconfig['USER']['dcpdir'] = dcp_dir
         hconfig['USER']['srcdir'] = in_path
-        hconfig['USER']['gmask'] = str(dilation)
     else:
         print("ERROR in hentAI_detection: Unable to read config file")
     with open(cfg_path, 'w') as cfgfile:
         hconfig.write(cfgfile)
     loader = Tk()
-    loader.title('Running TecoGAN')
+    loader.title('Running ESRGAN')
     load_label = Label(loader, text='Now running decensor. This can take a while. Please wait')
     load_label.pack(side=TOP, fill=X, pady=10, padx=20)
     loader.update()
