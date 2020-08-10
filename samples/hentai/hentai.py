@@ -317,7 +317,7 @@ if __name__ == '__main__':
         if args.dtype == "esrgan":
             detect_instance.run_ESRGAN(in_path = src_path, is_video = True, force_jpg = True)
         elif args.dtype == "bar":
-            detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, force_jpg=True, is_mosaic=False)
+            detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, is_mosaic=False)
         elif args.dtype == "mosaic":
             # First copy over all original files into input_original folder
             for fil in listdir(src_path):
@@ -326,7 +326,7 @@ if __name__ == '__main__':
                         shutil.copy(src_path + '/' + fil, out_path + '/decensor_input_original/' + fil) # DCP is compatible with original jpg input.
                     except Exception as e:
                         print("ERROR in hentAI_detection: Mosaic copy to decensor_input_original failed!", fil, e)
-            detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, force_jpg=True, is_mosaic=True)
+            detect_instance.run_on_folder(input_folder=src_path, output_folder=out_path + '/decensor_input/', is_video=False, is_mosaic=True)
     else:
         print("'{}' is not recognized. "
               "Use 'train'".format(args.command))
