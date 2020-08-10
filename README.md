@@ -148,6 +148,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [1.6.9](https://github.com/natethegreate/hent-AI/releases/tag/v1.6.9): Minor UI tweaks. There is now a hconfig.ini that will save your previous used directories and settings on startup. During detection process for images and video, total image/frame count will be displayed.
 
+* [1.6.9b](): Hotfix for ESRGAN and ESRGAN video. Fixed bug with the .ini. Note: .exe is unaffected, so no need for another version.
+
 
 ## Installation directions
 
