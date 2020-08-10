@@ -150,6 +150,8 @@ Here is an example of a screentoned image, and what it looks like when removed b
 
 * [1.6.9b](): Hotfix for ESRGAN and ESRGAN video. Fixed bug with the .ini. Note: .exe is unaffected, so no need for another version.
 
+* [1.6.9c](): Hotfix for image and mosaic decensoring for colab. Note: .exe is unaffected, so no need for another version.
+
 
 ## Installation directions
 
