@@ -11,6 +11,8 @@ h5py
 imgaug
 IPython[all]
 pandas>=0.23.1
+# Inform pip where to find torch
+--find-links https://download.pytorch.org/whl/torch_stable.html
 torch==0.4.1
 torchvision>=0.2.1
 ffmpeg-python
