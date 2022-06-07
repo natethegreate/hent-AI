@@ -15,6 +15,11 @@ from skimage.filters import unsharp_mask
 import imgaug # should augment this improt as well haha
 import time
 import ffmpeg
+
+# uncomment below if you want to use CPU instead
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+
 # Root directory of project
 ROOT_DIR = os.path.abspath("../../")
 
@@ -469,6 +474,9 @@ class Detector():
                 # Read next image
                 success, image = vcapture.read()
                 if success:
+                    if os.path.exists(save_path + "/" + fname[:-4] + str(count).zfill(6) + ".png"):
+                        count += 1
+                        continue
                     # OpenCV returns images as BGR, convert to RGB
                     image = image[..., ::-1]
                     # save frame into decensor input original. Need to keep names persistent.

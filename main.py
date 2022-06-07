@@ -14,6 +14,7 @@ import configparser
 import shutil
 from detector import Detector
 
+
 versionNumber = '1.6.9'
 weights_path = 'weights.h5' # should call it weights.h5 in main dir
 cfg_path = 'hconfig.ini'
