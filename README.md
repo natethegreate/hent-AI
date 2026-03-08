@@ -23,6 +23,11 @@ Examples of mosaic detection on model 236:
 For both of those examples, the newest model 161 provides far more accurate masks and detection.
 
 # Getting Started
+Use the deployment version: https://github.com/TriggerBurst/FastDeepCreamPy
+
+or 
+
+
 You will need all the same requirements as matterport's Mask RCNN implementation, nothing more. Note that I am using tensorflow 1.8.0, tensorflow-gpu 1.9.0, torch 0.4.1, and keras 2.2.0. I have not fully tested the stability of newer combinations. I use Anaconda3 for my command line. 
 
 Only windows is supported for the executable. You can pull this code for linux.
